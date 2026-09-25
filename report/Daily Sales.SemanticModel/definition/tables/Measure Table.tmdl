@@ -281,6 +281,31 @@ table 'Measure Table'
 		displayFolder: Sales
 		lineageTag: ae8e88c7-918a-4613-84c8-2afe0abd1d89
 
+	/// Days with sales in the current date filter, both the days and their sales read through the date table. Formatted out of the calendar days in the filter, such as 37 / 45, while the value stays a number. Reads 0 on a filter whose days have no sales, and blank only when the filter holds no days.
+	measure 'Active Days' =
+
+			// Every calendar day in the current date filter, from the date table
+			VAR __Days =
+			    VALUES ( 'DimDate'[Date] )
+			// Keep the days whose sales are not blank
+			VAR __ActiveDays =
+			    FILTER (
+			        __Days,
+			        NOT ISBLANK ( [Total Sales] )
+			    )
+			// Count them: 0 when the filter holds days but none has sales, blank with no days
+			VAR __Result =
+			    IF (
+			        NOT ISEMPTY ( __Days ),
+			        COUNTROWS ( __ActiveDays ) + 0
+			    )
+			RETURN
+			    __Result
+		displayFolder: Sales
+		lineageTag: 7cb7f973-161a-468e-ada5-a343dc60b187
+
+		formatStringDefinition = Fmt.OutOf ( [Days in Filter] )
+
 	column Column1
 		dataType: string
 		isHidden

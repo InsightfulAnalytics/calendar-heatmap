@@ -342,6 +342,32 @@
       "ticket": "T05",
       "report": "CALCULATE ( [Mean per Day], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
       "independent": "0"
+    },
+    {
+      "name": "Active days, {{name}}: the days that have sales rows",
+      "ticket": "T05",
+      "each": "filters",
+      "report": "CALCULATE ( [Active Days], {{report}} )",
+      "independent": "COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( FILTER ( 'Sales', {{salesRows}} ), \"@Date\", 'Sales'[Date] ) ) )"
+    },
+    {
+      "name": "Active days, {{name}}, reads as the active days / {{days}} in its format",
+      "ticket": "T05",
+      "each": "filters",
+      "report": "CALCULATE ( FORMAT ( [Active Days], Fmt.OutOf ( [Days in Filter] ) ), {{report}} )",
+      "independent": "FORMAT ( COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( FILTER ( 'Sales', {{salesRows}} ), \"@Date\", 'Sales'[Date] ) ) ), \"#,##0\" ) & \" / {{days}}\""
+    },
+    {
+      "name": "Active days reads 0, not blank, on a day with no sales (17 Jul 2025)",
+      "ticket": "T05",
+      "report": "CALCULATE ( [Active Days], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
+      "independent": "0"
+    },
+    {
+      "name": "the model's format functions are loaded in Desktop",
+      "ticket": "T05",
+      "report": "CONCATENATEX ( INFO.USERDEFINEDFUNCTIONS (), [Name], \", \", [Name], ASC )",
+      "independent": "\"Fmt.OutOf\""
     }
   ]
 }

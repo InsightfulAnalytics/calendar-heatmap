@@ -73,7 +73,7 @@ try {
 } catch {
     $message = $_.Exception.Message
     if ($functionNames.Count -and $message -match 'function') {
-        Note "this TOM assembly ($version) predates DAX user-defined functions: $($message.Split([char]10)[0].Trim())"
+        Note "this TOM assembly ($version) predates DAX user-defined functions: $(($message -replace '\s+', ' ').Trim())"
         Note 'workaround (pbip:tmdl authoring-gotchas): validating a copy of the folder without functions.tmdl'
         $scratch = Join-Path ([IO.Path]::GetTempPath()) ('tmdl-roundtrip-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
         Copy-Item -LiteralPath $Definition -Destination $scratch -Recurse

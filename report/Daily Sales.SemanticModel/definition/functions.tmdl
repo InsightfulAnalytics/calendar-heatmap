@@ -1,0 +1,19 @@
+function 'Fmt.OutOf' =
+		// Format string for a count shown out of a total, such as 37 / 45: a whole number with
+		// thousands separators, then the total as literal text. A measure uses it as its dynamic
+		// format string, so its value stays a number.
+		(
+			// The total the value is shown out of, evaluated in the caller's filter context
+			denominator: NUMERIC VAL
+		)
+		=>
+		// The total, written the same way as the value
+		VAR __Denominator =
+		    FORMAT ( denominator, "#,##0" )
+		// Quoted, so the format string prints it as literal text
+		VAR __Result =
+		    "#,##0"" / " & __Denominator & """"
+		RETURN
+		    __Result
+	lineageTag: 6024cff2-896d-4c6d-af27-a4ac8c616b84
+
