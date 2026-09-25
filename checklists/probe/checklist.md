@@ -8,13 +8,16 @@ Tim performs this in Power BI Desktop on the probe Report, `report/Daily Sales.p
   the whole Desktop window is best: every visual and the Filters pane in one image.
 - Where a step says **Record**, write the answer in the table at the end, or leave it for the
   review to read off the screenshot.
-- Do not run `report/seam.ps1` or edit any project file while working through this. Its step 3
-  puts the disk copy over Desktop.
-- Do not save from Desktop until step D2. When Desktop asks to save on close, choose **Don't
-  save**. Desktop marks the project as changed as soon as it opens, before you touch anything (seen
-  in T01, and a save straight after an open wrote nothing), so expect that prompt on every close.
-- The checklist ends with Selections cleared, the page filter as built (calendar 2025), and one
-  deliberate save (D2), so Desktop is left open with no unsaved changes.
+- Do not run `report/seam.ps1` or edit any project file while working through this. A seam run
+  with `-OverwriteUnsaved` puts the disk copy over Desktop, and a Desktop save writes over any
+  on-disk edit that has not been applied.
+- Desktop marks the project as changed as soon as it opens, before you touch anything (seen in
+  T01, and a save straight after an open wrote nothing), and an agent's seam run leaves its data
+  refresh unsaved. So the unsaved flag is often on when you start, and Desktop asks to save on
+  every close. Neither is your work. When Desktop asks to save on close, choose **Don't save**.
+- Save from Desktop only at 0.1 (optional) and D2.
+- The checklist ends with Selections cleared, the page filter as built (calendar 2025), and the
+  deliberate save at D2, so Desktop is left open with no unsaved changes.
 
 ## The page and the numbers
 
@@ -53,9 +56,36 @@ Sun, 14 Aug Thu, 20 Aug Wed, 21 Aug Thu. Hover a Calendar cell to see its date i
 pbir desktop list
 ```
 
-Expected: exactly one instance, holding `B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales.pbip`,
-with no unsaved changes. T01 left it that way. If Desktop is not open, open it with
-`Start-Process "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales.pbip"`.
+Expected: exactly one instance, holding `B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales.pbip`.
+If Desktop is not open, open it with
+`Start-Process "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales.pbip"`, wait
+for the page to draw, and run `pbir desktop list` again.
+
+The instance may show unsaved changes (`hasUnsavedChanges` true). That is expected and is not your
+work: Desktop turns the flag on as it opens, and an agent's seam run leaves its data refresh
+unsaved. Closing and reopening does not clear it, because the flag comes back on as Desktop opens.
+
+If Desktop shows an **Apply external changes** banner, stop here and do not save: an agent's
+on-disk edit has not been applied, and a save would write over it. Ask for a seam run first.
+
+Otherwise pick one:
+
+- **Clear the flag (the usual choice).** Press **Ctrl+S** once in Desktop. Then in the terminal:
+
+  ```powershell
+  git -C "B:\VS Code Files\PBI Projects\Calendar Heatmap" status --short -- report
+  pbir desktop list
+  ```
+
+  Expected: git lists nothing, and the instance shows no unsaved changes. If git lists files, the
+  save wrote Desktop's own serialization of something an agent changed: leave them uncommitted for
+  the review, **Record** them in the table at the end, and go on.
+- **Start over without saving.** If the page does not look as built (for example a Selection is
+  left over), close Desktop, choose **Don't save**, and open the PBIP again with the command above.
+  The flag is on again after the reopen; leave it, since D2 saves once at the end.
+
+Screenshot: `00-start.png` (the terminal after the commands above, with Desktop beside it if it
+fits)
 
 **0.2** Look at the page without clicking anything. Open the Filters pane.
 
@@ -115,6 +145,8 @@ Screenshot: `05-debug-1jul-own-zone.png`
 
 **A4** Leave the editor (**Back to report**). The page is unchanged from 0.2.
 
+Screenshot: `06-back-to-report.png`
+
 ## F. Fallback, only if A1 counted fewer than 365 rows
 
 **F1** Select the Calendar. In Visualizations, Build, open the drop-down on the `Date` field and
@@ -127,9 +159,13 @@ Screenshot: `F1-show-items-no-data.png`
 **F2** Untick **Show items with no data** again, and check the count is back to A1's. The Report
 must be as built for the rest of the checklist.
 
+Screenshot: `F2-show-items-no-data-off.png` (the editor's row count back to A1's)
+
 ## B. One reading west of UTC
 
 **B1** Close Desktop. When it asks to save, choose **Don't save**.
+
+Screenshot: `07-close-prompt.png` (the save prompt, before you choose **Don't save**)
 
 **B2** Switch Windows to Pacific Time. In a terminal:
 
@@ -142,6 +178,11 @@ Expected: `Pacific Standard Time`. (Or Settings, Time & language, Date & time, T
 "(UTC-08:00) Pacific Time (US & Canada)". Automatic time zone is off on this machine.) On 1 July,
 Pacific Time is on daylight time, UTC-7.
 
+**Record:** the `tzutil /g` output.
+
+Screenshot: `08-zone-west.png` (the terminal showing the `tzutil /g` output, or the Date & time
+settings page showing the zone)
+
 **B3** Open the PBIP again:
 
 ```powershell
@@ -153,7 +194,7 @@ zone). The Calendar should also look as in 0.2. **Record** if it does not: under
 delivery every day draws one day early here, so 1 Jan 2025 (a Wednesday) lands on Tuesday 31 Dec
 2024.
 
-Screenshot: `06-west-canvas.png`
+Screenshot: `09-west-canvas.png`
 
 **B4** Open the Calendar in Deneb's editor (A1) and find the 1 July 2025 row again.
 
@@ -164,7 +205,7 @@ Screenshot: `06-west-canvas.png`
 | 1751353200000, or 2025-07-01T07:00:00.000Z, or Tue Jul 01 2025 00:00:00 GMT-0700 | local midnight (expected: the raw value changed from A3) |
 | 1751328000000, or 2025-07-01T00:00:00.000Z, or Mon Jun 30 2025 17:00:00 GMT-0700 | UTC midnight (the raw value did not change) |
 
-Screenshot: `07-debug-1jul-west.png`
+Screenshot: `10-debug-1jul-west.png`
 
 **B5** Back to report. Close Desktop, **Don't save**. Restore your zone:
 
@@ -175,6 +216,11 @@ tzutil /g
 
 Expected: `AUS Eastern Standard Time`. Then open the PBIP again (B3's command). Expected: the page
 as in 0.2.
+
+**Record:** the `tzutil /g` output.
+
+Screenshot: `11-zone-restored.png` (the terminal showing the `tzutil /g` output, with the reopened
+page beside it if it fits)
 
 ## C. Clicks and drags on the Calendar
 
@@ -194,7 +240,7 @@ Expected:
 
 **Record:** whether the title changed to the text above (the title question).
 
-Screenshots: `08-drag.png`, then scroll the table so 17 Jul to 1 Aug show: `09-drag-blank-rows.png`
+Screenshots: `12-drag.png`, then scroll the table so 17 Jul to 1 Aug show: `13-drag-blank-rows.png`
 
 **C2 Selected flags after the drag.** With the Selection held, open the Calendar in Deneb's editor
 (A1).
@@ -204,7 +250,7 @@ Expected `__selected__`: `06-Jul` (`__row__` 186) off, `07-Jul` (187) on, `17-Ju
 
 **Record:** the five values, and whether the preview shows the 45 days strong.
 
-Screenshot: `10-debug-flags-drag.png` (use `10b-...` for a second page of rows)
+Screenshot: `14-debug-flags-drag.png` (use `14b-...` for a second page of rows)
 
 **C3 Selected flags after a clear.** In the editor's preview, click the Calendar background: inside
 its frame, off the day cells (the strip between the header and the grid). Read the same five rows.
@@ -213,18 +259,18 @@ Expected: `neutral` on all five, and on every row.
 
 **Record:** the five values.
 
-Screenshot: `11-debug-flags-cleared.png`
+Screenshot: `15-debug-flags-cleared.png`
 
 Back to report. Expected: the page as in 0.2. If the Selection is still applied there, click the
 Calendar background on the canvas, then reopen the editor, read the five rows again and screenshot
-that instead as `11-debug-flags-cleared.png`.
+that instead as `15-debug-flags-cleared.png`.
 
 **C4 Click one day.** Click 7 Jul 2025 once, without dragging.
 
 Expected: table one row `07-Jul-25` 4,120 1, Total row 4,120 and 1; Days in filter 1; Total sales
 4,120; title `Selected Period: 7 Jul 2025`.
 
-Screenshot: `12-click-7jul.png`
+Screenshot: `16-click-7jul.png`
 
 **C5 Click a day with no sales.** Click 17 Jul 2025 (Thursday).
 
@@ -232,20 +278,20 @@ Expected: table one row `17-Jul-25` with Total Sales blank and Days in Filter 1;
 Total sales (Blank) (independent DAX: no `Sales` rows on 17 Jul 2025); title
 `Selected Period: 17 Jul 2025`.
 
-Screenshot: `13-click-17jul-no-sales.png`
+Screenshot: `17-click-17jul-no-sales.png`
 
 **C6 Right click.** With 17 Jul still selected, right click 14 Aug 2025.
 
-Expected: Power BI's context menu opens. Screenshot it while open: `14-right-click-menu.png`. Press
+Expected: Power BI's context menu opens. Screenshot it while open: `18-right-click-menu.png`. Press
 **Esc** without choosing anything. Then expected: nothing changed, every visual still as in C5.
 
-Screenshot: `15-after-right-click.png`
+Screenshot: `19-after-right-click.png`
 
 **C7 Background click.** Click the Calendar background (inside its frame, off the cells).
 
 Expected: the page as in 0.2: 365 rows, 1,181,520, Days in filter 365, `Selected Period: 2025`.
 
-Screenshot: `16-background-click.png`
+Screenshot: `20-background-click.png`
 
 **C8 Shift-click on a selected day.** Drag 7 Jul to 20 Aug again (C1's values). Then hold
 **Shift** and click 14 Aug 2025 (Thursday, a selected day with sales 4,382).
@@ -260,7 +306,7 @@ Screenshot: `16-background-click.png`
 | d. Selection cleared | 365 | 1,181,520 | Selected Period: 2025 |
 | e. something else | describe it | | |
 
-Screenshot: `17-shift-click.png` (for outcome a, scroll the table so 13 to 15 Aug show)
+Screenshot: `21-shift-click.png` (for outcome a, scroll the table so 13 to 15 Aug show)
 
 **C9 Shift-drag over selected days.** Click the background, then drag 7 Jul to 20 Aug again. Hold
 **Shift** and drag from 4 Aug 2025 (Monday) to 10 Aug 2025 (Sunday): one week column, all seven
@@ -275,9 +321,11 @@ days already selected.
 | c. no change | 45 | 148,343 | Selected Period: 7 Jul - 20 Aug 2025 |
 | d. refused or cleared | describe it | | |
 
-Screenshot: `18-shift-drag.png`
+Screenshot: `22-shift-drag.png`
 
 **C10 Clear.** Click the Calendar background. Expected: the page as in 0.2.
+
+Screenshot: `23-cleared.png`
 
 ## D. Save, the build stamp and the container names
 
@@ -285,7 +333,12 @@ Screenshot: `18-shift-drag.png`
 Year is 2025 on this page, and the page matches 0.2. Deneb's editor has been opened in this session
 (C2, C3), which the container-name check needs.
 
-**D2** Save: **Ctrl+S**. This is the one deliberate save.
+Screenshot: `24-restored-state.png` (the page with the Filters pane open)
+
+**D2** Save: **Ctrl+S**. This is the deliberate save the checklist ends on. It saves only what
+Desktop already holds: the Selections are cleared and the page filter is as built.
+
+Screenshot: `25-after-save.png` (the Desktop window straight after the save)
 
 **D3** In a terminal:
 
@@ -299,17 +352,17 @@ Expected from the audit:
 - `legacy signals: total=2 pbiContainerWidth=1 pbiContainerHeight=1 pbiContainer=0`.
 - `denebContainer references: 0`.
 
-Expected from git: nothing listed. T01's save already recorded Desktop's stamps. Leave anything
-listed as it is, uncommitted, for the review.
+Expected from git: nothing listed, because T01's save already recorded Desktop's stamps. Leave
+anything listed as it is, uncommitted, for the review.
 
 **Record:** the build, and whether the legacy names survived.
 
-Screenshot: `19-audit-after-save.png` (the terminal)
+Screenshot: `26-audit-after-save.png` (the terminal)
 
 **D4** In the terminal: `pbir desktop list`. Expected: one instance on the PBIP, no unsaved
 changes.
 
-Screenshot: `20-final-state.png` (the page as in 0.2, with the terminal beside it if it fits)
+Screenshot: `27-final-state.png` (the page as in 0.2, with the terminal beside it if it fits)
 
 Leave Desktop open.
 
@@ -317,12 +370,15 @@ Leave Desktop open.
 
 | Step | Question | Answer |
 |---|---|---|
+| 0.1 | Unsaved flag at the start; which option you took; files git listed after the save (none expected) | |
 | A1 | Calendar dataset rows with the helper bound (365 expected) | |
 | A1 | `Sales__highlight` listed in the debug view | |
 | A3 | 1 Jul 2025 in own zone: shown as, hover, type | |
 | F1 | Rows with Show items with no data (only if A1 was short) | |
+| B2 | Zone set west of UTC: `tzutil /g` output (Pacific Standard Time expected) | |
 | B3 | Calendar drawn on the right weekdays in Pacific Time | |
 | B4 | 1 Jul 2025 in Pacific Time: shown as, hover, type; changed from A3? | |
+| B5 | Zone restored: `tzutil /g` output (AUS Eastern Standard Time expected); page as in 0.2 | |
 | C1 | Drag gave 45 rows, blank days included, 148,343 | |
 | C1 | Title followed the Selection | |
 | C2 | Flags after the drag (6 Jul, 7 Jul, 17 Jul, 20 Aug, 21 Aug) | |
