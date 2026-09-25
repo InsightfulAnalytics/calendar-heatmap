@@ -6,7 +6,10 @@ viewer does with a mouse or a finger, judges every `pbiCrossFilterApply` call th
 it, and answers questions about the drawn scene by date. No Power BI is involved.
 
 Every template check runs six times: under Vega 6.2 (Deneb 1.9) and Vega 6.4 (Deneb 2.0), each in
-UTC, Pacific/Auckland and America/Los_Angeles.
+UTC, Pacific/Auckland and America/Los_Angeles. Each cell is proved to be what it claims: the page
+reports its own time zone and its Vega bundle's version, and a date placeholder in an apply
+expression resolves the way that cell's Deneb writes it (an ISO string under 2.0,
+`Date.toString()` under 1.9).
 
 ## Commands
 
@@ -87,6 +90,8 @@ if the harness cannot answer a question by date, extend the scene query in `src/
 and keep mark names in `src/adapter.ts`.
 
 Deliberately wrong specs live in `test/specs/`. `strip.json` is the valid baseline they vary.
+`apply-date-placeholder.json` is a valid variant whose click applies a `_{date}_` placeholder, to
+tell Deneb 1.9 from 2.0.
 
 ## Adding a fixture
 

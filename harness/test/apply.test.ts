@@ -15,11 +15,22 @@ const sorted = (xs: number[]) => [...xs].sort((a, b) => a - b);
 const EVENT_WARNING = 'The first parameter must be a valid `event` from the Vega view.';
 const OPTIONS_WARNING = '`options` must be a valid object, and contain valid property values. Refer to the documentation for more information.';
 
+// Local midnight of 7 July 2025 in each suite time zone (NZST is UTC+12 and PDT is UTC-7 in July).
+// Deneb 2.0 writes a Date placeholder as its ISO string, Deneb 1.9 as Date.toString(), whose zone
+// name in brackets depends on the browser, so only the offset is pinned for 1.9.
+const JULY_7: Record<string, { iso: string; offset: string }> = {
+  UTC: { iso: '2025-07-07T00:00:00.000Z', offset: 'GMT+0000' },
+  'Pacific/Auckland': { iso: '2025-07-06T12:00:00.000Z', offset: 'GMT+1200' },
+  'America/Los_Angeles': { iso: '2025-07-07T07:00:00.000Z', offset: 'GMT-0700' },
+};
+
 let harness: Harness;
 before(async () => { harness = await openHarness(); });
 after(async () => { await harness.close(); });
 
 for (const { vega, timeZone, label: cell } of CELLS) {
+  // Vega 6.2 is Deneb 1.9 and Vega 6.4 is Deneb 2.0 (SPEC, "Testing Decisions").
+  const deneb = vega === '6.2' ? '1.9' : '2.0';
   const render = (spec: string, extra: Partial<RenderInput> = {}) =>
     harness.render({ spec: `test/specs/${spec}.json`, fixture: 'prototype-sample', size: { width: 780, height: 120 }, vega, timeZone, ...extra });
 
@@ -29,6 +40,22 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     const [call] = await cal.hostCalls();
     assert.equal(call.type, 'select');
     assert.deepEqual(call.type === 'select' && sorted(call.rows), rowsDated('2025-07-07', '2025-08-20'));
+  });
+
+  test(`${cell} a _{field}_ placeholder is filled from the clicked day as Deneb ${deneb} writes a date, and selects that day's row`, async () => {
+    const expected = JULY_7[timeZone];
+    assert.ok(expected, `no expected local midnight for ${timeZone}`);
+    const cal = await render('apply-date-placeholder');
+    await cal.click('2025-07-07');
+    const [apply] = await cal.applyCalls();
+    const prefix = "time(toDate(datum['Date'])) == time(toDate('";
+    const suffix = "'))";
+    const resolved = apply.resolvedExpression ?? '';
+    assert.ok(resolved.startsWith(prefix) && resolved.endsWith(suffix), `resolved to ${resolved}`);
+    const written = resolved.slice(prefix.length, -suffix.length);
+    if (deneb === '2.0') assert.equal(written, expected.iso);
+    else assert.ok(written.startsWith(`Mon Jul 07 2025 00:00:00 ${expected.offset} (`) && written.endsWith(')'), `Deneb 1.9 wrote ${written}`);
+    assert.deepEqual(await cal.hostCalls(), [{ type: 'select', rows: rowsDated('2025-07-07', '2025-07-07'), dates: ['2025-07-07'], multiSelect: false }]);
   });
 
   test(`${cell} an expression that reads a group-level signal selects nothing and reports an evaluation error`, async () => {
