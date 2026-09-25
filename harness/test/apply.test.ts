@@ -2,8 +2,9 @@
 // strips: strip.json is valid, and each other spec makes one deliberate mistake.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { openHarness, VEGA_VERSIONS, type Harness, type RenderInput } from '../src/index.ts';
+import { openHarness, type Harness, type RenderInput } from '../src/index.ts';
 import { loadFixture } from '../src/fixtures.ts';
+import { CELLS } from './matrix.ts';
 
 const sample = loadFixture('prototype-sample');
 const rowsDated = (from: string, to: string) =>
@@ -18,10 +19,9 @@ let harness: Harness;
 before(async () => { harness = await openHarness(); });
 after(async () => { await harness.close(); });
 
-for (const vega of VEGA_VERSIONS) {
-  const cell = `[Vega ${vega}]`;
+for (const { vega, timeZone, label: cell } of CELLS) {
   const render = (spec: string, extra: Partial<RenderInput> = {}) =>
-    harness.render({ spec: `test/specs/${spec}.json`, fixture: 'prototype-sample', size: { width: 780, height: 120 }, vega, ...extra });
+    harness.render({ spec: `test/specs/${spec}.json`, fixture: 'prototype-sample', size: { width: 780, height: 120 }, vega, timeZone, ...extra });
 
   test(`${cell} the valid test strip selects the 36 sample rows from 7 Jul to 20 Aug`, async () => {
     const cal = await render('strip');
@@ -51,7 +51,7 @@ for (const vega of VEGA_VERSIONS) {
   });
 
   test(`${cell} an apply call with limit 2,501 is rejected and leaves the previous Selection unchanged`, async () => {
-    const cal = await render('strip', { options: { selectionLimit: 2501 }, selected: [0, 1, 2] });
+    const cal = await render('apply-limit-2501', { selected: [0, 1, 2] });
     await cal.drag('2025-07-07', '2025-08-20');
     const [apply] = await cal.applyCalls();
     assert.deepEqual(apply.result, { warning: OPTIONS_WARNING, rowNumbers: [] });
@@ -72,13 +72,13 @@ for (const vega of VEGA_VERSIONS) {
   test(`${cell} an apply call with limit 0 is not given a limit of its own: over the format pane's data point limit it is refused and the previous Selection stays`, async () => {
     const q1 = rowsDated('2025-01-01', '2025-03-31');
     assert.ok(q1.length > 50 && q1.length <= 100, `the first quarter holds ${q1.length} rows`);
-    const refused = await render('strip', { options: { selectionLimit: 0 }, selected: [0, 1, 2] });
+    const refused = await render('apply-limit-0', { selected: [0, 1, 2] });
     await refused.drag('2025-01-01', '2025-03-31');
     const [apply] = await refused.applyCalls();
     assert.equal(apply.result.exceedsLimit, true, 'the default data point limit is 50');
     assert.deepEqual(await refused.hostCalls(), []);
     assert.deepEqual(await refused.selection(), [0, 1, 2]);
-    const accepted = await render('strip', { options: { selectionLimit: 0 }, dataPointLimit: 100 });
+    const accepted = await render('apply-limit-0', { dataPointLimit: 100 });
     await accepted.drag('2025-01-01', '2025-03-31');
     const [call] = await accepted.hostCalls();
     assert.deepEqual(call.type === 'select' && sorted(call.rows), q1);

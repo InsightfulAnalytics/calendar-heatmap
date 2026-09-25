@@ -2,8 +2,9 @@
 // midnight or text) changes the date field's shape and nothing else, in every time zone.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { openHarness, TIME_ZONES, type Harness, type DateDelivery } from '../src/index.ts';
+import { openHarness, type Harness, type DateDelivery } from '../src/index.ts';
 import { loadFixture } from '../src/fixtures.ts';
+import { CELLS } from './matrix.ts';
 
 const base = loadFixture('base-2025');
 const MIDNIGHT = '00:00:00.000';
@@ -12,11 +13,11 @@ let harness: Harness;
 before(async () => { harness = await openHarness(); });
 after(async () => { await harness.close(); });
 
-for (const timeZone of TIME_ZONES) {
-  test(`[${timeZone}] switching date delivery between local midnight, UTC midnight and text changes the rows' date shape and nothing else`, async () => {
+for (const { vega, timeZone, label: cell } of CELLS) {
+  test(`${cell} switching date delivery between local midnight, UTC midnight and text changes the rows' date shape and nothing else`, async () => {
     const delivered: Record<string, Record<string, unknown>[]> = {};
     for (const dateDelivery of ['local', 'utc', 'text'] as DateDelivery[]) {
-      const cal = await harness.render({ spec: 'prototype', fixture: 'base-2025', timeZone, dateDelivery });
+      const cal = await harness.render({ spec: 'prototype', fixture: 'base-2025', vega, timeZone, dateDelivery });
       assert.equal(await cal.timeZone(), timeZone);
       delivered[dateDelivery] = await cal.deliveredRows();
     }
@@ -30,16 +31,16 @@ for (const timeZone of TIME_ZONES) {
     assert.deepEqual(withoutDate(delivered.text), withoutDate(delivered.local));
     assert.deepEqual(withoutDate(delivered.local), base.rows.map((r, i) => ({ Sales: r.Sales, __row__: i, __selected__: 'neutral' })));
   });
-}
 
-test('each measure carries its highlight companion value when highlight values are given, and none otherwise', async () => {
-  const values = base.rows.map((_, i) => (i < 3 ? 100 + i : null));
-  const lit = await harness.render({ spec: 'prototype', fixture: 'base-2025', highlight: { Sales: values } });
-  const rows = await lit.deliveredRows();
-  assert.deepEqual(rows.slice(0, 4).map((r) => r.Sales__highlight), [100, 101, 102, null]);
-  const plain = await harness.render({ spec: 'prototype', fixture: 'base-2025' });
-  assert.ok((await plain.deliveredRows()).every((r) => !('Sales__highlight' in r)));
-});
+  test(`${cell} each measure carries its highlight companion value when highlight values are given, and none otherwise`, async () => {
+    const values = base.rows.map((_, i) => (i < 3 ? 100 + i : null));
+    const lit = await harness.render({ spec: 'prototype', fixture: 'base-2025', vega, timeZone, highlight: { Sales: values } });
+    const rows = await lit.deliveredRows();
+    assert.deepEqual(rows.slice(0, 4).map((r) => r.Sales__highlight), [100, 101, 102, null]);
+    const plain = await harness.render({ spec: 'prototype', fixture: 'base-2025', vega, timeZone });
+    assert.ok((await plain.deliveredRows()).every((r) => !('Sales__highlight' in r)));
+  });
+}
 
 function pick(value: unknown, ...keys: string[]): Record<string, unknown> {
   const obj = value as Record<string, unknown>;

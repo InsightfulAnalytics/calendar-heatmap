@@ -8,7 +8,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "test": "node --test --test-concurrency=2 --test-reporter=./src/reporter.ts \"test/**/*.test.ts\"",
+    "test": "node --test --test-concurrency=4 --test-reporter=./src/reporter.ts \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "render": "node src/cli/render.ts"
   },

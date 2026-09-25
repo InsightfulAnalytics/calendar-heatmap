@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { openHarness, type Harness } from '../src/index.ts';
 import { loadFixture, type Fixture } from '../src/fixtures.ts';
+import { CELLS } from './matrix.ts';
 
 // Recorded when each fixture was first generated. A deliberate change to a fixture updates its
 // fingerprint here in the same commit; any other change is a determinism failure.
@@ -66,9 +67,9 @@ let harness: Harness;
 before(async () => { harness = await openHarness(); });
 after(async () => { await harness.close(); });
 
-for (const name of ['base-2025', 'regions-2025']) {
-  test(`the ${name} fixture loads and renders in the prototype without error`, async () => {
-    const cal = await harness.render({ spec: 'prototype', fixture: name });
+for (const { vega, timeZone, label: cell } of CELLS) for (const name of ['base-2025', 'regions-2025']) {
+  test(`${cell} the ${name} fixture loads and renders in the prototype without error`, async () => {
+    const cal = await harness.render({ spec: 'prototype', fixture: name, vega, timeZone });
     assert.deepEqual(await cal.errors(), []);
     assert.equal((await cal.days()).length, 365);
     assert.equal((await cal.deliveredRows()).length, loadFixture(name).rows.length);
