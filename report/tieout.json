@@ -420,6 +420,31 @@
       ]
     },
     {
+      "name": "the helper (Days in Filter) is non-blank for every date under each channel",
+      "ticket": "T05",
+      "report": "COUNTROWS ( FILTER ( CROSSJOIN ( ALL ( 'Channel'[Channel] ), ALL ( 'DimDate'[Date] ) ), NOT ISBLANK ( CALCULATE ( [Days in Filter] ) ) ) ) + 0",
+      "independent": "COUNTROWS ( ALL ( 'Sales'[Channel] ) ) * COUNTROWS ( CALENDAR ( DATE ( 2023, 7, 1 ), DATE ( 2026, 6, 30 ) ) )"
+    },
+    {
+      "name": "the helper (Days in Filter) is non-blank for every date under each region",
+      "ticket": "T05",
+      "report": "COUNTROWS ( FILTER ( CROSSJOIN ( ALL ( 'Region'[Region] ), ALL ( 'DimDate'[Date] ) ), NOT ISBLANK ( CALCULATE ( [Days in Filter] ) ) ) ) + 0",
+      "independent": "COUNTROWS ( ALL ( 'Sales'[Region] ) ) * COUNTROWS ( CALENDAR ( DATE ( 2023, 7, 1 ), DATE ( 2026, 6, 30 ) ) )"
+    },
+    {
+      "name": "the helper (Days in Filter) is non-blank for every date under each channel and region together",
+      "ticket": "T05",
+      "report": "COUNTROWS ( FILTER ( CROSSJOIN ( ALL ( 'Channel'[Channel] ), ALL ( 'Region'[Region] ), ALL ( 'DimDate'[Date] ) ), NOT ISBLANK ( CALCULATE ( [Days in Filter] ) ) ) ) + 0",
+      "independent": "COUNTROWS ( ALL ( 'Sales'[Channel] ) ) * COUNTROWS ( ALL ( 'Sales'[Region] ) ) * COUNTROWS ( CALENDAR ( DATE ( 2023, 7, 1 ), DATE ( 2026, 6, 30 ) ) )"
+    },
+    {
+      "name": "the sales Calendar's query shape keeps every day of {{name}} as a row, blank-sales days included",
+      "ticket": "T05",
+      "each": "filters",
+      "report": "CALCULATE ( COUNTROWS ( SUMMARIZECOLUMNS ( 'DimDate'[Date], \"@Helper\", [Days in Filter], \"@Sales\", [Total Sales] ) ), {{report}} ) + 0",
+      "independent": "{{days}}"
+    },
+    {
       "name": "the model's format functions are loaded in Desktop",
       "ticket": "T05",
       "report": "CONCATENATEX ( INFO.USERDEFINEDFUNCTIONS (), [Name], \", \", [Name], ASC )",
