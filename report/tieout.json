@@ -445,6 +445,17 @@
       "independent": "{{days}}"
     },
     {
+      "name": "the model reads no external file, database or service: no data source, and no partition or shared expression calls a connector",
+      "ticket": "T05",
+      "report": [
+        "VAR __Connectors = { \"File.Contents\", \"Web.Contents\", \"Sql.Database\", \"OData.Feed\", \"Excel.Workbook\", \"Folder.Files\", \"Folder.Contents\", \"SharePoint.\", \"AzureStorage.\", \"Odbc.\", \"OleDb.\", \"Lakehouse.\", \"PowerPlatform.\", \"AnalysisServices.\", \"PowerBI.Dataflows\", \"Snowflake.\", \"Databricks.\", \"Fabric.\" }",
+        "VAR __Code = UNION ( SELECTCOLUMNS ( INFO.PARTITIONS (), \"@Code\", [QueryDefinition] ), SELECTCOLUMNS ( INFO.EXPRESSIONS (), \"@Code\", [Expression] ) )",
+        "VAR __External = COUNTROWS ( FILTER ( __Code, COUNTROWS ( FILTER ( __Connectors, CONTAINSSTRING ( [@Code], [Value] ) ) ) > 0 ) ) + COUNTROWS ( INFO.DATASOURCES () )",
+        "RETURN IF ( COUNTROWS ( __Code ) > 0, __External + 0 )"
+      ],
+      "independent": "0"
+    },
+    {
       "name": "the model's format functions are loaded in Desktop",
       "ticket": "T05",
       "report": "CONCATENATEX ( INFO.USERDEFINEDFUNCTIONS (), [Name], \", \", [Name], ASC )",

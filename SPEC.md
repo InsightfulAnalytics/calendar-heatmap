@@ -499,7 +499,12 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   year starting July) is related to daily fact tables for sales (by channel and region), support
   tickets, web sessions and daily targets, plus region and channel dimensions. Measures follow the
   house DAX standard (the dax-standard skill). Every visual reads this one model, which is what makes
-  the filtering real.
+  the filtering real. The region and channel dimensions (#5) are DAX calculated tables of their
+  members with a hidden display-order column (North, South, EMEA, APAC; Online, Retail, Wholesale),
+  related many to one from Sales, whose own Channel and Region columns are hidden so every filter
+  goes through a dimension. The Sales generator keeps its own member list (it carries the shares),
+  so the tie-out checks that every sales row finds its member and every member has sales. Only
+  Sales carries channel and region.
 - **Sample data is synthetic and lives inside the model.** The PBIP opens and publishes with no
   external files, gateway or credentials. It covers three fiscal years, FY24 to FY26 (1 July 2023 to
   30 June 2026), so FY24 carries 29 February 2024 and the leap day can be checked in Desktop. Each
@@ -513,6 +518,16 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   draw them. That is what lets the DAX tie-out test them. Mean per day is total sales over the
   calendar days in the current date filter, with blank days in the divisor. Active days is the days
   with sales over the calendar days in the current date filter, both counted from the date table.
+  As built in #5: Mean per day and Active days read 0 on a filter whose days have no sales, and
+  blank only when the filter holds no days; Peak day is the date of the best day, the earliest on a
+  tie, blank when no day has sales. Top days is a measure, not a Top N filter: Top Day Sales keeps a
+  day's total only when it is one of the five best days with sales in the visual's filter
+  (slicers, page filters and a Calendar Selection, through ALLSELECTED on the date table), ties to
+  the earlier date, so a visual of the date and that measure gets exactly five rows. Formats: Total,
+  Mean per day and Top Day Sales `#,##0` (exact, because a Calendar tooltip shows the measure in
+  its model format), Peak day `d mmm yyyy`, and Active days a dynamic format string from the
+  `Fmt.OutOf` DAX function that reads 343 / 365 while the value stays a number. The house formats
+  put DAX user-defined functions in the model, hence compatibility level 1702.
 - **Pages.** Daily overview, By region (small multiples on one shared scale) and Targets (target
   mode) are the three visible pages. Two hidden pages support the calendars: Day detail, a
   drill-through page keyed on the date (sales by channel and region for that day, and the day
@@ -598,6 +613,9 @@ so no third harness is built.
    values), a container size, a theme and option values. Fixtures are synthetic rows covering the
    edge cases, plus rows exported from the working report's model by a calendar's own query, so the
    template is also tested on the shape the report delivers: every date present, some values blank.
+   The first is `report-sales-fy26` (#5): the sales Calendar's query as pbir builds it from the
+   visual, with the page's date filter swapped for FY26, run in Desktop (`npm run export-fixture`
+   in `report/desktop`; `--check` proves a second export is identical).
    Output: the rendered scene (which cells exist, where, in what colour, which labels) and the
    recorded host calls. Each apply call is checked the way Deneb handles it: rejected unless the
    event is a browser event and the limit is 1 to 2,500 (0 falls back to the format pane's limit),
@@ -616,7 +634,13 @@ so no third harness is built.
    compared with the mock and the layout decisions above. Schema validation does not catch a
    malformed measure-driven text run, so the title is checked on screen. DAX tie-out queries evaluate
    the report's own measures (total, mean per day, peak day, active days) and the Top days rows
-   under a test's filters, and compare them with independent queries over the fact tables. There are
+   under a test's filters, and compare them with independent queries over the fact tables, always
+   after a data refresh in Desktop. The suite holds a fixed set of filters that every measure is
+   checked under, and later tickets reuse: whole FY26, whole FY24 (366 days), 7 July to 20 August
+   2025 (45 days), FY26 with the Retail channel, and FY26 with the EMEA region (#5). Before Desktop
+   applies the model, its TMDL is round-tripped offline (`report/validate-model.ps1`); where the TOM
+   assembly predates DAX user-defined functions, it validates a copy without `functions.tmdl`, the
+   documented workaround, and Desktop is the referee for the functions. There are
    no human click-through checklists (Tim's decision, 2026-09-26). Clicks and drags inside a Deneb
    visual are proven at the template seam, whose apply evaluator copies Deneb's source, and
    replayed in Desktop too: the report canvas's WebView2 accepts remote debugging when Desktop is

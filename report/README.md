@@ -10,19 +10,46 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
 | `Daily Sales.SemanticModel/` | The model (TMDL, compatibility level 1702, auto date/time off) |
 | `Daily Sales.Report/` | The Report (PBIR, BI Nexus theme), one page so far: Daily overview |
 | `seam.ps1` | The report seam loop, below |
-| `tieout.json` | The DAX tie-out suite the loop runs. Later tickets add checks here |
-| `desktop/` | The Desktop driver: replays gestures in Desktop through remote debugging, and the #2 probe. See "Gestures in Desktop" below |
+| `tieout.json` | The DAX tie-out suite the loop runs, with its fixed set of filters. Later tickets add checks here |
+| `validate-model.ps1` | The model's offline TMDL round trip, run by the loop before Desktop applies anything |
+| `desktop/` | The Desktop driver: replays gestures in Desktop through remote debugging, the #2 probe, the #5 card check and the fixture export. See "Gestures in Desktop" below |
 
 ## The model
 
 - `DimDate`: the standard date table from the date-table skill, 1 Jul 2023 to 30 Jun 2026, fiscal
-  year from July, marked as the date table.
+  year from July (`FYear` reads FY24 to FY26), marked as the date table.
 - `Sales`: synthetic daily sales at the day by channel by region grain, a DAX calculated table
   generated from `DimDate` by a fixed formula. Blank days have no rows. The generation pattern, and
   why it never reads the date table's blank row, is in the project LEARNINGS
-  (`Vault\Projects\Calendar Heatmap\LEARNINGS.md`).
-- `Measure Table`: `Total Sales`, `Days in Filter` (a count of date rows, never blank for a date, so
-  a Calendar that binds it receives every date as a row) and `Dates Selected` (the title text).
+  (`Vault\Projects\Calendar Heatmap\LEARNINGS.md`). Its Channel and Region columns are hidden:
+  filters go through the dimensions.
+- `Channel` and `Region`: the dimensions, DAX calculated tables of their members sorted by a hidden
+  order column, related many to one from `Sales`.
+- `Measure Table`, every measure in the house DAX style:
+  - `Total Sales`: the sum of the amounts.
+  - `Mean per Day`: the total over every calendar day in the date filter, blank days counted as zero
+    (FY26 divides by 365, FY24 by 366).
+  - `Peak Day`: the date of the best day in the filter, the earliest on a tie.
+  - `Active Days`: the days with sales in the filter, shown out of the days in the filter (`343 /
+    365`) by a dynamic format string from the `Fmt.OutOf` function in `functions.tmdl`.
+  - `Top Day Sales`: a day's total only when it is one of the five best days in the visual's filter,
+    so a visual of the date and this measure shows exactly the Top days.
+  - `Days in Filter`: the never-blank helper, a count of date rows. Every Calendar binds it beside its
+    value measure, so it receives every date as a row, blank-sales days included, under any channel
+    or region filter.
+  - `Dates Selected`: the title text.
+
+The DAX functions need compatibility level 1702. The DAX Studio TOM assembly on this machine
+(19.84.1.0) predates them, so `validate-model.ps1` round-trips a copy of the definition without
+`functions.tmdl` (the pbip:tmdl skill's documented workaround) and says so; Desktop loads and
+queries the function, which the tie-out checks.
+
+## The page
+
+Daily overview holds the Calendar, the title, the `Daily rows` table, a month slicer, and five
+native cards: Total sales, Days in filter, Mean per day, Peak day and Active days. The Calendar
+filters the table, the title and every card; the table filters nothing. The page filter limits it
+to calendar 2025 until the rail's fiscal year slicer arrives (#8).
 
 ## The report seam loop
 
@@ -47,7 +74,10 @@ It exits 0 only when every step passes:
 2. Validates the Report by its absolute path, and fails unless the first output line reads
    `Validating Daily Sales` (an active pbir connection hijacks relative paths). A second, full
    validate (`--all`) must show no errors beyond one known false positive: pbir reads the text box
-   dynamic value that Desktop itself writes as a Column bound to a measure.
+   dynamic value that Desktop itself writes as a Column bound to a measure. Then the model's
+   offline round trip (`validate-model.ps1`): the TMDL deserializes, and every measure, format
+   string and dynamic format string written in it comes back (a measure body at the wrong depth
+   parses but swallows its format string, and only this catches it).
 3. Applies the on-disk model and report by clicking Desktop's **Apply external changes** banner,
    when Desktop has noticed a change on disk. If Desktop then asks **Overwrite your unsaved
    edits**, the loop confirms only with `-OverwriteUnsaved`.
@@ -56,9 +86,11 @@ It exits 0 only when every step passes:
 5. Reloads the canvas.
 6. Takes the all-pages screenshot into `-OutDir`. Open every PNG and look at it: a Calendar that
    draws an empty skeleton still passes every other step.
-7. Runs every check in `tieout.json`.
+7. Runs every check in `tieout.json`, after the two refreshes.
 
-`-SkipScreenshot` skips step 6 for a quick DAX-only rerun.
+`-SkipScreenshot` skips step 6 for a quick DAX-only rerun. `-ListChecks` prints every check's two
+expressions, with the per-filter checks expanded, and exits without touching Desktop (no `-OutDir`
+needed).
 
 Every DAX query the loop runs (the compatibility level, the refresh-completion poll, the
 fingerprint and the tie-out) goes through `pbir model "<absolute Report path>" -q --json`, which
@@ -110,6 +142,9 @@ npm run desktop -- open --plain      # start it without a port
 npm run desktop -- save              # save through the title bar Save button
 npm run desktop -- close             # close it, answering the save prompt with Don't save
 npm run probe                        # the #2 probe, end to end (below)
+npm run cards                        # the #5 card check (below)
+npm run export-fixture               # the sales Calendar's FY26 rows as a harness fixture (below)
+npm run export-fixture -- --check    # export again; fail unless identical to the committed fixture
 npm test                             # offline checks, no Desktop needed
 npm run typecheck
 ```
@@ -171,6 +206,28 @@ the end that the zone is the one it started in, and `npm test` fails if any scri
 zone. #2's first probe run did switch Windows to Pacific Time after this was decided; see the
 project LEARNINGS.
 
+### The #5 card check
+
+`npm run cards -- [--out <folder>]` connects through the debugging port (starting Desktop with it
+when needed), then reads Total sales, Mean per day, Peak day, Active days and Days in filter off the
+canvas: with no Selection, after a drag from 7 July to 20 August 2025 replayed on the Calendar, and
+after a background click. Each reading must equal the value worked out from independent DAX over
+the Sales rows and date arithmetic (148,343, 3,297, 15 Aug 2025 and 42 / 45 for the drag). It then
+checks on disk that the page holds only its page filter and no visual has a filter of its own.
+Screenshots and `cards.json` go to `--out`, by default `evidence/05-sales-model/`.
+
+### The Report-exported fixture
+
+`npm run export-fixture` writes `harness/fixtures/report-sales-fy26.json`, the harness fixture
+`report-sales-fy26`: the sales Calendar's own query (`pbir visuals query` on the Calendar, its
+SUMMARIZECOLUMNS over the date and the two measures) with the page's date filter swapped for FY26,
+run in Desktop through `pbir model -q`. Each column takes the name the Calendar gives it, in the
+Calendar's order, dates as `yyyy-mm-dd` text and a blank as `null`: 365 rows, 22 with no sales.
+The file has no timestamp, so `--check` exports again and fails unless the rows and the file are
+identical. A second date filter, or a Calendar field the export does not expect, stops it rather
+than exporting something else. Run it after a data refresh, and export again whenever the model's
+sales change; the harness's fixture test pins the rows by fingerprint.
+
 ## Adding a tie-out check
 
 Each check in `tieout.json` is two DAX scalar expressions that must agree:
@@ -206,3 +263,30 @@ So write an existence check as a non-blank condition against a constant
 (`NOT ISBLANK ( ... )` against `TRUE ()`) or as a count, never as two values that could both be
 blank. A check that counts rows should add `+ 0`, because `COUNTROWS` of an empty table is blank,
 not 0.
+
+### Checks under the fixed set of filters
+
+`tieout.json` holds a fixed set of `filters`, each a name and the fragments a check needs:
+`report` (the CALCULATE filter arguments for the Report's measures), `salesRows` (the same filter
+as a condition on a `Sales` row, for the independent side), `from`, `to` and `days` (the calendar
+day count, worked out by hand). The five are FY26, FY24, 7 Jul to 20 Aug 2025, FY26 with channel
+Retail and FY26 with region EMEA. A check with `"each": "filters"` runs once per filter, and one
+with `"each": ["FY26", "FY24"]` once per named filter; every `{{key}}` in its name and expressions
+is replaced by that filter's value:
+
+```json
+{
+  "name": "Mean per day, {{name}}: the total over {{days}} calendar days",
+  "ticket": "T05",
+  "each": "filters",
+  "report": "CALCULATE ( [Mean per Day], {{report}} )",
+  "independent": "DIVIDE ( SUMX ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Amount] ), {{days}} )",
+  "tolerance": 1e-9
+}
+```
+
+A later fact table adds its own fragment to every filter (for example `targetRows`, the condition
+on a target row) rather than a second filter set. A key a filter does not define, or a filter name
+the suite does not hold, fails the loop before it touches Desktop; `-ListChecks` shows the expanded
+suite. To test a measure the way a visual queries it (ALLSELECTED included), wrap
+`SUMMARIZECOLUMNS` in `CALCULATE ( ..., {{report}} )`, as the Top days checks do.

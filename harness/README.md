@@ -132,3 +132,11 @@ sha256 fingerprint to `FINGERPRINTS` in `test/fixtures.test.ts`, with a test of 
 promises. The fingerprint is a deliberate change detector: it is what proves the fixture is the
 same on every run and machine, so update it only in a commit that means to change the fixture.
 Row order is row identity: row `i` is delivered as `__row__ = i`.
+
+`report-sales-fy26` is not generated here: it is the sales Calendar's own query rows for FY26
+(Date, Days in Filter, Sales; 365 rows, the 22 no-sales days as rows with `Sales` null), exported
+from the Report's model in Desktop by `npm run export-fixture` in `report/desktop` into
+`fixtures/report-sales-fy26.json`. It is the shape the Report delivers. `test/report-export.test.ts`
+checks its fields against the Report's Calendar, its dates, its blank days and tie-out totals
+against literals from the report seam, its fingerprint, and that the Report's Calendar takes it in
+all six cells. Never edit the file: export again, and update the fingerprint in the same commit.

@@ -29,7 +29,9 @@
       7. Run every check in tieout.json: each evaluates a report expression and an independent
          expression over the fact and date tables, and any difference fails the loop. A blank on
          either side fails too, unless the check sets "blankExpected": true, in which case both
-         sides must be blank.
+         sides must be blank. A check with "each" runs once per filter in the suite's fixed set
+         ("filters"), its {{key}} placeholders filled from that filter. The suite is loaded and
+         expanded before step 1, so a malformed suite fails before Desktop is touched.
 
     Every DAX query (the compatibility level, the refresh-completion poll, the fingerprint and the
     tie-out) goes through `pbir model <absolute Report path> -q --json`, which finds the local
