@@ -1,0 +1,9 @@
+# Local only: captures of lumericvisuals.com and anything built from them stay out of git (they are third-party captures).
+target_card.png
+compare.png
+render-lumeric-purple.png
+
+# Render intermediates
+_render-spec*.json
+_browser.html
+_check-*.png

@@ -1,0 +1,7 @@
+{
+  "autosize": {"type": "fit", "contains": "padding"},
+  "background": "transparent",
+  "view": {"stroke": "transparent"},
+  "font": "Segoe UI",
+  "text": {"font": "Segoe UI"}
+}

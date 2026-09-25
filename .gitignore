@@ -1,0 +1,17 @@
+# Power BI Desktop local cache and user settings (never commit)
+.pbi/
+*.abf
+localSettings.json
+
+# pbir CLI per-directory active report marker (pbir connect)
+.pbir/
+
+# Claude Code machine-local settings and lock
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+# Third-party captures of lumericvisuals.com: local reference only, never committed
+reference/lumeric-site/
+
+# Python
+__pycache__/

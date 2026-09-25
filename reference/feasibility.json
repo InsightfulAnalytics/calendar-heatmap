@@ -1,0 +1,1970 @@
+{
+ "inventory": {
+  "visualFeatures": [
+   {
+    "feature": "Calendar grid: weeks as columns, days as rows",
+    "detail": "CSS grid, grid-auto-flow: column, 7 rows. Monday is the top row and Sunday the bottom. 364 cells, which is 52 full weeks, and the first cell is a Monday. There is no leading or trailing padding. The grid sits centred inside a bordered 'well'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Capsule cells (default 'Round')",
+    "detail": "border-radius 999px, so the ends are semicircles. Width:height is a constant 0.58 (h = 1.724 x w) in every instance, for example 19.47x33.58, 15x25.86, 11.69x20.15 and 7.29x12.57.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Square cells ('Support tickets · square cells', pin step 03 'Shape')",
+    "detail": "Same 0.58 aspect (tall rectangles, not true squares), border-radius a fixed 3px. The spec claims 'Four treatments from square to capsule, with density and corner radius driven together so the grid never reads as a stack of pills at high density'. A Cell shape slider runs Round to Square, with the default at 22% = 'Round'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Density / gap control",
+    "detail": "Default gap 3.16px ('Balanced', slider at 52%). 'Dense' / high density = 1px. Other gaps seen: 5px (landing ghost), 2.6px (landing chart), 2.1px (drawer preview), 2px (setup intent thumbnails). Copy: 'Loose to read. Tight to compare.' and 'The gap between cells is yours to set'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Height-driven cell size, derived week count",
+    "detail": "The cell height is solved from the available height (7h + 6g = well inner height), the width is 0.58h, and weeks shown = floor((width + g)/(w + g)), capped at 52. Evidence: short box 44 weeks at 13px cells, tall box 19 weeks at 37px cells, pin stage 23 to 24 weeks, drawer 37 weeks, full screen 'Weeks shown 35 · derived', small multiples 45 weeks. Copy: 'a cell is never stretched to fill a box'. In the mock, fewer weeks still show the whole Jan to Dec trend compressed and keep the Jan..Nov labels, so the mock does not show which weeks a real truncation would keep.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Colour bins, 5 steps plus empty",
+    "detail": "Five-step sequential ramp plus an 'empty' colour for no-data days. The panel shows 'Steps 5' on a 3 to 9 slider and 'Bins 5 · quantile'. The spec claims 'Bin count from three to nine, or continuous'. The observed counts are NOT quantile, though. Sales has 37/106/93/45/8 active days across bins 1 to 5 plus 75 empty, and Sessions never uses bin 1. That pattern looks like equal-interval thresholds over 0..max.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Blank days render as empty, never zero",
+    "detail": "No-data days use var(--empty), a 5% ink tint (#f3f3f3 on white), rather than the lowest ramp step. The 'Show days with no data' toggle is on in the mock. The hint reads: 'Off leaves a gap, which reads as \"no data\" rather than \"zero\"'. Active days KPI: '289 / 364'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Peak-day ring",
+    "detail": ".grid i.pk has box-shadow: inset 0 0 0 1.8px var(--ink). That is #17151d in light and #f6f4fa in dark, drawn inside the cell, and the cell keeps its fill (#504a67). Sales peak = cell index 345 (week column 50 of 52, Wednesday row), labelled '16 Dec'. Sessions peak = index 362 (last week, Saturday). On the product page the ringed cell renders 23px wide against 15px siblings, which widens its week column and leaves a visible gap. The home page does not do this, so treat the home-page inset ring as canonical. Settings: 'Mark the peak day' toggle; KPI 'Dec · marked'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Month labels",
+    "detail": "Always the six labels Jan, Mar, May, Jul, Sep, Nov at 10px, ink3. They are spread evenly (flex:1, each 1/6 of the well width) starting at the well's left edge, NOT placed at real month-start weeks. They appear unchanged even on 19-week grids. Row height 13px with a 5px gap above the well. A 'Month labels' toggle exists. 'Month separators' toggle exists (off), with no separator drawn.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Weekday labels",
+    "detail": "Only M, W, F, S, in a 15px column 6px left of the well, 9.5px ink3. They are justified space-between over the grid height, so they sit on rows 0, 2, 4, 6 (Mon, Wed, Fri, Sun). Setting: 'Day-of-week labels M · W · F · S'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Less / More legend",
+    "detail": "Footer left: 'Less' then five 11x11 swatches (radius 3, gap 3) then 'More', 12.5px ink3, gap 6px. A 'Legend' toggle exists.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Total in the card header",
+    "detail": "Header row: title (Sora 600 15px, e.g. 'Sales'), subtitle 'by Order Date' (12.5px ink3), and a right-aligned total '1.33M' (600 15px, tabular numerals). Other totals: 847K Sessions, 10K Tickets, 3.85M split by Region.",
+    "shownOrClaimed": "shown"
+   },
+   {
+    "feature": "Live contrast readout chip",
+    "detail": "Footer right: a 14px green circle (#1f8f6f) with a white check, 'Contrast checks out' in ink3, and '8.35:1' in mono 11.5px 600 ink2. The value is the WCAG contrast of the deepest step #504a67 against the well #ffffff, which I verified as 8.345. In dark it is '12.00:1' (#d1ccdc against #12101a, verified 12.004).",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Selection readout chip",
+    "detail": "On selection the chip text changes to 'Filtered to week 29' ('week 29' in mono bold). The selected week is cells 196 to 202 (week column 29).",
+    "shownOrClaimed": "shown"
+   },
+   {
+    "feature": "Every cell is a slicer: click to filter",
+    "detail": "The selected cells stay at opacity 1 and all other cells drop to opacity .24. Shown for one full week (home Tickets, feature fv1 'one week selected · the rest dims', pin step 04).",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Drag for a date range",
+    "detail": "'Drag for a range', 'Drag across a run of days for a range'. Only a whole-week selection is ever drawn.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Ctrl-click to add",
+    "detail": "Interaction page toggle 'Ctrl-click to add'; spec 'ctrl-click to add'.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Cross-filter and cross-highlight",
+    "detail": "'Cross-filtering runs both ways: filter the report elsewhere and the heatmap dims to match.' Interaction page toggle 'Cross-highlight'.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Report page tooltips",
+    "detail": "Interaction page: 'Tooltip: Report tooltip · Sales summary'. There is also an optional Tooltip field. A suggestion says exact values 'save a trip to the tooltip'.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Drill-through",
+    "detail": "Interaction page: 'Drill-through: Day detail'.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "KPI row inside the visual",
+    "detail": "Five cells in one bordered strip (radius 12, 1px line2 dividers): TOTAL 1.33M '365 days'; DAILY AVG 3.6k 'per day'; PEAK DAY 11.6k 'Dec · marked'; BEST MONTH 188.2k 'Oct'; OVER TARGET 194 days '80% of mean'. Labels Sora 600 9.5px uppercase; values Sora 600 18px; subtitles 10.5px ink3. Toggle 'KPI row'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Month totals strip",
+    "detail": "12 bars under the grid, spanning the full card width (flex:1, gap 5px, 46px tall including labels). Radius 3px. Each bar is coloured with a ramp step: Jan-Mar #c6bede, Apr-Jun #9c90bc, Jul-Sep #746998, Oct-Dec #504a67. Heights 8, 9, 11, 14, 17, 18, 23, 25, 27, 32, 34, 36px. Labels Jan..Dec at 9.5px. Toggle 'Month totals'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Goal / target line and performance colouring",
+    "detail": "Optional 'Goal' field. Settings: 'Colour against a target' (on), 'Target 80% of mean'; KPI 'Over target 194 days'. The spec lists 'a goal line'. No goal line or performance colouring is ever drawn.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Day markers",
+    "detail": "Optional 'Marker' field; the spec overlays list 'day markers'. Only the peak ring is shown.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Longest streak",
+    "detail": "Data & analytics toggle 'Longest streak' (on). No visual treatment is shown.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Value labels in cells",
+    "detail": "'Value labels' toggle (off). A suggestion card reads 'Cells are big enough to hold their value. At 15px a number fits.' with a 'Show values in cells' button.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Race playback with scrubber",
+    "detail": "Filled up to the playhead; later days render as empty grey. The colour domain stays fixed to the full year (the top bin is not reached by Sep). Track 4px line colour, radius 2; accent fill to 72%; 16px white thumb with a 2.5px accent border. Chip 'Playhead 18 Sep · 261 of 364 days'. Panel: 'Animate through the year', 'Steps the calendar forward a month at a time', Speed 2.8x (Slow..Fast), Loop, Show the scrubber, Position Jan..Dec. Tag 'Partly built'. Claims the rest of the report follows the playhead.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Small multiples on one shared scale",
+    "detail": "A 2x2 grid of panels (North 1.33M, South 1.09M, EMEA 835K, APAC 595K), each 45 weeks with no month or weekday labels. One shared legend. Chip 'One shared scale · 45 weeks in every panel'. Panel: Split by Region, Columns 2 (1..4), Panel titles; the section is locked. Tag 'Designed · not shipped'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Week start",
+    "detail": "'Week starts: Monday' dropdown. The standard card shows MON / SUN / SAT start rows with the weekend positions moving. Spec: 'Any week start'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Fiscal year",
+    "detail": "Spec: 'calendar or fiscal year'. The report is titled 'Daily Sales · FY26' with a filter 'Year · FY26'.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Leap years and time zones",
+    "detail": "'leap years handled rather than approximated'; 'Week starts, fiscal years, time zones, leap years'.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Granularity: day / week / month",
+    "detail": "Layout 'Granularity: Day' dropdown; copy 'whether you are looking at days, weeks or months'.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Aggregation",
+    "detail": "'Sum, average, min, max, count and distinct count, applied per day'; the dropdown shows Sum.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Up to 10 years; export",
+    "detail": "'Tested from a 200-pixel tile up to full-page, and at ten years of daily data.' 'Static-image export and PDF supported.'",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Edge cases",
+    "detail": "'One week of data. A 200-pixel tile. A year with gaps in it.' Illustrated with three dashed mini bar tiles labelled 1 WEEK, 200PX TILE and GAPS.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Dark theme inversion / follows report theme",
+    "detail": "In dark mode the ramp inverts: low values are darkest, nearest the canvas, and high values are light. Dark ramp #362d51 to #d1ccdc on well #12101a. Empty is #f6f4fa at 5%, and the peak ring becomes light. Toggles 'Match the report theme' (on) and 'Reverse the ramp' (off). I captured dark versions of every mock.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Palettes grouped by job",
+    "detail": "Drawer groups: RECOMMENDED Signature; BOARD-SAFE Neutral, Classic blue, Grayscale ('Low-saturation ramps that survive a projector and a printer.'); HIGH-SIGNAL Coral, Amber ('Warm and bright, good when the point is to draw the eye.'); COLOUR-BLIND SAFE Teal, Green. The showcase picker offers Signature, Ember, Forest and Slate. Claims: 'Ten palettes in four groups', plus a custom ramp; the spec says 'Five sequential palettes, a diverging palette, a colour-blind-safe categorical set, and a custom ramp'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Accessibility checks card",
+    "detail": "'Accessibility · 2 of 4 passing': ✓ Deepest step vs the heatmap area 8.35:1; ! Steps are evenly spaced 2.9x; ✓ Lightness moves one way Monotonic; ! A second channel for magnitude Colour only. The check mark uses ok #1f8f6f and the '!' uses warn #9c7a3f. Also claimed: ramp mixed in gamma space, and palettes checked against three colour-vision deficiencies.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Screen reader, keyboard, high contrast, reduce motion",
+    "detail": "Spec: 'Keyboard navigable, high-contrast mode honoured, screen-reader labels per cell'. Advanced page: Reduce motion toggle; High-contrast mode 'Follow Windows'.",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "Number format",
+    "detail": "Advanced: 'Value format: Compact (1.3M)'. The format is not consistent across the mocks: the visual's KPI strip uses lowercase k with one decimal (3.6k, 11.6k, 188.2k), while the report mock and header totals use 1.33M, 3.6K, 12K and 847K.",
+    "shownOrClaimed": "shown"
+   },
+   {
+    "feature": "IBCS compliance mode",
+    "detail": "'Applies the Hichert SUCCESS preset in one move; locks typography, spacing and the comparison notation.'",
+    "shownOrClaimed": "claimed"
+   },
+   {
+    "feature": "'Studio' custom format pane (drawer, 396px)",
+    "detail": "Header: calendar icon, 'Lumeric Calendar Heatmap' / 'Sales by Order Date', and undo, redo, expand and close icons. Then a live mini preview; a status line 'Signature · Balanced · Round' with a green '• Live'; 'Search settings'; a back arrow and section title; grouped setting boxes (card2 bg, radius 12); a lock icon on Palette; footer '🔒 1 locked'.",
+    "shownOrClaimed": "shown"
+   },
+   {
+    "feature": "Studio full screen (three panes)",
+    "detail": "A settings rail (Design, Color, Layout, Data & analytics, Small multiples 🔒, Race playback, Interaction, Advanced | Suggestions 2, Review changes 4), the current page, and a live preview with the accessibility card. Footer: 'Contrast 8.35:1' ... 'Preset Signature · Weeks shown 35 · 1 changed from the preset'.",
+    "shownOrClaimed": "shown"
+   },
+   {
+    "feature": "Change history / Review changes",
+    "detail": "Changes grouped by section with the old value struck through, an arrow, then the new value in bold. 'Not on the report yet 2 [Apply all] [Discard]': Match the report theme On→Off, Palette Signature→Neutral. 'Design 2 [Clear section]': Density Balanced→Dense, Show days with no data On→Off. Undo and redo in the header.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Suggestions",
+    "detail": "Tagged cards (READABILITY, POLISH), each with a reason, an action button and Dismiss. Every suggestion writes a real setting and can be undone.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Presets and tones; per-section locking",
+    "detail": "Preset 'Signature'; tone 'Balanced · Round' moves palette, density and cell shape together. Governance is per section ('1 locked', Small multiples locked).",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "First-run setup",
+    "detail": "Landing: a ghost grid behind the text 'LUMERIC / Calendar Heatmap', with buttons [Set it up →] and [Use defaults]. Then 1 Intent (4 cards: Lumeric Signature 'Distinctive, built for dashboards' = Signature; Executive 'Clean, restrained, board-ready' = Slate; Analytical 'Dense, information-rich' = Forest; Presentation 'Spacious, presentation-ready' = Ember), 2 Appearance (Density and Cell shape sliders beside a live preview), 3 Done ('Open Calendar Heatmap →'). 'Skip for now'.",
+    "shownOrClaimed": "both"
+   },
+   {
+    "feature": "Cell build-in animation (site only)",
+    "detail": "@keyframes cellIn: scale .5→1 and opacity 0→1 over .5s, with a 9ms stagger per week column. Only the page 'Four decisions' stage stays pinned while scrolling.",
+    "shownOrClaimed": "shown"
+   },
+   {
+    "feature": "Certification constraints",
+    "detail": "No external service calls, no remote resources, under the code-size budget, reviewed for data privacy. The spec admits it is 'not certified yet'.",
+    "shownOrClaimed": "claimed"
+   }
+  ],
+  "reports": [
+   {
+    "name": "Daily Sales · FY26 (report mock)",
+    "where": "Home page, section 'In your report / Not a screenshot. The visual, running.' (#rep, home_03/home_04; clean crops el_light_rep.png and el_dark_rep.png). Canvas 1080 x 817.5 CSS px, aspect about 1.32. All numbers below are px from the report's top-left, with % of 1080 x 817.5.",
+    "elements": [
+     {
+      "element": "Outer frame",
+      "description": "bg --card2 #faf9fc, 1px border #17151d1a, radius 20, overflow hidden, shadow 0 1px 2px #17151d0d + 0 44px 90px -48px #17151d38. It sits on the page bg #f8f7fb."
+     },
+     {
+      "element": "Top bar (0,0 1080x52.6; 6.4% h)",
+      "description": "White bg with a 1px line2 bottom border and 12x17 padding. Left: 'Daily Sales · FY26' in Sora 600 13px #17151d, at x18 y16. Right: two pills (11px, radius 999, padding 4x11, 27.6 tall). The active 'Calendar Heatmap' (x865, w114) has accent #5a5278 border and text; 'All regions' (x987, w75.5) has a line border and ink3 text."
+     },
+     {
+      "element": "Left rail (x0-158, y53-817; 14.6% w)",
+      "description": "Transparent over card2, with a 1px line2 right border and 15x14 padding. Section keys are mono 9px, .14em letter-spacing, uppercase, ink3 #716d78: 'PAGES' (y68), 'DATE RANGE' (y181), 'FILTERS' (y285). Items are 12.5px, 24.9 tall rows: 'Daily overview' (active, #17151d 600), 'By region' and 'Targets' (ink3); 'Year · FY26' and 'Channel · All' (ink3)."
+     },
+     {
+      "element": "Date range mini-calendar (x15 y205, 129x64)",
+      "description": "SVG, viewBox 112x64. A header row of 7 thin bars (12.4x3, rx1.5, #c6bede), then 5 week rows of 7 day tiles (12.4x6.6, rx2, 14px pitch). Day tiles are #e8e3f3 at opacity .75. A 7-day range runs across rows 2 to 3 in #9c90bc, and one tile in that range is #504a67."
+     },
+     {
+      "element": "Main column",
+      "description": "x158 to 1080, 15px padding, 13px vertical gaps."
+     },
+     {
+      "element": "KPI cards (4 across, y68, each 215x101.2; 19.9% w, 12.4% h; gaps 10)",
+      "description": "x = 174, 399, 624, 849. White bg, 1px border #17151d0e, radius 11, padding 11x13, no shadow. Each card has a label (mono 9.5px, .1em, uppercase, ink3), a value (Sora 600 20px, -.02em, tabular, #17151d, 5px below), and a mini chart 17px tall, 187 wide, 8px below. The cards are, in order: TOTAL '1.33M'; MEAN / DAY '3.6K'; PEAK DAY '16 Dec'; ACTIVE DAYS '289 / 364'."
+     },
+     {
+      "element": "KPI mini charts",
+      "description": "TOTAL: a 13-point rising area sparkline filled #c6bede at opacity .5 (its #504a67 1.6px line path starts with 'L', so it never renders; only the area shows). MEAN / DAY: a bullet made of a track #e8e3f3 8px r4 at 100%, a band #c6bede at 66%, a bar #504a67 5px r2.5 at 51%, and a 2x13 accent #5a5278 target tick at 73%. PEAK DAY: a 10px 100% stacked bar, dark to light, #504a67 40.6%, #746998 25.6%, #c6bede 17.7%, #e8e3f3 10.6%, with 1.5px gaps. ACTIVE DAYS: 15 columns, 6.1 wide, 1.5 gap, rx1, #746998 with the last 3 in #504a67, heights 23% to 85% of 20."
+     },
+     {
+      "element": "Main heatmap card (x174 y182, 890x218; 82.4% w, 26.7% h)",
+      "description": ".shot.tight: white, 1px #17151d1a border, radius 14, padding 14, shadow 0 1px 2px #17151d0d + 0 34px 70px -42px #17151d2e. It has NO title, legend or chip, only month labels (row at y197), weekday labels (15px column at x219) and the well (x240 y215, 779x170, radius 11, 1px line2, white). 52 weeks, capsule cells 11.69x20.15, gap 3.16, Signature ramp, peak ring on index 345."
+     },
+     {
+      "element": "Row 2 (y413, h180.4; 50.5% to 72.6%)",
+      "description": "Grid of 1.55fr : 1fr with a 13 gap. Left card 533x180 (x174), right card 344x180 (x720). The cards are white, 1px #17151d0e, radius 12, padding 13, no shadow. Titles are 11.5px 600 ink2 #514d59, 12px above the content."
+     },
+     {
+      "element": "'Support tickets · square cells' card",
+      "description": "Months and weekday labels plus a well of 448x104 (at x227 y476). 47 weeks (329 cells), cells 6.22x10.72 at radius 3px (squared corners), gap 3.16. Tickets data: summer peak around weeks 22 to 34, light weekends. No legend."
+     },
+     {
+      "element": "'Sales by month' card",
+      "description": "12 columns in an 86px-tall area, 4px gaps, colour accent #5a5278 at opacity .85 (about #736c8c on white), radius 3 top corners. Heights as % of the max: 23.6, 23.3, 29.8, 45.6, 43.3, 48.2, 71.5, 62.1, 69.9, 100 (Oct), 87.4, 99.5. The x labels J F M A M J J A S O N D are 8.5px ink3, 6px below. No axis or values."
+     },
+     {
+      "element": "Row 3 (y607, h194.3; 74.3% to 98.0%)",
+      "description": "Same 1.55fr : 1fr split. Bottom padding 15."
+     },
+     {
+      "element": "'Web sessions · high density' card",
+      "description": "Well 441x104. 52 weeks, capsule cells 7.29x12.57, gap 1px. Sessions data: weekend rows (Sat, Sun) darkest and many weekday cells empty. The silhouette is the opposite of Sales."
+     },
+     {
+      "element": "'Top days' card",
+      "description": "5 rows at a 28.5px pitch. Each row is a date (11.5px ink2, 50px column): 16 Dec, 30 Dec, 23 Dec, 29 Dec, 15 Dec. Then a bar track 7px tall, radius 999, #17151d0e, with accent #5a5278 fill at 100, 98, 96, 94 and 90%. Then a value (mono 10.5px ink3, right-aligned, 38px): 12K, 11K, 11K, 11K, 10K."
+     },
+     {
+      "element": "Caption below",
+      "description": "13px ink3: 'Three copies of **the same visual** on three different measures, daily sales, support tickets, web sessions, each configured differently...'"
+     },
+     {
+      "element": "Dark variant",
+      "description": "Frame card2 #161320, bar and cards #12101a, text #f6f4fa / #b9b3c6 / #8b8497. The heatmaps use the dark ramp (low = #362d51). Bars and top-day fills use accent #8372a9. The peak ring is light."
+     }
+    ]
+   },
+   {
+    "name": "Home hero heatmap 'Sales by Order Date'",
+    "where": "Home top (#heroBig, home_00). 1320x417 card at x60.",
+    "elements": [
+     {
+      "element": "Card",
+      "description": "White, 1px #17151d1a border, radius 24 (the .ch.big override), padding 30, shadow 0 1px 2px #17151d0d + 0 34px 70px -42px #17151d2e."
+     },
+     {
+      "element": "Header",
+      "description": "'Sales' Sora 600 15px, 'by Order Date' 12.5px ink3, right-aligned '1.33M' 600 15px. 14px below it: the months row."
+     },
+     {
+      "element": "Grid",
+      "description": "Well 1184x264, 52 weeks, cells 19.47x33.58, gap 3.16. Peak ring at index 345. The weekend rows are mostly empty grey with occasional lavender."
+     },
+     {
+      "element": "Footer",
+      "description": "'Less ▢▢▢▢▢ More' on the left and '✓ Contrast checks out 8.35:1' on the right. Below the card, a mono 10.5px caption: 'CALENDAR HEATMAP · **364 DAYS** · DRAWN LIVE, RIGHT NOW' (the bold part in accent)."
+     }
+    ]
+   },
+   {
+    "name": "Home 'Sessions by Visit Date'",
+    "where": "Home 'A year of daily values. One view.' (#bigShot, home_01).",
+    "elements": [
+     {
+      "element": "Card",
+      "description": "Same styling as the hero, total '847K'. Well 1210x270, cells 19.97x34.43. There are no bin-1 cells; weekends are darkest; the peak ring sits at index 362 (last Saturday)."
+     }
+    ]
+   },
+   {
+    "name": "Home 'Tickets by Created Date' selection demo",
+    "where": "Home 'Every cell is a slicer.' (#selShot, home_02).",
+    "elements": [
+     {
+      "element": "Card",
+      "description": "Total '10K'. Well 1064x236, cells 17.15x29.58. Week 29 (cells 196 to 202) is at full opacity and every other cell is at opacity .24. The static screenshot caught it undimmed because the demo cycles. Chip: '✓ Filtered to week 29'."
+     }
+    ]
+   },
+   {
+    "name": "Home catalogue and standard cards (minor mocks)",
+    "where": "Home 'The catalogue' and 'The standard' (home_04 to home_06).",
+    "elements": [
+     {
+      "element": "Shelf lead card",
+      "description": "White, radius 18, padding 24. Contains a mini heatmap (32 weeks, cells 7.38x12.72) inside a .shot.tight; an 'IN DEVELOPMENT' pill (mono 10px, warn #9c7a3f text, warn 16% bg, 38% border); h3 'Calendar Heatmap'; and a description. Two dashed ghost slots follow: 'VISUAL 02' and 'VISUAL 03'. A segmented control reads 'Today · 1 / Soon · 6 / At scale · 24'."
+     },
+     {
+      "element": "Standard cards (2x2)",
+      "description": "card2 bg, 1px line2, radius 16, padding 22. Card 01 shows week-start rows MON / SUN / SAT with 13px accent squares. Card 02 shows the light ramp tile on #fff and the dark ramp tile on #12101a. Card 03 is a checklist with green ticks. Card 04 shows dashed mini tiles labelled 1 WEEK, 200PX TILE and GAPS."
+     }
+    ]
+   },
+   {
+    "name": "Product page hero heatmap",
+    "where": "calendar-heatmap page top (#pShot, heatmap_00).",
+    "elements": [
+     {
+      "element": "Card",
+      "description": "1080x363, radius 20, padding 30. 'Sales by Order Date 1.33M'. Well 952x210, cells 15x25.86, gap 3.16. The peak ring cell renders 23px wide here, which leaves a column gap. Footer: legend and '8.35:1' chip. Caption: 'THE REAL RENDERER · 52 WEEKS · PEAK DAY RINGED'."
+     }
+    ]
+   },
+   {
+    "name": "Pinned 'Four decisions' stage",
+    "where": "Product page 'The visual' (#stage plus #pick; heatmap_02 to heatmap_04, pin_0..3.png).",
+    "elements": [
+     {
+      "element": "Stage",
+      "description": "A sticky .shot with no header or footer, about 558px wide. Well 475x236, 23 weeks, cells 17.15x29.58. Its four scroll states are: 01 Coverage (default), 02 Density (gap 1px, 24 weeks, cells 18.23x31.43), 03 Shape (radius 3px), and 04 Interaction (last week selected, the rest at .24)."
+     },
+     {
+      "element": "Colour picker",
+      "description": "Label 'COLOUR' (mono 9.5px). Four pill buttons (radius 999, padding 6x14x6x7), each holding a capsule swatch strip of 5 segments, each 11x20: Signature (selected: accent border, accent 11% tint), Ember, Forest, Slate. Text 12.5px 500."
+     },
+     {
+      "element": "Step copy",
+      "description": "On the right, each step has a mono index ('01 · Coverage'), an h3 of 23 to 40px, and body text. Inactive steps sit at opacity .26."
+     }
+    ]
+   },
+   {
+    "name": "First-run setup tile",
+    "where": "Product page 'It sets itself up.' (#v-tile, heatmap_05, vtile_0..3.png).",
+    "elements": [
+     {
+      "element": "Stepper",
+      "description": "Landing ◇, then 1 Intent, 2 Appearance, 3 Done. Each dot is a 25px circle; the active one is accent-filled. They are joined by 30px lines."
+     },
+     {
+      "element": "Landing",
+      "description": "Tile 1080 wide, bg --bg, radius 18. A ghost grid runs behind at opacity .5 x .34 (36 weeks, cells 23.2x40, gap 5). Left: 'LUMERIC' eyebrow, 'Calendar' / 'Heatmap' in Sora 44px, a subtitle, a [Set it up →] accent button and a [Use defaults] outline button. Right: a floating chart card (padding 15, well 434x150, 33 weeks, cells 10.31x17.77, gap 2.6)."
+     },
+     {
+      "element": "Intent",
+      "description": "A 2x2 grid of preview cards, each a 52-week thumbnail with cells 4.47x7.71 and gap 2. The cards are Lumeric Signature (Signature, selected: accent border and tick), Executive (Slate), Analytical (Forest) and Presentation (Ember). Footer: 'Step 1 of 3' and 'Back · Continue →'."
+     },
+     {
+      "element": "Appearance and Done",
+      "description": "A preview with Density (Spacious..Dense) and Cell shape (Round..Square) sliders. Done reads 'That's the chart. Here's where everything lives.' and has an 'Open Calendar Heatmap →' button."
+     }
+    ]
+   },
+   {
+    "name": "Studio drawer panels",
+    "where": "Product page 'The Studio' (#m-color, #m-a11y, #m-suggest, #m-changes; heatmap_06 to heatmap_10).",
+    "elements": [
+     {
+      "element": "Panel shell",
+      "description": "Max 396 wide, white, 1px line, radius 18, shadow 0 40px 80px -40px #17151d38. Behind it is an accent radial glow blurred 38px. Header 13x15 padding, title Sora 13.5px 600, subtitle 11.5px ink3."
+     },
+     {
+      "element": "Preview",
+      "description": ".shot.tight with a well of 311x96, 37 weeks, cells 6.08x10.49, gap 2.1."
+     },
+     {
+      "element": "Colour page",
+      "description": "Palette list (card2, radius 12): group headers in mono 9.5px, rows with five 12x12 r3 swatches and a name at 13px, ✓ on the selected row. 'Ramp' box: Steps 5 on a 3..9 slider (accent track, 14px thumb), 'Reverse the ramp' switch off, 'Match the report theme' switch on (34x20, accent)."
+     },
+     {
+      "element": "Accessibility, Suggestions, Review changes",
+      "description": "As listed under visualFeatures. Rows are 12px with mono 11px values; the tag chips use bg2 and mono 9.5px; action buttons are 12px 600, radius 8."
+     }
+    ]
+   },
+   {
+    "name": "Full screen Studio",
+    "where": "Product page 'Or open the whole thing.' (#xp, heatmap_10/heatmap_11, el_light_xp.png).",
+    "elements": [
+     {
+      "element": "Frame",
+      "description": "1080x833, radius 18. Header (83px) has a search box on the right. The body grid is 200 | 332 | 1fr (546), with the right pane on bg2 #f1eff7."
+     },
+     {
+      "element": "Rail",
+      "description": "'SETTINGS' (Sora 600 10.5px, .15em), then items at 13.5px with 16px line icons, padding 9x11, radius 10. The active 'Design' has a card2 bg and line border. Badges are accent circles (19px) showing 2 and 4."
+     },
+     {
+      "element": "Middle",
+      "description": "'Design' at Sora 23px. 'Cells' box: Cell shape Round (slider at 22%, Round..Square); Density Balanced (52%, Spacious..Dense); Show days with no data (on) with a hint; Value labels (off)."
+     },
+     {
+      "element": "Preview",
+      "description": "A 'Sales by Order Date 1.33M' shot with the 5-cell KPI strip, a 34-week grid (cells 10.03x17.29), month totals and the legend chip. Below it sits the Accessibility card. The footer bar is 12px."
+     }
+    ]
+   },
+   {
+    "name": "All ten pages explorer",
+    "where": "Product page 'Ten pages. Have a look at all of them.' (.explorer, heatmap_12/heatmap_13, epanel_0..9.png, explorer.txt).",
+    "elements": [
+     {
+      "element": "Layout",
+      "description": "Grid of 212 | 1fr | 300-396. The rail is a white card (radius 15). The middle has '02 / 10' in mono, an h3, a paragraph, and a mono caption. The right is the drawer panel for the selected page. All ten pages' text is in explorer.txt."
+     }
+    ]
+   },
+   {
+    "name": "On the report: 'The full canvas'",
+    "where": "Product page 'What those settings actually build.' (#cv-full, heatmap_14, el_light_cvfull.png / el_dark_cvfull.png).",
+    "elements": [
+     {
+      "element": "Card",
+      "description": "1080x502, white, radius 20, padding 30, shot shadow."
+     },
+     {
+      "element": "Header (y30)",
+      "description": "'Sales' / 'by Order Date' / '1.33M'."
+     },
+     {
+      "element": "KPI strip (y70-157, 1018x87; 14% to 31% h)",
+      "description": "5 equal cells (203 wide), 1px line2 border, radius 12, dividers between. Padding 11x14. Label Sora 600 9.5px .11em uppercase ink3; value Sora 600 18px; subtitle 10.5px ink3."
+     },
+     {
+      "element": "Heatmap (well y189-379, 866x190)",
+      "description": "Centred with the weekday column. 52 weeks, cells 13.34x23.01, gap 3.16, peak ring. Month labels 18px above."
+     },
+     {
+      "element": "Month totals (y391-437, full 1018 width)",
+      "description": "12 ramp-coloured bars of 80px each, radius 3, labels Jan..Dec at 9.5px."
+     },
+     {
+      "element": "Footer (about y451-471)",
+      "description": "Legend and contrast chip (12.00:1 in dark). Caption below: 'The full canvas.'"
+     }
+    ]
+   },
+   {
+    "name": "On the report: small multiples",
+    "where": "#cv-small (el_light_cvsmall.png).",
+    "elements": [
+     {
+      "element": "Card",
+      "description": "1080x445. Header 'Sales / by Order Date · split by Region / 3.85M'. Panels in a 2x2 grid, gap 14, each 502x148. Panel header: name in Sora 600 12.5px, total in mono 11px ink3 on the right. Well 496x122, 45 weeks, cells 7.71x13.29, no axis labels. Footer: legend and '✓ One shared scale · 45 weeks in every panel'. Pill 'Designed · not shipped' below."
+     }
+    ]
+   },
+   {
+    "name": "On the report: race playback",
+    "where": "#cv-race (el_light_cvrace.png).",
+    "elements": [
+     {
+      "element": "Card",
+      "description": "1080x470. Header, 5-cell KPI strip, and a 52-week grid filled to about 37 weeks with the rest empty grey. Scrubber at y391 across the full width. Footer chip 'Playhead 18 Sep · 261 of 364 days'. Pill 'Partly built'."
+     }
+    ]
+   },
+   {
+    "name": "Feature demos and spec",
+    "where": "Product page 'What it does and how it decides.' and '#spec' (feat_0..5.png).",
+    "elements": [
+     {
+      "element": "fv0a / fv0b",
+      "description": "Two cards side by side, each with a 478-wide well. Short: 44 weeks, 13px cells. Tall: 19 weeks, 37px cells. Mono captions such as 'SHORT BOX · 44 WEEKS · CELL 13PX'."
+     },
+     {
+      "element": "fv1",
+      "description": "Full-width tickets grid (47 weeks, cells 18.31x31.58) with one week selected. Caption 'ONE WEEK SELECTED · THE REST DIMS'."
+     },
+     {
+      "element": "fv2",
+      "description": "Two swatch cards (radius 13): 'LIGHT REPORT' ramp in 26px r5 blocks with '8.35:1 vs the well', and 'DARK REPORT' with '12.00:1 vs the well' (the ratio in ok green, mono)."
+     },
+     {
+      "element": "fv3",
+      "description": "Sessions grid, caption 'LIGHT THEME · RAMP PALE TO DEEP' (it flips in dark)."
+     },
+     {
+      "element": "fv4",
+      "description": "Three step cards (1 What is it for? active, 2 How should it look?, 3 Done) above a 52-week grid."
+     },
+     {
+      "element": "Spec table",
+      "description": "Caption 'Calendar Heatmap · v1'. Rows: Fields, Aggregation, Calendar, Colour, Cell, Interaction, Overlays, Accessibility, Rendering, Certification. The first column is 600 ink at 30% width; the text is 14.5px ink2 with line2 rules. The email capture button reads 'Tell me when it ships'."
+     }
+    ]
+   }
+  ],
+  "palette": [
+   {
+    "name": "Signature (light report ramp, low to high)",
+    "hexes": [
+     "#e8e3f3",
+     "#c6bede",
+     "#9c90bc",
+     "#746998",
+     "#504a67"
+    ],
+    "source": "Inline background on every heatmap cell and legend <i> in home.html and heatmap.html; pitem 'Signature'; #pick"
+   },
+   {
+    "name": "Signature dark-report ramp (low to high)",
+    "hexes": [
+     "#362d51",
+     "#5f5384",
+     "#887ca7",
+     "#b0a9c7",
+     "#d1ccdc"
+    ],
+    "source": "home.html .thm-b.d swatches; I confirmed live cell colours with lumeric-theme=dark (rgb 54,45,81 ... 209,204,220) and the same bin indices"
+   },
+   {
+    "name": "Ember",
+    "hexes": [
+     "#fbebdd",
+     "#f4cba5",
+     "#e4a46f",
+     "#c77e49",
+     "#965d3d"
+    ],
+    "source": "heatmap.html #pick 'Ember'; setup intent 'Presentation'"
+   },
+   {
+    "name": "Forest (identical to drawer 'Green')",
+    "hexes": [
+     "#e3f1e9",
+     "#badecb",
+     "#87c3a8",
+     "#5ba081",
+     "#44765f"
+    ],
+    "source": "heatmap.html #pick 'Forest', pitem 'Green'; setup intent 'Analytical'"
+   },
+   {
+    "name": "Slate",
+    "hexes": [
+     "#ebebf0",
+     "#cbcbd6",
+     "#a1a1b3",
+     "#78788b",
+     "#565667"
+    ],
+    "source": "heatmap.html #pick 'Slate'; setup intent 'Executive'"
+   },
+   {
+    "name": "Neutral",
+    "hexes": [
+     "#ededf0",
+     "#d1d1d8",
+     "#ababb6",
+     "#808091",
+     "#5c5c6b"
+    ],
+    "source": "heatmap.html drawer pitem (BOARD-SAFE)"
+   },
+   {
+    "name": "Classic blue",
+    "hexes": [
+     "#e1eef8",
+     "#b8d5ed",
+     "#85b4dc",
+     "#588abb",
+     "#436793"
+    ],
+    "source": "heatmap.html drawer pitem (BOARD-SAFE)"
+   },
+   {
+    "name": "Grayscale",
+    "hexes": [
+     "#efefef",
+     "#d4d4d4",
+     "#adadad",
+     "#7f7f7f",
+     "#575757"
+    ],
+    "source": "heatmap.html drawer pitem (BOARD-SAFE)"
+   },
+   {
+    "name": "Coral",
+    "hexes": [
+     "#f9e4db",
+     "#f1c0ab",
+     "#e19576",
+     "#c56c50",
+     "#935141"
+    ],
+    "source": "heatmap.html drawer pitem (HIGH-SIGNAL)"
+   },
+   {
+    "name": "Amber",
+    "hexes": [
+     "#fbefd2",
+     "#f3d9a0",
+     "#e3bb6a",
+     "#c59949",
+     "#94733e"
+    ],
+    "source": "heatmap.html drawer pitem (HIGH-SIGNAL)"
+   },
+   {
+    "name": "Teal",
+    "hexes": [
+     "#def1ed",
+     "#addfd5",
+     "#77c5b5",
+     "#4fa08e",
+     "#41766a"
+    ],
+    "source": "heatmap.html drawer pitem (COLOUR-BLIND SAFE)"
+   },
+   {
+    "name": "Empty (no-data) cell",
+    "hexes": [
+     "#17151d0d",
+     "#f3f3f3",
+     "#f6f4fa0d",
+     "#1e1c25"
+    ],
+    "source": "Base.css --empty: light #17151d0d (flattens to #f3f3f3 on the white well), dark #f6f4fa0d (flattens to #1e1c25 on #12101a)"
+   },
+   {
+    "name": "Light theme surfaces",
+    "hexes": [
+     "#f8f7fb",
+     "#f1eff7",
+     "#ffffff",
+     "#faf9fc",
+     "#ffffff",
+     "#17151d1a",
+     "#17151d0e",
+     "#e7e7e8",
+     "#f2f2f3"
+    ],
+    "source": "Base.css [data-t=light]: bg, bg2, card, card2, well, line, line2, plus line and line2 flattened on white"
+   },
+   {
+    "name": "Light theme text and accents",
+    "hexes": [
+     "#17151d",
+     "#514d59",
+     "#716d78",
+     "#5a5278",
+     "#ffffff",
+     "#1f8f6f",
+     "#9c7a3f"
+    ],
+    "source": "Base.css [data-t=light]: ink, ink2, ink3, accent/btn, btn-tx, ok (check chip), warn ('!' and pills)"
+   },
+   {
+    "name": "Dark theme surfaces",
+    "hexes": [
+     "#000000",
+     "#0c0a11",
+     "#12101a",
+     "#161320",
+     "#12101a",
+     "#f6f4fa1a",
+     "#f6f4fa0e",
+     "#0000009e"
+    ],
+    "source": "Base.css :root default (dark): bg, bg2, card, card2, well, line, line2, vig"
+   },
+   {
+    "name": "Dark theme text and accents",
+    "hexes": [
+     "#f6f4fa",
+     "#b9b3c6",
+     "#8b8497",
+     "#8372a9",
+     "#b5adcf",
+     "#12101a",
+     "#35a98b",
+     "#c9a15a"
+    ],
+    "source": "Base.css :root: ink, ink2, ink3, accent, btn, btn-tx, ok, warn"
+   },
+   {
+    "name": "Peak ring stroke",
+    "hexes": [
+     "#17151d",
+     "#f6f4fa"
+    ],
+    "source": "Base.css .grid i.pk box-shadow inset 1.8px var(--ink); computed rgb(23,21,29) light, rgb(246,244,250) dark"
+   },
+   {
+    "name": "Report mock chart colours",
+    "hexes": [
+     "#5a5278",
+     "#736c8c",
+     "#17151d0e",
+     "#c6bede",
+     "#e8e3f3",
+     "#9c90bc",
+     "#504a67",
+     "#746998"
+    ],
+    "source": "index.css .bars (accent at .85, which is about #736c8c on white), .rk-b track (line2), .rk-b i (accent); KPI svg fills in home.html"
+   },
+   {
+    "name": "Logo mark",
+    "hexes": [
+     "#17151d",
+     "#8372a9"
+    ],
+    "source": "nav SVG fills"
+   },
+   {
+    "name": "Shadows",
+    "hexes": [
+     "#17151d0d",
+     "#17151d2e",
+     "#17151d38",
+     "#17151d33"
+    ],
+    "source": ".shot 0 1px 2px #17151d0d + 0 34px 70px -42px #17151d2e; .rep 0 44px 90px -48px #17151d38; .panel 0 40px 80px -40px #17151d38; .xp -44px #17151d33"
+   }
+  ],
+  "typography": "Display: Sora from Google Fonts (weights 400/500/600/700; --display: \"Sora\",\"Segoe UI\",system-ui). Uses:\n- h1: 104px, 600, letter-spacing -.042em, line-height .99.\n- h2: 64px, 600, -.035em.\n- h3: 20px, 600.\n- The 'thin' second line is still 500 weight, coloured ink2.\n- Card titles ('Sales', 'Daily Sales · FY26'): 600, 15px and 13px.\n- KPI values: 600, 20px in the report mock and 18px in the visual strip, letter-spacing -.02 to -.025em, tabular numerals.\n- KPI labels in the visual strip: Sora 600 9.5px uppercase .11em.\n- Settings rail headers: 10.5px 600 .15em.\n- 'Free. For good.': 196px 700.\n\nBody: \"Segoe UI Variable Text\",\"Segoe UI\",system-ui. Sizes: 17px base, ledes 21px, card subtitles and legend 12.5px, rail items 12.5px, mc titles 11.5px 600, month labels 10px, weekday labels 9.5px, bar x-labels 8.5px, month-total labels 9.5px.\n\nMono: ui-monospace,\"SF Mono\",Menlo,monospace. Chromium on Windows renders it as Consolas. Uses:\n- Eyebrows: 11px .24em uppercase, accent colour.\n- Report KPI labels: 9.5px .1em uppercase.\n- Rail section keys: 9px .14em.\n- Chip values ('8.35:1', 'week 29'): 11.5px 600.\n- Top-day values and panel totals: 10.5 to 11px.\n- Captions: 10.5px .13em uppercase.\n\nTotals ('1.33M'): Segoe 600 15px, tabular. For Power BI: Sora is not a PBI font and Deneb cannot fetch Google Fonts, so plan on Segoe UI Semibold/Bold for display and Consolas for mono.",
+  "cellGeometry": "Grid:\n- CSS grid, 7 rows, auto-flow column (one column per week). Monday is the top row and Sunday the bottom.\n- 364 cells = 52 weeks, and the data begins on a Monday. No padding cells.\n\nCell aspect:\n- Width:height = 0.58 everywhere, so height = 1.724 x width. Examples: 19.47x33.58, 15x25.86, 11.69x20.15, 6.22x10.72, 23.2x40.\n- The size captions quote height ('cell 13px' = 13.01 tall).\n\nCorner radius:\n- Capsule: 999px, i.e. radius = width/2.\n- 'Square': a fixed 3px.\n\nGap:\n- 3.16px default ('Balanced').\n- 1px 'Dense'.\n- 2 to 2.6px in small previews, 5px in the landing ghost.\n\nSizing rule:\n- Solve h from the well height (7h + 6g = inner height).\n- w = 0.58h.\n- Weeks shown = floor((innerWidth + g)/(w + g)), max 52. Verified exactly for 44 and 19 weeks.\n- When all 52 fit, the well shrinks to the grid and centres.\n\nWell:\n- White (#fff light, #12101a dark), 1px border #17151d0e, radius 11px.\n- The grid is centred with about 4px inset per side inside the 1px border: 1184x264 well for a 1173.6x254 grid.\n\nWeekday labels:\n- 15px column, 6px gap to the well.\n- M, W, F, S justified space-between over the grid height, so they fall on rows 0, 2, 4, 6.\n\nMonth labels:\n- A row 13px tall, 5px above the well. Padding-left 22px so it starts at the well edge.\n- Six spans (Jan, Mar, May, Jul, Sep, Nov), each flex:1 = 1/6 of the width. Evenly spaced, not date-aligned.\n\nLegend:\n- Footer 14px below the well.\n\nPeak ring:\n- An inset box-shadow of 1.8px in the ink colour (#17151d light, #f6f4fa dark), same radius as the cell, fill unchanged (#504a67).\n- In Vega: a second rect at x+0.9, y+0.9, w-1.8, h-1.8 with stroke 1.8 and the same cornerRadius.\n\nSelection:\n- Unselected cells get opacity .24.",
+  "notes": "Capture defects and extra files:\n- The stitched heatmap_full.png is broken: slices 15-21 repeat slices 00-06 with the sticky nav pasted in. The sections after 'On the report' are missing from the slices entirely.\n- I recaptured those sections at 2x, in light and dark, plus the live DOM data. All in the scratchpad lumeric folder:\n  - el_light_*.png and el_dark_*.png: rep, heroBig, selShot, std, pShot, cvfull, cvsmall, cvrace, xp, explorer, fv2, fv3, vtile.\n  - feat_0..5.png, epanel_0..9.png, vtile_0..3.png, pin_0..3.png.\n  - explorer.txt: all 10 settings pages and the setup copy.\n  - home_measure.json and heatmap_measure.json: element boxes.\n  - home_outline.txt and heatmap_outline.txt: DOM outline.\n  - base_pretty.css, index.BmcWXOSt_pretty.css, calendar-heatmap.msXspRl7_pretty.css: design tokens. These are CSS only; I did not copy any JS.\n\nWhere the mock contradicts itself (decide what to match):\n- KPI 'Total 1.33M · 365 days' against a 364-day grid.\n- 'Bins 5 · quantile' against non-quantile bin counts; equal-interval over 0..max fits better.\n- Month-totals bar heights rise every month (Dec tallest) although the KPI says best month is Oct, and 'Sales by month' has Oct at 100%.\n- Peak '16 Dec' at index 345 implies the grid starts Mon 5 Jan 2026. The race chip '18 Sep = day 261' implies it starts 1 Jan. The data is a seeded synthetic set, not real dates.\n- Month labels are evenly spaced placeholders. A faithful Deneb build could either copy that or, better, place them at real month-start weeks.\n- The report-mock 'Total' sparkline shows only its area, because the line path is malformed.\n- The product-page peak cell renders wider than its column (probably a bug). Use the home-page ring.\n\nRebuilding the report as a PBI page:\n- The mock is 1080 x 817.5, aspect about 1.32.\n- Either use a custom page size around 1280x969 (scale 1.185) or re-flow to 16:9.\n- Every card is a flat white rounded box with a hairline border, no shadow except the main heatmap card.\n- Deneb can draw all of the following with rect/text marks and quantize or threshold scales:\n  - the capsule grid (cornerRadius = w/2)\n  - the peak ring\n  - the empty-cell colour\n  - the legend\n  - the contrast chip text (computable in a Vega expression from the ramp and background hex)\n  - the KPI strip\n  - month totals\n  - the playback scrubber (a Vega signal with a timer event or slider)\n  - small multiples on a shared scale (facet or group)\n- Cross-filter, ctrl-click multi-select, report page tooltips and drill-through are Deneb-native.\n- Drag range selection needs a Vega interval over cells.\n\nNot reproducible in Deneb:\n- The Studio pane, setup wizard, suggestions, change history, section locks and search.\n- The build-in animation.\n- Automatic dark-theme detection and high-contrast 'Follow Windows'. Expose a theme switch or use pbiColor instead.\n- Web fonts.\n- Keyboard focus per cell. Vega aria/description can provide screen-reader labels.\n\nDark theme:\n- Invert the ramp, well #12101a, empty #f6f4fa at 5%, light ring.\n- Contrast figure 12.00:1.\n\nDatasets used:\n- Sales: weekday-heavy, year-end peak, 75 empty days, mostly weekends.\n- Sessions: weekend-heavy, no bin 1.\n- Tickets: summer bulge, 47 weeks in the report.\n- Region split: North, South, EMEA and APAC each fade progressively."
+ },
+ "caps": {
+  "capabilities": [
+   {
+    "topic": "Single-click cross-filter on a data point",
+    "supported": "yes",
+    "detail": "Set objects.vega enableSelection true (default false). In simple mode (selectionMode 'simple', the default) Deneb binds a 'click' listener to the Vega view, resolves the clicked mark's datum to a dataset row through __row__ (field-value matching is the fallback), and passes that row's selection ID to Power BI's ISelectionManager. Works in both Vega and Vega-Lite. The spec has to style selection state itself from the per-row __selected__ field ('on' / 'off' / 'neutral'). Row context has to survive: a Vega formula or filter on a derived source dataset keeps __row__, but aggregate transforms lose it, and primitive-aggregate resolution is only best effort. A calendar cell that is one date row is the ideal case. Whether other visuals filter or highlight is set in Power BI's Edit interactions, not by Deneb. It also needs host.allowInteractions, which is false in some hosts such as dashboard tiles.",
+    "evidence": "B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md sections 'Interactivity' and 'Cross-Filtering'; https://deneb-viz.github.io/docs/interactivity-selection (docs source branch @73fe7a0 docs/interactivity/selection.md, sections 'Data Point Resolution' and 'The __selected__ Field'); deneb-viz/deneb@2.0.0.0 src/app/app.tsx L189-192 (view.addEventListener('click', crossFilterHandler)), src/lib/interactivity/cross-filter.ts isCrossFilterPropSet (enableSelection && host.allowInteractions), src/lib/interactivity/data-point.ts getResolvedRowIdentities"
+   },
+   {
+    "topic": "Ctrl-click multi-select",
+    "supported": "yes",
+    "detail": "In simple mode, Ctrl or Shift plus click adds a row to the selection. The limit is selectionMaxDataPoints, 1-250 (default 50). Past it, Deneb shows a header warning, keeps the current selection and refuses further additions. In advanced mode (Vega only), pbiCrossFilterApply options.multiSelect takes an array of 'ctrl', 'shift', 'alt' (default ['ctrl','shift']), and options.limit runs 1-2500. When options.limit is omitted it defaults to the constant 50, not the format-pane value. For a multi-select, the size of the existing selection is added to the new rows before the limit check.",
+    "evidence": "docs/interactivity/selection.md sections 'Additional Strategy for the Simple Management Mode' and 'Data Point Limit'; docs/interactivity/selection-advanced.md section 'options'; deneb-viz/deneb@2.0.0.0 src/lib/interactivity/cross-filter.ts isMultiSelect, getPotentialCrossFilterSelectionSize, getCrossFilterSelectionLimitSize; src/lib/vega-embed/cross-filter-expressions.ts getResolvedCrossFilterOptions (limit defaults to INTERACTIVITY_DEFAULTS.selectionMaxDataPoints = 50); B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\advanced-patterns.md 'Advanced Cross-Filtering'"
+   },
+   {
+    "topic": "Clearing selection",
+    "supported": "yes",
+    "detail": "In simple mode, clicking empty space or a mark that cannot be resolved clears the visual's selection and tells Power BI to clear it too. The limit banner also offers Dismiss and Clear selection. In advanced mode nothing is automatic. The author wires a view-level mouseup or click handler that calls pbiCrossFilterClear() (no arguments) and filters out the data-point mark by name, because Vega does not stop a mark event from propagating to the view (vega/vega#1493). Restoring a bookmark with a selection updates __selected__.",
+    "evidence": "docs/interactivity/selection.md 'Additional Strategy for the Simple Management Mode'; docs/interactivity/selection-advanced.md 'Approach for Advanced Management' (caution 'Handling catch-all events against the view') and 'pbiCrossFilterClear()'; deneb-viz/deneb@2.0.0.0 src/lib/vega-embed/cross-filter-expressions.ts createCrossFilterClearHandler"
+   },
+   {
+    "topic": "Drag a date range and cross-filter the rest of the report",
+    "supported": "partial",
+    "detail": "This is possible only in Vega, with selectionMode 'advanced'. Mechanism: keep the drag endpoints in TOP-LEVEL signals (for example brushLo and brushHi, set on mousedown and mousemove over the cell mark). On mouseup, call pbiCrossFilterApply(event, \"datum['Date'] >= brushLo && datum['Date'] <= brushHi\", {limit: 2500}). Power BI never receives the filter as an expression. Deneb runs it in a headless Vega view over the base dataset, collects the matching rows' __row__ and selects their selection IDs. That headless view copies only top-level signal values (event.dataflow._signals), so signals inside group marks are invisible to it. The range is therefore carried as a list of row identities, with a hard cap of 2,500 rows (options.limit 1-2500; the default is 50 if omitted). At daily grain that is about 6.8 years per selection. A 10-year drag goes over the cap, and so does any extra grouping column that multiplies rows per day. Deneb then returns {exceedsLimit: true}, keeps the previous selection and shows the header warning. The spec can read that return value if the apply call's result is stored in a signal. Deneb has no JSON or Advanced filter API: applyJsonFilter appears nowhere in the 2.0.0.0 source. So a true 'between dates' filter is impossible, as are filter-pane persistence and cross-page sync. Other visuals receive a normal cross-filter or cross-highlight, as set in Edit interactions. Checked offline with Vega 6.4.0: relational comparisons (>=, <=) on Date objects work. == on Date objects never matches (it compares object identity). That includes the documented placeholder form datum['Date'] == _{Date}_, which Deneb resolves to toDate('<ISO>'); use time(datum['Date']) == time(_{Date}_) instead. Call apply once on mouseup, not on every mousemove. The DAX cost to other visuals of a 2,500-identity selection has not been measured, and none of this has been reproduced in Desktop.",
+    "evidence": "docs/interactivity/selection-advanced.md (whole page, 'pbiCrossFilterApply()' limit 1-2,500 default 50); deneb-viz/deneb@2.0.0.0 src/lib/interactivity/cross-filter.ts getCrossFilterSelectionAdvanced (headless View over dataset.values with top-level signals), isCrossFilterPointLimitExceeded (exceedsLimit keeps the current selection); src/lib/vega-embed/cross-filter-expressions.ts getResolvedFilterExpressionForPlaceholder (Date -> toDate('ISO')); grep of src and packages for applyJsonFilter/AdvancedFilter/BasicFilter returned nothing; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\advanced-patterns.md 'Advanced Cross-Filtering' ('For a brush, bind a Vega interval selection and pass its extent into the filter argument'); offline test C:\\Users\\timos\\AppData\\Local\\Temp\\claude\\b--VS-Code-Files-Deneb\\904b0a85-a520-41e0-8d25-0ec57fb03eb9\\scratchpad\\datetest.mjs (placeholder == returned [], time()== and range returned the expected rows)"
+   },
+   {
+    "topic": "Vega-Lite interval selection for report cross-filtering",
+    "supported": "partial",
+    "detail": "A Vega-Lite interval param (select: {type: 'interval', encodings: ['x']}) works for brushing, zoom and emphasis inside the visual, but it cannot cross-filter the report. Advanced mode is Vega only, and Vega-Lite params cannot attach a custom event update that calls pbiCrossFilterApply: in the bundled VL 6.4 schema, VariableParameter has only bind, expr, name, react and value. In simple mode Deneb listens for 'click', so a drag that ends on a different cell probably fires a click on a common ancestor and clears the selection (inferred from the source, not tested). The route is to author in Vega, or use the 2.0 editor's 'Convert my spec to Vega' (cannot be undone; extract the VL spec first) and then add the signals.",
+    "evidence": "docs/interactivity/selection-advanced.md info box 'This mode is only available for developers using Vega'; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\advanced-patterns.md ('Vega only; Vega-Lite cannot use it'); B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md 'Provider Policy' (Convert my spec to Vega); B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-pbir\\renderer\\node_modules\\vega-lite\\build\\vega-lite-schema.json definitions.VariableParameter; deneb-viz/deneb@2.0.0.0 src/app/app.tsx L191"
+   },
+   {
+    "topic": "Cross-highlight (receiving highlights from other visuals), __highlight__ fields",
+    "supported": "yes",
+    "detail": "Set enableHighlight true. Each MEASURE gets <measure>__highlight, the value for the highlighted subset, which equals the base value when nothing is highlighted. On 1.9 and on migrated visuals, measures also get __highlightStatus ('neutral'/'on'/'off') and __highlightComparator ('eq'/'lt'/'gt'/'neq'); on new 2.0 projects those two are opt-in through supportFieldConfiguration. Columns never get highlight fields. The spec has to draw 'two visuals in one', for example base intensity dimmed with highlight intensity on top, or opacity driven by the highlight/base ratio. Each source visual's Edit interactions setting decides whether it highlights or filters, and Deneb cannot set it. With highlighting off, Deneb tries to map highlight values onto the base measure names. Traps: (1) in the shipped 2.0.0.0, __highlightStatus and __highlightComparator are wrong for rows whose highlight value is null (fixed on main after the tag, deneb#753), so test __highlight for null instead. (2) Author enableHighlight true before the visual is first opened under 2.0; otherwise the migration freezes highlight:false in supportFieldConfiguration.",
+    "evidence": "https://deneb-viz.github.io/docs/interactivity-highlight (docs/interactivity/highlight.md 'Recommended Approaches', 'How We Try to Help'); B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\capabilities.md 'Special Fields' and 'Defaults: which companions exist'; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\deneb-2-migration.md 'What 2.0 changes on first open' item 2; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-pbir\\SKILL.md 'The highlight trap'; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\vega-lite-patterns.md 'Bar Chart with Cross-Highlighting'"
+   },
+   {
+    "topic": "Power BI default tooltips from a Deneb mark",
+    "supported": "yes",
+    "detail": "enableTooltips defaults to true. In Vega, encode 'tooltip': {'signal': 'datum'} or an object signal; in Vega-Lite, set mark tooltip true or a tooltip channel. Deneb hands key/value pairs to Power BI's tooltip service, so styling comes from the visual's Tooltip format card. There is no per-point styling: a custom-styled hover card like a vendor visual's has to be drawn as Vega marks. Default tooltips need no row context. Auto-formatting with the model format string only applies to NUMERIC fields whose key matches a Values field name. A Date object is not auto-formatted, so build the tooltip object with timeFormat(datum.Date, ...) or pbiFormat. tooltipDelay is 0-10000 ms. Sentence-template tooltips (Power BI, June 2026) can read only fields that are in the tooltip object. Modern tooltips can show drill-through actions.",
+    "evidence": "https://deneb-viz.github.io/docs/interactivity-tooltips (docs/interactivity/tooltips.md); deneb-viz/deneb@2.0.0.0 src/lib/interactivity/tooltip.ts L91-144 (getFieldsEligibleForAutoFormat requires column.type.numeric); B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md 'Interactivity' table and Gotcha 'Deneb's native tooltip cannot be styled per-point'; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\capabilities.md vega object (tooltipDelay)"
+   },
+   {
+    "topic": "Report page tooltips from a Deneb mark",
+    "supported": "yes",
+    "detail": "This works when the hovered mark's datum still carries __row__, either an untransformed row or a derived source dataset that copies the field, and a tooltip page exists that matches a column in the datum (or one is assigned in the visual's Tooltip settings). In PBIR the page must be visualTooltip.type 'Canvas', not 'ReportPage'; with the wrong value nothing appears. When resolution fails, Deneb falls back to the default tooltip. Cells generated in the spec for empty days have no __row__, so they only get default tooltips.",
+    "evidence": "docs/interactivity/tooltips.md 'Data Point Resolution' and 'Limitations and Considerations'; deneb-viz/deneb@2.0.0.0 capabilities.json tooltips.supportedTypes {default: true, canvas: true}; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md Gotcha 'Report-page tooltips: visualTooltip.type is Canvas, not ReportPage'"
+   },
+   {
+    "topic": "Context menu and drill-through from a mark",
+    "supported": "yes",
+    "detail": "Right-click shows the Power BI context menu (enableContextMenu, default true). With enableContextMenuSelector true (new in 2.0, under objects.vega, not objects.interactivity) and a datum that carries __row__, Deneb resolves the row, so Drill through, Include and Exclude act on that date. It takes a single datum only, so aggregated marks cannot resolve. There is no drill down/up (hierarchy drilling), because capabilities.json declares no drilldown. Never author enableContextMenu false on an unstamped visual: under 2.0 that hides the menu, while 1.9 reads it as 'no resolution'. Use true plus enableContextMenuSelector false instead. With the menu disabled, the spec can own right-click events.",
+    "evidence": "https://deneb-viz.github.io/docs/interactivity-context-menu (docs/interactivity/context-menu.md incl. 'Limitations': single datum only); B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md 'Authoring rule for the context menu' and Gotchas; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\deneb-2-migration.md 'What 2.0 changes on first open' item 3; deneb-viz/deneb@2.0.0.0 capabilities.json (no drilldown key)"
+   },
+   {
+    "topic": "Reading report theme colours (pbiColor and pbiColor* schemes)",
+    "supported": "yes",
+    "detail": "pbiColor(index | name, shade) returns a theme data colour by 0-based index, or a named colour: min, middle, max, negative, neutral, positive, and the aliases bad and good. shade runs from -1 to 1 and darkens or lightens the colour. Schemes: pbiColorNominal is the data colours; pbiColorOrdinal and pbiColorLinear interpolate divergent min to max, without middle; pbiColorDivergent runs min, middle, max. The colours are read live, so a report theme change updates the visual. A sequential heatmap ramp built on pbiColorLinear therefore follows the theme's divergent min/max. For a fixed brand ramp, hard-code it or drive it from a measure. An unknown name falls through to theme colour index 1. No other theme property is reachable (foreground, background, text classes, fonts).",
+    "evidence": "https://deneb-viz.github.io/docs/schemes (docs/deeper-concepts/color-schemes.md); B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md 'Theme Integration'; deneb-viz/deneb@2.0.0.0 packages/vega-runtime/src/lib/extensibility/scheme/powerbi.ts (getVegaSchemesPowerBi, getNamedColors: exactly 8 names)"
+   },
+   {
+    "topic": "Detecting a dark theme or the background colour",
+    "supported": "no",
+    "detail": "Deneb binds host.colorPalette but exposes only data, divergent and sentiment colours to specs. Background, foreground and isHighContrast cannot be reached from an expression. The Power BI-flavoured config (theme foreground for text and axes) is baked in once, statically, when a spec is created from the built-in catalog, and is not re-read at runtime. Deneb forces config.background 'transparent', so the Power BI visual or page background shows through. Workarounds: (1) set the visual background in Power BI and pick text colours that suit it; (2) feed a theme flag or hex colours into the dataset from a measure (for example a disconnected 'Mode' table with a slicer) and switch palettes in the spec. Guessing the theme from pbiColor luminance is unreliable.",
+    "evidence": "deneb-viz/deneb@2.0.0.0 packages/vega-runtime/src/lib/extensibility/scheme/powerbi.ts (getThemeFirstLevelElement/foreground used only in getPowerBiThemeBase); packages/app-core/src/catalog/vega/index.ts L28 and catalog/vega-lite/index.ts L31 (theme baked into the config at creation); packages/vega-runtime/src/lib/spec-processing/patch-config.ts (background: 'transparent'); src/index.ts L291 VegaExtensibilityServices.bind(host.colorPalette)"
+   },
+   {
+    "topic": "Container size signals and responsive sizing",
+    "supported": "yes",
+    "detail": "In 2.0 the container is the denebContainer signal (Vega) or param (Vega-Lite): an object with width, height, scrollWidth, scrollHeight, scrollTop and scrollLeft. The legacy names pbiContainerWidth, pbiContainerHeight and pbiContainer work natively on 1.9, and 2.x rewrites them textually at parse time (deprecated, removal target 3.0). denebContainer does not exist on 1.9, where a spec using it is expected to fail to parse (inferred, not reproduced). Rule: use denebContainer.* only when the visual is stamped 2.0.0.0 or later; otherwise keep the legacy names. With autosize fit, Deneb sizes an unsized spec from the container, so do not write a literal width/height. Standard Vega-Lite layouts get 'container' automatically. A calendar can derive its cell size from the container, for example min((w - labels)/53, (h - gaps)/(7 * years)). A spec that overflows the container gets Deneb overlay scrollbars, and scrollTop/scrollLeft update the signal (throttle 5 ms by default), so a tall multi-year calendar can scroll.",
+    "evidence": "B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md 'Responsive Sizing (Vega)'; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\deneb-2-migration.md 'Compatibility matrix' and 'Authoring rules during the transition' rule 1; https://deneb-viz.github.io/docs/scrolling-overflow ('Using denebContainer to Track Scrolling Events'); deneb-viz/deneb@2.0.0.0 packages/vega-runtime/src/lib/signals/deneb-container.ts"
+   },
+   {
+    "topic": "Row limit, data limit override, and whether 10 years of daily data fits",
+    "supported": "yes",
+    "detail": "The default window is 30,000 rows in 2.0 (capabilities.json dataReductionAlgorithm.window.count) and 10,000 in 1.9.1. A row is a distinct combination of grouping columns; measures add columns, not rows. 10 years x 365 days = 3,650 rows, which fits easily in both builds with several measures. Every added grouping column multiplies the rows: 8 categories x 3,650 = 29,200, which fits 2.0 only. dataLimit.override fetches more in 10,000-row batches, but only while a report is viewed; Microsoft no longer guarantees it during PDF/PPT export, so do not design around it. Supporting fields widen each row: on unstamped or migrated visuals every measure gets __format and __formatted.",
+    "evidence": "B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\capabilities.md 'Data Roles' and 'dataLimit object'; https://deneb-viz.github.io/docs/dataset (docs/getting-started/dataset.md 'Query (Row) Limits', 'Grain / Row Context'); deneb-viz/deneb@2.0.0.0 capabilities.json window.count 30000"
+   },
+   {
+    "topic": "Vega timer events and animation (playback scrubber)",
+    "supported": "partial",
+    "detail": "Vega event streams accept {'type': 'timer', 'throttle': ms}. vega-view blocks a timer only if the view's eventConfig forbids it, and Deneb 2.0.0.0 sets no eventConfig (no match in the source). So a signal such as frame = playing ? frame + 1 : frame, updated on a timer, can drive playback, with a play/pause signal toggled by a clickable mark. Vega-Lite variable params have no 'on', so Vega-Lite cannot use a timer. A scrubber can be a Vega-drawn slider (drag signals) or a bound HTML input ({'bind': {'input': 'range'}}); in 2.0 a bound input is the only Tab-focusable element in the visual. Caveats: every tick re-runs the dataflow and re-renders, so with 3,650 marks use canvas and keep per-tick work to encode updates. Deneb reports renderingFinished when the embed completes, so an export captures the initial state; make the default state paused or showing everything. A new dataset from Power BI resets signal state unless continuous view patches it (threshold at most 5,000 rows). A timer signal parsed and ran offline in Vega 6.4.0; not tested in Desktop.",
+    "evidence": "B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-pbir\\renderer\\node_modules\\vega-view\\build\\vega-view.js L239-310 (TIMER source; permit() checks view._eventConfig); grep for eventConfig in deneb-viz/deneb@2.0.0.0 src and packages: none; vega-lite-schema.json definitions.VariableParameter (bind, expr, name, react, value); docs/getting-started/keyboard.md warning 'Vega views are not keyboard-tabbable'; deneb-viz/deneb@2.0.0.0 src/app/app.tsx onRenderingFinished; docs/getting-started/dataset.md 'Continuous View'; offline C:\\Users\\timos\\AppData\\Local\\Temp\\claude\\b--VS-Code-Files-Deneb\\904b0a85-a520-41e0-8d25-0ec57fb03eb9\\scratchpad\\bench.mjs"
+   },
+   {
+    "topic": "Custom fonts (Sora or any web font)",
+    "supported": "partial",
+    "detail": "A spec can name any CSS font-family (config font, mark font), but it cannot load one. The certified build blocks every external resource, fonts included (the ALLOW_EXTERNAL_URI build flag is false), and a spec has no way to declare @font-face. Deneb bundles only DIN, registered as 'din' and 'wf_standard-font' (base64 in style/visual.less), and Segoe UI resolves on Windows clients. So 'Sora' renders only on machines with Sora installed locally; everywhere else, including Service-side export rendering, it falls back. Use a stack such as 'Sora, Segoe UI, sans-serif' and accept the fallback, or design in Segoe UI or DIN. The uncertified standalone build can fetch resources, but it loses PDF/PPT export and subscriptions.",
+    "evidence": "B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md 'Images and external resources' ('Deneb cannot fetch anything. Not an image, not a dataset, not a font'); deneb-viz/deneb@2.0.0.0 style/visual.less @font-face din / wf_standard-font; packages/vega-runtime/src/lib/extensibility/scheme/constants.ts (POWERBI_THEME_FONT_STANDARD / _TITLE stacks); bin/config-validation.ts L66-68 (ALLOW_EXTERNAL_URI only for standalone); docs/getting-started/index.md 'Standalone Version'"
+   },
+   {
+    "topic": "Keyboard navigation",
+    "supported": "partial",
+    "detail": "2.0 declares supportsKeyboardFocus. Enter moves focus into the visual, Tab cycles (and wraps) within Deneb's own UI, and Esc returns to the canvas. Vega and Vega-Lite marks, axes and legends cannot take focus; only HTML inputs created by a signal or param 'bind' can. So a calendar cannot offer arrow-key navigation between cells; bound inputs such as a year select, a month select or a scrubber range are the only keyboard route. 1.9.1 has no keyboard focus support.",
+    "evidence": "https://deneb-viz.github.io/docs/keyboard (docs/getting-started/keyboard.md 'Canvas and Visual Focus' and warning 'Vega views are not keyboard-tabbable'); B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\capabilities.md 'Supported Features' (Keyboard focus, new in 2.0); deneb-viz/deneb@2.0.0.0 capabilities.json supportsKeyboardFocus true"
+   },
+   {
+    "topic": "Screen-reader labels (aria / description on marks)",
+    "supported": "partial",
+    "detail": "Vega marks accept the aria (boolean), description, ariaRole and ariaRoleDescription encode properties; Vega-Lite has the description channel and the aria mark property. The SVG renderer writes them out as aria-label and role attributes; offline in Vega 6.4.0, 3,650 rects produced 3,650 aria-label attributes. The canvas renderer creates no per-mark DOM, so it produces no labels, which means SVG versus canvas is also an accessibility trade-off. Marks cannot take focus, so screen-reader users can only reach them in browse/virtual mode, and 3,650 labelled cells is noisy. Consider aria false on the cells, a summary description on a group or axis, and the Power BI alt text on the visual container.",
+    "evidence": "docs/getting-started/keyboard.md ('reachable only via the mouse pointer and screen reader (if the marks have been set up accordingly)'); Vega mark encoding docs https://vega.github.io/vega/docs/marks/ (aria, description); offline run C:\\Users\\timos\\AppData\\Local\\Temp\\claude\\b--VS-Code-Files-Deneb\\904b0a85-a520-41e0-8d25-0ec57fb03eb9\\scratchpad\\bench.mjs (ariaLabels 3650 in SVG output)"
+   },
+   {
+    "topic": "High contrast mode",
+    "supported": "no",
+    "detail": "Deneb does not pass host.colorPalette.isHighContrast, or the high-contrast foreground and background, to specs. pbiColor knows only its 8 names plus data-colour indexes, and the powerbi-compat shim hard-codes isHighContrast false for hosts other than Power BI. A spec therefore cannot adapt, and colours stay as authored or as the theme palette returns them. Whether pbiColor returns high-contrast colours while Windows high contrast is on is unverified.",
+    "evidence": "deneb-viz/deneb@2.0.0.0 packages/vega-runtime/src/lib/extensibility/scheme/powerbi.ts getNamedColors; packages/powerbi-compat/src/lib/theme/shim.ts L374 (isHighContrast: false); no other isHighContrast reference in src or packages; no mention of high contrast in the Deneb docs"
+   },
+   {
+    "topic": "Format pane options for report authors (template placeholders, usermeta)",
+    "supported": "no",
+    "detail": "Deneb's format pane is fixed by the objects in its capabilities.json: vega, display, dataLimit, stateManagement, editor, developer, general. A spec or template cannot add properties to it. Template usermeta v2 holds only deneb, information, datasets (the field placeholders __dataset.N__, mapped at import), interactivity and config (a string), and it allows no extra keys. So a template cannot declare user options, and options live in the spec or config: put tunables in top-level signals at the head of the spec, or in jsonConfig. Runtime options for viewers: signal/param 'bind' HTML inputs inside the visual, or data-driven options, where a disconnected table and slicer feed a measure that returns a palette name, week-start day or colour for the spec to read. The only per-visual switches authors get are the interactivity toggles (tooltips, selection, highlight, context menu), set through usermeta.interactivity or the pane.",
+    "evidence": "deneb-viz/deneb@2.0.0.0 capabilities.json objects (general, developer, display, vega, editor, dataLimit, stateManagement); B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\capabilities.md 'Template Format (v2)' ('usermeta allows no extra properties'); https://deneb-viz.github.io/docs/templates (docs/deeper-concepts/templates.md 'Dataset Placeholders')"
+   },
+   {
+    "topic": "Export to PDF / PowerPoint / subscription image rendering",
+    "supported": "yes",
+    "detail": "Deneb is AppSource-certified, and certified visuals render in Export to PowerPoint and PDF and in email subscriptions. Caveats: (1) data beyond the initial row window (dataLimit.override) is not guaranteed in an export; (2) the export captures the state at renderingFinished, meaning the spec's initial state, so brush, playback and hover states are not captured (whether a cross-filter selection shows is unverified); (3) the uncertified standalone build loses export and subscriptions; (4) canvas renders a bitmap and may look softer than SVG in an export (unverified).",
+    "evidence": "https://learn.microsoft.com/en-us/power-bi/developer/visuals/power-bi-custom-visuals-certified ('you can export them to PowerPoint, or display the visual in received emails when a user subscribes'; certification requires the Rendering Events API); https://deneb-viz.github.io/docs/dataset 'Query (Row) Limits' danger box 'Not Supported for Export to PDF/PPT'; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md 'Images and external resources' (standalone trades away export and subscriptions); deneb-viz/deneb@2.0.0.0 src/app/app.tsx onRenderingStarted/onRenderingFinished"
+   },
+   {
+    "topic": "Performance of ~400 to 3,650 rect marks, SVG vs canvas",
+    "supported": "yes",
+    "detail": "400 to 3,650 rects is comfortably within Vega's range. Offline in Vega 6.4.0 (Node, no DOM), 3,650 rects with 3 formula transforms parsed and rendered to a 561 KB SVG in about 72 ms, and 400 rects in about 19 ms; a browser DOM will cost more. SVG gives crisp text, per-mark aria and pbiPatternSVG fills. Canvas avoids 3,650 DOM nodes and is the better choice once hover or animation re-renders every mark; pair it with stateManagement.scaleToZoom (2.0, canvas only) to reduce blur. Deneb recompiles the whole spec on each data update unless continuous view patches it (dataLimit.enableIncrementalDataUpdates, incrementalUpdateThreshold default 500, hard maximum 5,000). 3,650 rows is under that ceiling, but the docs warn Power BI may suspend a slow patch. Standard levers: aggregate in DAX, bind only the fields the spec reads, and on stamped 2.0 visuals switch off unused supporting fields.",
+    "evidence": "B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\advanced-patterns.md 'Performance Engineering' levers 1-6; https://deneb-viz.github.io/docs/performance (docs/deeper-concepts/performance-considerations.md 'Selection of Renderer', 'Continuous View Thresholds'); docs/getting-started/dataset.md 'Continuous View'; offline benchmark C:\\Users\\timos\\AppData\\Local\\Temp\\claude\\b--VS-Code-Files-Deneb\\904b0a85-a520-41e0-8d25-0ec57fb03eb9\\scratchpad\\bench.mjs"
+   },
+   {
+    "topic": "Date parsing of Power BI dates and time-zone pitfalls",
+    "supported": "partial",
+    "detail": "Dates work, with pitfalls. Deneb casts dateTime fields with new Date(value.toString()), so a date arrives as a JS Date at local midnight in the viewer's browser time zone (the local-midnight part is inferred and not observed in Desktop). Use local functions: in Vega, date, day, month, year, week, timeFormat and datetime; in Vega-Lite, the default local timeUnits. utc* functions, utcFormat, 'utc' scales and VL 'utc...' timeUnits shift the day for viewers east of UTC: offline in Australia/Sydney, utcdate != date for all 3,650 rows. Do not derive day or week indexes by dividing milliseconds by 864e5 without rounding, because DST days are 23 or 25 hours; generate missing days with datetime(y, m, d + i), not by adding 864e5. Cross-filter placeholders render a date as toDate('<ISO>'), which works for range tests; == never matches, so use time(). Vega week() starts on Sunday, and the isoweek timeunit only arrived with Vega 6.3 (the 2.0 bundle), so compute Monday-start weeks by hand to stay 1.9-compatible. Bind the raw date column, not the auto date/time hierarchy (in PBIR a Column projection, not a HierarchyLevel), or the dataset gets Year/Quarter/Month/Day columns (general Power BI behaviour, not verified in Deneb). Default tooltips do not auto-format Date values.",
+    "evidence": "deneb-viz/deneb@2.0.0.0 src/lib/dataset/values.ts L12-18 (getCastedPrimitiveValue); src/lib/vega-embed/cross-filter-expressions.ts L196-217; src/lib/interactivity/tooltip.ts L91-108; offline C:\\Users\\timos\\AppData\\Local\\Temp\\claude\\b--VS-Code-Files-Deneb\\904b0a85-a520-41e0-8d25-0ec57fb03eb9\\scratchpad\\bench.mjs (utcMismatchRows 3650, tz Australia/Sydney) and datetest.mjs; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\deneb-2-migration.md 'Changes in the bundled Vega' (isoweek)"
+   },
+   {
+    "topic": "Other blocker: sparse days (blank measures drop rows)",
+    "supported": "partial",
+    "detail": "The visual's query (SUMMARIZECOLUMNS) drops rows where every measure is blank, so days with no activity never arrive in the dataset. A calendar grid needs every day. There are two options. (1) Make the measure return 0, which delivers all 3,650 rows but loses the difference between zero and blank. (2) Generate the full date grid in the spec (Vega sequence plus a formula with datetime(...)) and look up the dataset values onto it. Generated cells have no __row__, so they get no report-page tooltip, context menu or cross-filter; only real rows are interactive. This comes from standard Power BI query behaviour and was not tested with Deneb specifically.",
+    "evidence": "docs/interactivity/index.md 'Getting Data from the Model' (the SUMMARIZECOLUMNS query Power BI generates for Deneb); docs/getting-started/dataset.md 'Grain / Row Context'; docs/interactivity/tooltips.md (row context required for report page tooltips)"
+   },
+   {
+    "topic": "Other: Deneb 1.9.1 vs 2.0 during the rollout",
+    "supported": "partial",
+    "detail": "2.0.0.0 was released on GitHub on 2026-09-08. The AppSource rollout was expected around 2026-09-24 and varies by region, so some viewers may still be on 1.9.1. Tim's Desktop runs 2.0: repo commit bca7e68 notes that a 2.0 Desktop stamps 2.0.0.0 on save. The showcase generator deliberately writes 1.9.1 stamps, and all 27 Deneb visuals in B:\\VS Code Files\\Deneb\\showcase are currently stamped 1.9.1.0. Features in this study that exist only in 2.0: denebContainer, the 30k row window, keyboard focus, continuous view, scaleToZoom, enableContextMenuSelector and isoweek. A template meant to work on both builds: legacy container signals, no stamps, enableHighlight authored up front, Vega (not Vega-Lite) for advanced cross-filtering and timers.",
+    "evidence": "B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\deneb-2-migration.md 'Timeline', 'Compatibility matrix', 'Authoring rules during the transition'; gh release list -R deneb-viz/deneb (2.0.0 Latest, 2026-09-08); B:\\VS Code Files\\Deneb commit bca7e68 tools/showcase/README.md; audit of showcase visual.json developer.version (27 x '1.9.1.0')"
+   },
+   {
+    "topic": "Conflicts between the skill and the official docs/source",
+    "supported": "partial",
+    "detail": "(1) The skill's gotcha says a Vega-signal slicer will not filter the report and recommends a native slicer, while the docs' advanced mode does cross-filter other visuals. Reconciled: it cross-filters through selection IDs, up to 2,500 rows, but it is not a slicer or filter-pane filter and does not sync or persist across pages. (2) The docs say advanced options.limit is 'the same as the Data point limit setting', but the source defaults to the constant 50 and ignores the pane (the skill agrees with the source). (3) The tooltip docs say format strings apply to fields whose names match Values fields; the source auto-formats numeric fields only, not dates. (4) The docs' placeholder example uses ==, which never matches on a Date column (offline test). (5) The PBIR guide still says 10,000 rows; 2.0 is 30,000 (the skill already flags this). (6) The docs describe the __highlightStatus/__highlightComparator values for un-highlighted rows as they behave on main after the tag; the shipped 2.0.0.0 differs (the skill already flags this).",
+    "evidence": "B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\SKILL.md Gotcha 'Cross-filtering OUT of a Deneb visual does not behave like a native visual'; docs/interactivity/selection-advanced.md 'options' limit; deneb-viz/deneb@2.0.0.0 src/lib/vega-embed/cross-filter-expressions.ts getResolvedCrossFilterOptions; docs/interactivity/tooltips.md vs src/lib/interactivity/tooltip.ts getFieldsEligibleForAutoFormat; datetest.mjs; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\deneb-2-migration.md 'Docs errors and unverified claims'; B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-visuals\\references\\capabilities.md 'Special Fields'"
+   }
+  ]
+ },
+ "conv": {
+  "templateSteps": [
+   "Branch first: main on InsightfulAnalytics/Deneb has the 'Protect main' ruleset (PR only, no direct push). History uses one conventional commit per part (feat:, fix:, docs(tools):), then a PR.",
+   "Folder: templates/<category>/<slug>/ holding <slug>.json, sample-data.csv, render.json, README.md and preview.png. check-templates.mjs only finds a template whose file basename equals its folder name. Existing categories are kpi, comparison, financial, gauge and map. A new one (for example calendar) is ordered after map on the showcase unless you add it to CATEGORY_ORDER in tools/showcase/build_showcase.py line 32.",
+   "Spec body (follow kpi-line-card): $schema is https://vega.github.io/schema/vega-lite/v6.json or .../schema/vega/v6.json. Top-level config is {autosize {type fit, contains padding}, view {stroke transparent}, background transparent, font 'Segoe UI'}; Vega specs also set text, guide-label and guide-title fonts. Vega-Lite uses padding 0, data {name: 'dataset'} and no literal width or height (the checker warns). Vega reads data[0] {name: 'dataset'} and sets width and height to {signal: pbiContainerWidth} / {signal: pbiContainerHeight}. Never reference denebContainer (Deneb 1.9 cannot parse it).",
+   "Options: every option is a top-level param (Vega-Lite: value or expr) or signal (Vega: value or update), with user options first and layout params after. Layout scales from a design size through a unit param, e.g. clamp(min(width / 264, height / 235), 0.5, 4), and every size, margin and baseline is N * unit. Colours use pbiColor('good'|'bad'|'neutral'), pbiColor('min'|'middle'|'max') or pbiColor(n, shade). Only text greys stay fixed hex. Numbers use d3 formats, not pbiFormat.",
+   "Tokens: the first transforms form an alias block that copies each datum['__n__'] into an internal name (toNumber(...), time(...)). Use bracket access only: datum.__0__ fails the checker. Every declared token must be used and every used token declared.",
+   "usermeta.deneb: {build: '1.9.1.0', metaVersion: 1, provider: 'vegaLite' or 'vega', providerVersion: '6.4.1' (VL) or '6.2.0' (Vega)}. The provider must match $schema.",
+   "usermeta.information: name (max 100 chars). description (max 300) whose LAST sentence is the credit, 'Design after X (domain).' or 'Design by Timothy Osborn.', because the showcase lifts it as the page subtitle. author is the exact string 'Timothy Osborn' or 'Timothy Osborn, after X' (the checker warns otherwise; Background Designer groups by the exact string). uuid is a fresh v4, unique across the repo (checked). generated is an ISO date-time like '2026-09-25T00:00:00.000Z'. previewImageBase64PNG is added later by crop_previews.py --embed: it starts 'data:image/png;base64,', is at most 300 px on the long side and under 30 KB.",
+   "usermeta.dataset: [{key '__0__', '__1__', ... in order, name (max 30 chars, unique, no ' or backslash, and avoid . [ ] \" which Deneb rewrites to _), description (max 300), type text|numeric|dateTime|bool|other, kind column|measure|any}]. The showcase binds a numeric measure field as SUM of its column; any other kind or type binds the raw column.",
+   "usermeta.interactivity: {tooltip: true, contextMenu: true, selection: false, highlight: false, dataPointLimit: 50}. This is the house default, and the generator hard-codes selection and highlight off.",
+   "sample-data.csv: the header must be exactly the dataset names (no missing or extra columns). Keep only the rows the visual receives: the Q6 addendum says small CSVs, and the checker warns over 50 KB. Dates are ISO yyyy-mm-dd, numbers plain decimals, and an empty cell is null.",
+   "render.json: {\"width\": W, \"height\": H}, the container size for the headless render. It is also the showcase instance size when a part omits size.",
+   "README.md, same shape as the others: H1 name, one-line summary, ![Name](preview.png), then ## Fields (Name | Kind | Type | Description), ## Options (Parameter or Signal | Default | What it changes, then a second table of layout params), ## Use it (numbered Deneb import steps, the DAX pattern, field notes; a Vega template also says why it is Vega), ## Credit, and ## Licence ('MIT, see [LICENSE](../../../LICENSE). The design credit above stays with its author.').",
+   "Hygiene: strict JSON (no comments), under 400 KB including the thumbnail (Background Designer's bundle cap), and no em or en dash in any .json/.csv/.md/.txt/.py/.mjs/.dax file in the folder (the checker fails on it). Build any \\u escapes with chr(92): tool input decodes them.",
+   "Showcase part: add showcase/parts/<slug>.json = {template: 'templates/<cat>/<slug>/<slug>.json', instances: [{id: '<slug>', page: 'template', data: 'templates/<cat>/<slug>/sample-data.csv', size: [W, H], params: {}}]}. Optional variant instances (e.g. a bad-case card) take their own CSV in showcase/data/ and param overrides by name. The template page, its title box and the credit line are then generated.",
+   "Checks: cd tools; npm ci; npm run check (or node check-templates.mjs ../templates/<cat>/<slug>). This validates usermeta against tools/schema/deneb-template-usermeta-v1.json, tokens, dataset name, CSV header, size, dashes and uuid uniqueness, then compiles and runs a headless Vega view over the sample rows. Optionally npm run render -- --theme ../showcase/theme/bi-nexus.json for an SVG/PNG in tools/out/ (fonts fall back, so it is not preview quality).",
+   "Preview: py tools/showcase/build_showcase.py. Then open the showcase in Desktop (Deneb installed, secure local APIs on). cd showcase; pbir desktop screenshot \"Deneb Template Showcase.Report\" --all --scale 2 --output-dir <shots> --settle 4000. Then from the repo root: python tools/showcase/crop_previews.py <shots> --only <slug> --embed, which writes preview.png and embeds the thumbnail. Rerun npm run check.",
+   "Repo README: put the gallery cell in the empty <td valign=\"top\"></td> beside Australia Choropleth, format <a href=\"templates/<cat>/<slug>/\"><img src=\"templates/<cat>/<slug>/preview.png\" alt=\"Name\"></a><br><b>Name</b><br>One-line summary. After X. (or By Timothy Osborn.). Change 'Twelve ready-to-import' to 'Thirteen' and extend the intro list. Add a Credits table row (Designer | Templates) for any outside designer.",
+   "Downstream: the Background Designer harvest (Vault\\Projects\\Deneb\\background-designer-handoff.md) hard-codes corpus counts (withTokens, showcase counts) that move with each tokenised template, and the shape (e.g. heatmap) must be classified explicitly. Project notes go in Vault\\Projects\\Deneb\\, with a row in Vault\\Projects\\index.md, and root causes go in its LEARNINGS.md."
+  ],
+  "showcaseSteps": [
+   "The generator owns the whole output. build_showcase.py rebuilds 'Deneb Template Showcase.pbip', '.SemanticModel/' and '.Report/' from scratch on every run, so a page or visual added by hand or saved from Desktop is deleted. Change only the inputs: showcase/parts/*.json, showcase/data/*.csv, showcase/dashboard.json and showcase/theme/. The generator never writes to those.",
+   "Hard limit today: only ONE multi-visual page. An instance's page must be 'template' or 'dashboard'. dashboard.json is a single layout and always becomes page 1 (the README hero). make_background.py reads only dashboard.json and draws one fixed geometry (a navy gradient band with a curved bottom, bandLines, gridLines, a footer with an accent line). crop_previews.py writes every dashboard-kind page to showcase/dashboard.png. A second report page therefore needs generator work first. Options: a layouts list or showcase/pages/<name>.json, a new page value on instances, page order handling, a background renderer per page (or a hand-authored SVG in showcase/theme referenced by name), and a PNG per page in crop_previews (e.g. showcase/<page>.png).",
+   "Sample data: one CSV per instance in showcase/data/<instance-id>.csv (precedent: dash-*.csv), header = the template's dataset names (extra columns are ignored with a warning). The generator writes each as a DAX calculated table named after the instance id: partition = calculated, source = DATATABLE(...), typed from usermeta.dataset (text STRING, numeric DOUBLE, dateTime DATETIME, bool BOOLEAN, empty cell BLANK ()). Dates are shown yyyy-mm-dd unless a value has a time. Numeric measure fields get an explicit measure 'Field (instance-id)' = SUM(...) with the raw column hidden. Column fields bind with summarizeBy none. The model is compat level 1606, en-US, auto date/time off, with no relationships and no date table. So every visual has its own isolated table, and a page-wide slicer cannot filter across visuals.",
+   "Visuals from parts: add instances with page 'dashboard' to each template's part file, then add a slot per instance id under the layout's 'visuals': {x, y, w, h, alt, container: {background, border: {color, width, radius}, shadow}, params}. Slot params override the part's params for that page only (the Duggan page blanks in-visual titles this way). Each Deneb visual gets the template body without $schema or usermeta; config goes into jsonConfig with its font forced to Arial (any Segoe UI value is swapped too). Then params are applied by name, tokens are replaced by the dataset names, projections get displayName = the dataset name, stamps are Deneb 1.9.1 and the provider version, tooltips and context menu are on, selection and highlight off, render mode SVG, and container title, background, border, shadow and padding are off unless the slot turns them on.",
+   "Non-Deneb content: the generator supports only textboxes (layout 'text': id, x, y, w, h, paragraphs of runs {text, style, size in pt, color, bold, italic, font}, optional align) and images from showcase/theme (layout 'images'). Named colours resolve through layout 'colors', then the theme's good, bad and neutral. There are no native cards, charts, slicers, shapes or buttons. Anything else (panels, rounded cards, nav bars, dividers) goes into the background SVG.",
+   "Background SVG: edit the 'background' block and run py tools/showcase/make_background.py, which writes showcase/theme/<page.background> and skips the write when unchanged. The generator registers it as a RegisteredResources image and sets it as the page background (scaling Fill, transparency 0). A page layout different from the Duggan band/curve/grid needs make_background.py extended or a second renderer.",
+   "Theme: showcase/theme/bi-nexus.json is the one custom theme, registered over the Fluent2-CY26SU07 base in tools/showcase/assets/BaseThemes. Power BI allows one theme per report, and decision Q18 locked 'no colour overrides anywhere' (palette override rejected). The Q14 precedent for a recreated dashboard: keep the original layout but restyle it in BI Nexus colours, put the BI Nexus logo where the original's mark was, and credit the designer in a footer textbox and the README caption.",
+   "Page: layout 'page' gives displayName, width, height (the Duggan page is 1600 x 900) and the background file. displayOption is hard-coded to FitToPage and section verticalAlignment to Top.",
+   "Build and verify: py tools/showcase/build_showcase.py and read every WARNING (missing slots, unknown params and bad CSVs are skipped, not fatal). Then cd showcase; pbir validate \"Deneb Template Showcase.Report\". Check that the first line reads 'Validating Deneb Template Showcase' (SCHEMA_DEGRADED is a pbir cache gap). Run pbir desktop list so only one Desktop instance holds the project. Open the .pbip; no refresh is needed because DATATABLEs calculate on open. Then pbir desktop screenshot ... --all --scale 2 --settle 4000 and python tools/showcase/crop_previews.py <shots> --only dashboard (or the new page once supported).",
+   "LEARNINGS that bite: (1) use DATATABLE, never M #table. 27 M partitions spawned a Mashup container each (70 to 100 MB) and ran Windows out of commit memory on refresh. Write numbers in plain decimal form, dates as \"yyyy-mm-dd\" strings, and BLANK () for empty. (2) Captures are the canvas at fit-to-page zoom, not the page. Crop maths finds the collapsed Filters pane strip by its exact colour #F8FAFC, then computes zoom and centring. (3) pbir silently validates the connected report (global 'netflix' profile or a .pbir/active file) when given a relative forward-slash path, and exits 0, so cd into showcase/ or pass absolute paths. (4) pbir desktop screenshot with one page path always renders page 1, so use --all. (5) Tool input decodes \\uXXXX escapes. (6) A Desktop save rewrites the generated files, and Deneb 2.0 stamps 2.0.0.0 plus stateManagement, so rerun the generator after a save."
+  ],
+  "creditsConvention": "Two forms. 'After X': Tim's own spec that reimplements someone else's design. 'By Y': an original design ('By Timothy Osborn.'; the map adds 'boundaries from Natural Earth'). MIT copyright is 'Timothy Osborn' for the whole repo. Because MIT does not force design credit, the credit lives in the files (Q3). It is written in five places:\n(1) usermeta.information.author: 'Timothy Osborn' or 'Timothy Osborn, after Gerard Duggan' / 'after Daniel Marsh-Patrick and Robert Mundigl' / 'after Ruben Van de Voorde (Tabular Editor)'. Q15 requires the exact string because Background Designer groups by it.\n(2) The last sentence of usermeta.information.description: 'Design after Gerard Duggan (dg-analysis.com).' or 'Design by Timothy Osborn.'. build_showcase.py credit_line() lifts that sentence as the template page subtitle when it matches after|design|designed|credit|based on|inspired|original, and otherwise falls back to 'Design by <author>.'.\n(3) The template README '## Credit' section: designer and source with links (site, video, article, author page). It says the template is 'an independent Deneb reimplementation ... with its own spec', notes where copyright stays (TE: 'The article and its images remain Tabular Editor ApS copyright'), then 'Rebuilt as a Deneb template by Timothy Osborn.' and a 'What changed from the original:' bullet list (fonts, theme colours, maths differences, any nudged sample numbers). Its '## Licence' section says 'The design credit above stays with its author.'.\n(4) The repo README gallery caption ends 'After X.' or 'By Timothy Osborn.', and the README '## Credits' table (Designer | Templates) links each outside designer. It closes with Deneb/Vega credits and a Licence note that design credits stay with their authors.\n(5) For a recreated dashboard: a footer textbox on the page ('design: Gerard Duggan, dg-analysis.com') and the README hero caption ('Dashboard design: Gerard Duggan').\nA courtesy credit is given even when none is required (Natural Earth).",
+  "courtesyPrecedent": "Decision Q5 in template-library-design.md covers the Tabular Editor 'full make-over' KPI card. tabulareditor.com's terms claim copyright on all site material and bar commercial reuse ('consultancy work'), and Tim is a consultant publishing under his own name.\n\nTim chose to build it anyway, but from scratch:\n- his own Vega-Lite spec and his own invented sample data (he did not reuse even the daily-gap numbers reconstructed from their embed);\n- none of their images or embed code;\n- a substitute font (Segoe UI for Albert Sans, since Deneb cannot load web fonts);\n- a credit to the author and the publisher ('after Ruben Van de Voorde (Tabular Editor)') with links, in the author field, the description, the README and the credits table;\n- a README statement that it is an independent reimplementation and that the article and its images stay Tabular Editor ApS copyright;\n- a list of every deviation.\n\nHe also had Claude draft a courtesy note (Vault\\Projects\\Deneb\\tabular-editor-courtesy-note.md, status 'draft, for Tim to send', to the author or sales@tabulareditor.com). The note is upfront about how the card was made and offers to change the wording or take it down.\n\nRejected options:\n- Asking permission first and holding the card back (could stall the work).\n- An 'inspired by' card that is visibly different (dodges the ask).\nThe design doc frames design ideas as generally less protected than code or images, notes that from-scratch reimplementation is Deneb community norm (as with the Marsh-Patrick/Mundigl bullet), and says 'This is not legal advice.'\n\nRelated precedent (Q14, Duggan): a recreated report page keeps the original layout but uses BI Nexus colours and theme, and replaces the original's logo (the Northwind mark) with the BI Nexus logo. Sample numbers are reconstructed to match on-screen values, and every nudge is documented.\n\nLumeric Visuals appears to sell custom visuals. If so, a free MIT copy is a sharper case than a blog article, so this precedent points to checking their terms, a from-scratch spec, a visible credit, a courtesy note, and no copied branding.",
+  "specLanguageUsedByRepo": "Vega-Lite is the default. Nine of the twelve templates are Vega-Lite v6 (providerVersion 6.4.1): kpi-line-card, kpi-gap-sparkline-card, bullet-chart, bullet-prior-period, both overlap-bar lollipops, pl-accounts-statement, pl-odd-rows and half-donut-gauge. They are single layered views with computed positions and params that scale by 'unit', not facet or concat.\n\nThree are Vega v6 (providerVersion 6.2.0), each with a stated reason in its README:\n- kpi-bar-card: the inline MoM arrow must follow a label of measured rendered width, and the column and month label thinning needs text-width measurement. Only Vega can do that (reactive geometry).\n- pl-monthly-grid: the original spec was Vega. It builds its own row registry and total datasets and places every cell with signals, including a scroll floor.\n- australia-choropleth: the original was Vega, and its labels need Vega. They are placed from projected anchor points and measured against each state's projected area to decide inside or outside, and the tooltip names the value after the legend title.\n\nRule in practice: use Vega only when Vega-Lite cannot do the job, and say why in the README.\n\nBoth kinds target Deneb 1.9.1 (build stamp 1.9.1.0) and also run on 2.0. They use pbiContainerWidth and pbiContainerHeight, never denebContainer. The tools pin vega 6.4.0 and vega-lite 6.4.3, which is the Deneb 2.0.0.0 bundle.",
+  "tools": [
+   "cd tools && npm ci   (once; node_modules is present on this machine)",
+   "npm run check   = node check-templates.mjs over every template under templates/. Verified 2026-09-25: 12/12 pass. Exit code 1 on any error; warnings do not fail.",
+   "node check-templates.mjs ../templates/<cat>/<slug>   one folder or one template .json",
+   "npm run render   = node check-templates.mjs --render out: also writes tools/out/<slug>.svg and .png. Extra flags: --theme ../showcase/theme/bi-nexus.json (pbiColor stubs read that theme; default is the Power BI palette), --width/--height (default 600x400, overridden by render.json), --scale (default 2). The headless PNG uses fallback fonts, so it is a sanity render, not a preview.",
+   "py tools/showcase/make_background.py [--repo <copy>]   draws showcase/theme/<page.background> SVG from dashboard.json 'background'",
+   "py tools/showcase/build_showcase.py [--quiet] [--repo <copy>]   regenerates the PBIP and writes tools/showcase/out/capture-map.json",
+   "py tools/showcase/build_showcase.py --check   writes nothing, exits 1 if the output is out of date. On this checkout it currently reports 108 files out of date because of line endings only (see risks).",
+   "cd showcase; pbir validate \"Deneb Template Showcase.Report\"   (always from inside showcase/, or with an absolute path)",
+   "cd showcase; pbir desktop list; pbir desktop screenshot \"Deneb Template Showcase.Report\" --all --scale 2 --output-dir <shots> --settle 4000",
+   "python tools/showcase/crop_previews.py <shots> [--embed] [--only <slug>|dashboard]   (needs Pillow): writes preview.png per template and showcase/dashboard.png, and with --embed puts the thumbnail in usermeta",
+   "tools/pl/ (gen_*_spec.py, verify_*.mjs, harness.mjs): P&L-only generators and numeric gates, not needed for a new template",
+   "Skills: custom-visuals:deneb-visuals (spec authoring rules), custom-visuals:deneb-pbir (extract or embed a spec in visual.json and offline-render it, audit build stamps)"
+  ],
+  "risks": [
+   "The report page is the main blocker. The generator supports exactly one multi-visual page (dashboard.json, always page 1, already the Gerard Duggan recreation and the README hero). make_background.py draws only that band/curve/grid geometry, and crop_previews.py writes every dashboard-kind page to showcase/dashboard.png, so a second one would overwrite the hero image. A page mimicking a web mockup needs build_showcase.py, make_background.py and crop_previews.py extended first. Hand-built pages are deleted on the next build.",
+   "'Looks the same' conflicts with locked decisions. There is one theme per report (BI Nexus), and Q18 locked 'no colour overrides anywhere'. The Q14 precedent restyles a recreated dashboard into BI Nexus colours and swaps the original logo. Matching the site's palette and branding would reopen Q18, or need a separate project.",
+   "Fonts: the generator forces Arial into every Deneb config and swaps any Segoe UI value. Template files ship Segoe UI. Deneb cannot load web fonts (the TE precedent swapped out Albert Sans), and textboxes can only use fonts installed on the machine. A web mockup's font (Inter or similar) will not match exactly.",
+   "Web chrome (sidebars, nav bars, rounded cards, icons, hover states, KPI tiles) has no native support. The generator emits only Deneb visuals, textboxes and images. Cards must come from the background SVG, from slot container border radius and shadow, or from Deneb. Slicers, buttons and native visuals are not generated. And because each instance gets its own unrelated table, a shared date slicer cannot filter the whole page.",
+   "Page size and capture: displayOption is hard-coded to FitToPage. A tall scrolling web page gets shrunk to fit the canvas, and the Desktop capture (scale 2 of the fitted canvas) then gives a low-resolution crop. Keep 16:9 (e.g. 1600 x 900). Also, crop_previews finds the canvas edge by scanning in from the right while pixels equal #F8FAFC (the Filters pane). A mockup with a slate-50 #F8FAFC page background, very common in web designs, would break the crop maths.",
+   "Big sample tables: build_showcase writes one DATATABLE line per row into the TMDL. 10k rows gives a TMDL of roughly 0.4 to 0.6 MB with heavy git diffs, and the checker warns when sample-data.csv is over 50 KB. Q6 says sample CSVs must hold only the rows the visual receives. Deneb receives the first 10,000 rows unless its data limit override is on, and the generator does not set it. Rendering is hard-coded to SVG, and 10k rect marks in SVG are slow. A calendar heatmap should ship one or two years of daily rows (365 to 731 rows, about 10 to 20 KB).",
+   "Calendar heatmap spec shape: Vega-Lite autosize fit works only for single or layered views, and the checker only sizes single views. A 12-month facet or concat calendar would not fit the container. The repo pattern is one layered Vega-Lite view with x and y computed from week and weekday offsets plus unit-scaled params, or Vega if labels need measured text. Watch date handling: the checker parses 'yyyy-mm-dd' as local midnight, so mixing utc* and local time functions can shift days by the AEST offset.",
+   "Interactivity: selection and highlight are false in usermeta by house convention, and hard-coded off in build_showcase.deneb_visual. A clickable calendar that cross-filters would need usermeta and generator changes.",
+   "IP and courtesy: lumericvisuals.com appears to sell custom visuals. Republishing a close copy of a commercial product as a free MIT template, and copying its report's look, is riskier than the TE blog precedent. Follow Q5: check their terms, write the spec from scratch with invented data, copy no images, code or branding, credit 'after Lumeric Visuals' in all five places, and draft a courtesy note before publishing. Not legal advice.",
+   "build_showcase.py --check is not a usable gate on this checkout. It reports '108 files out of date' because core.autocrlf=true gives CRLF working copies while the generator writes LF, a line-ending-only difference. A real build rewrites them all as LF (git content unchanged). Judge a change by the build's 'written:' list or git diff, not by --check.",
+   "Hygiene gates: the checker fails on any em or en dash in any text file in the template folder, and the build warns on dashes in the output. Tool input decodes \\uXXXX escapes, so build them with chr(92). The spec plus thumbnail must stay under 400 KB (Background Designer cap). dataset names are capped at 30 chars and descriptions at 300.",
+   "Previews need Power BI Desktop with Deneb installed and the secure local APIs preview on (ON on this machine), with one Desktop instance on the project. Headless renders use fallback fonts and are not README quality. A Desktop with Deneb 2.0 re-stamps visuals on save, so rerun the generator after any save.",
+   "Downstream: a 13th template moves the hard-coded test counts in Background Designer (withTokens, showcase counts) and needs an explicit shape classification (heatmap) in its catalogue rebuild. The handoff doc in Vault\\Projects\\Deneb would need updating."
+  ]
+ },
+ "proto": {
+  "specPath": "prototype\\calendar-heatmap.json",
+  "pngPath": "prototype\\calendar-heatmap.png",
+  "dataPath": "prototype\\sample-data.csv",
+  "specLanguage": "Vega 6 (parsed and rendered with vega 6.4.0, the Deneb 2.0.0.0 bundle). Separate jsonConfig in config.json",
+  "renderCommand": "PowerShell: & \"prototype\\render.ps1\"  (runs prep.py, which merges config.json plus a white background into _render-spec.json because render.mjs has no --config flag, then: node \"B:\\VS Code Files\\PBI_Agentic_Dev\\plugins\\custom-visuals\\skills\\deneb-pbir\\renderer\\render.mjs\" \"<prototype>\\_render-spec.json\" \"<prototype>\\calendar-heatmap.png\" --data \"<prototype>\\sample-data.json\" --provider vega --width 1200 --height 330 --scale 1 --deneb 1.9, then browser_render.py (headless Edge render plus interaction replay) and compare.py (target / render.mjs / Edge stacked into compare.png))",
+  "iterations": 4,
+  "matches": [
+   "Grid: 53 week columns x 7 weekday rows, Monday first. The weekday comes from day(date) and the week index from dayofyear(date) plus the Jan 1 weekday, both computed inside the spec. The year is read from the Date field and nothing is precomputed in the data",
+   "Capsule cells: cornerRadius = cellW/2. The gap is 0.21 x cell width on both axes (target: 3.16 / 15 px). Cell height is capped at 1.72 x width, the target's aspect. At 1200x330 the grid is height-bound, so cells come out about 17 x 27 px (aspect 1.6)",
+   "Colours are the exact five hexes from heatmap.html: #e8e3f3, #c6bede, #9c90bc, #746998, #504a67. Empty is #f3f3f4 (sampled #f3f3f3). A quantize scale over [0, max] gives 5 equal-interval classes. This reproduces the target's bin shape (prototype 40/121/88/35/6 vs target 37/106/93/45/8), which shows the target itself uses equal-interval bins, not quantiles",
+   "Empty days are rendered, not dropped: an in-spec sequence builds the full year and looks up each day's dataset row, so all 75 blanks draw in the empty colour. That covers both kinds of blank in the data: 72 missing weekend rows and 3 holiday rows with null Sales",
+   "Weekend rows come out mostly empty or lightest-bin, like the target",
+   "Month labels Jan, Mar, May, Jul, Sep and Nov sit above the column holding the 1st of each month. 10px, #716d78",
+   "Weekday labels M, W, F and S sit left of the frame. 10px, #8d8a92",
+   "The peak day (Wed 17 Dec) gets a wider near-circular pill with a 2.5px #17151d ring. It lands on the W row near the right edge, as in the target",
+   "Thin rounded frame around the grid: 1px #ebeaee, radius 8, 4px inner padding, inset from the right edge like the target",
+   "Header: 'Sales' is 16px semibold #17151d. The muted 'by Order Date' is placed off the title's measured bounds using Vega reactive geometry. '1.33M' is right-aligned via pbiFormatAutoUnit(total, '#,0.00')",
+   "Legend bottom-left: 'Less', five 11px swatches (radius 2.5, 14px pitch), 'More'. Geometry sampled from the target",
+   "Synthetic data totals exactly 1,330,000, with weekdays rising to a December peak of 11,620",
+   "Checks passed: the spec audits clean (deneb_spec.py audit: parses, legacy container signals only, no __identity__ or __key__) and renders under both --deneb 1.9 and --deneb 2.0"
+  ],
+  "gaps": [
+   "RENDERER ARTEFACT, NOT DENEB: render.mjs ships without the node canvas package, so Vega estimates text widths (0.8 x fontSize per character) and librsvg picks the font weights. In calendar-heatmap.png, 'by Order Date' therefore sits about 25px too far right. The headless Edge render (calendar-heatmap-browser.png) measures text the way Deneb does inside Power BI and places it correctly",
+   "DENEB/POWER BI LIMIT (minor): the target's custom web font cannot be loaded, because Deneb cannot fetch anything. The prototype uses Segoe UI, so glyph shapes and weights differ slightly",
+   "DENEB LIMIT: the target's staggered column-reveal animation and the peak-ring pop cannot be reproduced. Vega has no enter transitions or CSS animation",
+   "NOT A LIMIT, PBIR SETTING: the white rounded card with its soft shadow is the Power BI visual container (background, rounded corners, shadow), set in visual.json. It is not part of the spec",
+   "POLISH: the target uses a rolling 52-week window (364 days, always a full rectangle). The prototype draws calendar 2025, which needs 53 columns. Mon-Tue of week 1 and Thu-Sun of week 53 are drawn as faint ghost pills behind the showOutsideDays toggle. A rolling-52-weeks mode is a formula change",
+   "POLISH (deliberate): the target spreads M/W/F/S evenly top to bottom, so its labels drift off their rows. The prototype centres them on rows 0, 2, 4 and 6",
+   "POLISH: in a container taller than the capped cell aspect needs, the spare height collects below the legend (visible in compare-1to1.png at 1080x362). The block could be vertically centred instead",
+   "POLISH: the website's 'Contrast checks out 8.35:1' chip is marketing chrome and is not drawn. It would be a single text mark",
+   "POLISH / HOUSE RULE: the ramp is hardcoded hex in a 'palette' signal to match the target. House style prefers theme colours, e.g. pbiColor(0, shade) steps",
+   "POLISH: the title and subtitle are hardcoded signals ('Sales', 'by Order Date'). A template would take them from the field display names",
+   "UNVERIFIED IN DESKTOP: how the Date column arrives (Date object, number or string, and its timezone). The spec wraps it in toDate() and builds both the lookup key and the filter the same way, but a UTC-midnight value in a negative-offset timezone would shift days by one. Check it in the Deneb debug Source tab",
+   "UNVERIFIED IN DESKTOP: whether Deneb accepts a pbiCrossFilterApply filter string with no _{Field}_ placeholders. The docs say the filter is any Vega predicate over dataset, and the headless replay matched the expected rows, but it has not been run against the real host"
+  ],
+  "interactivityWired": "Built on Deneb's advanced selection mode, which is Vega-only and is why the spec is Vega, not Vega-Lite. PBIR must set objects.vega enableSelection true, selectionMode 'advanced', enableTooltips true, enableContextMenu true and enableContextMenuSelector true. The signals:\n1. downIdx and headIdx: both set to datum.idx on '@cell:mousedown'.\n2. headIdx follows the drag on '[@cell:mousedown, window:mouseup] > @cell:mouseover'.\n3. Both reset to null on 'view:mousedown[!event.item || event.item.mark.name !== \\'cell\\']'.\n4. dragging: true on cell mousedown, false on window:mouseup.\n5. selLo and selHi: min and max of downIdx and headIdx.\n6. rangeFilter: builds the predicate string 'inrange(time(toDate(datum[\"Date\"])), [<start of lo day ms>, <end of hi day ms>])'.\n7. pbiCrossFilterSelection on 'view:mouseup': downIdx == null ? pbiCrossFilterClear() : pbiCrossFilterApply(event, rangeFilter, {limit: 400}).\nA single click is a one-day range. A drag selects a contiguous date range in calendar order, not a rectangle. Ctrl or Shift add to the selection through Deneb's default multiSelect keys. A click on the background clears.\nFeedback: while dragging, cells outside [selLo, selHi] drop to 0.28 opacity. Once Power BI applies the filter, each calendar day reads __selected__ from its looked-up dataset row (field 'sel'). The anySelected signal, fed by a selectedRows dataset, then dims every cell that is not 'on'. Each day also takes __row__ from its matched row, so tooltips and the context menu resolve (blank days have none). Tooltip: date plus pbiFormat(Sales, '#,0') or '(blank)'. Hovering a cell shows an ink outline.\nReplayed in headless Edge (browser_render.py) with pbiCrossFilterApply and pbiCrossFilterClear shimmed to record their calls:\n- Dragging 7 Jul to 20 Aug produced one apply on mouseup, whose filter matched 36 dataset rows (7 Jul to 20 Aug).\n- Clicking the peak matched 1 row (17 Dec).\n- Clicking the background produced one clear.\nThe drag preview is in calendar-heatmap-drag.png. None of this has been run inside Power BI Desktop.",
+  "notes": "Verdict: yes. Deneb can reproduce this visual very closely: grid geometry, capsule cells, the exact ramp, empty days, labels, peak ring, frame, header, total, legend, and a click or drag date-range cross-filter. The only real Deneb limits are the web font and the entry animation. Everything else is polish or PBIR container formatting.\n\nFiles, all in prototype\\:\n- calendar-heatmap.json: the spec. It keeps a root $schema for standalone use; embed strips it.\n- config.json: the jsonConfig (autosize fit, transparent background, Segoe UI).\n- gen_data.py: writes sample-data.csv and sample-data.json (renderer rows with local-midnight date-times and __row__).\n- prep.py, render.ps1, browser_render.py, compare.py: the render pipeline.\n- calendar-heatmap.png: the required render from the deneb-pbir renderer.\n- calendar-heatmap-browser.png: the same spec in headless Edge, with real text measurement.\n- calendar-heatmap-drag.png: the drag-select preview state.\n- compare.png: target card scaled to 1200 wide, above the render.mjs and Edge renders.\n- compare-1to1.png: target vs Edge render at the target card's native 1080x362.\n\nContainer signals: the spec uses the legacy pbiContainerWidth and pbiContainerHeight (padding 0) because no target report is confirmed on Deneb 2.0. It works on 1.9 and on 2.x, which rewrites them at parse time.\n\nThe four iterations:\n1. Base spec.\n2. Faint ghost pills for out-of-year days so the grid is a full rectangle. Semibold total.\n3. Cell aspect capped at 1.72, with the frame and legend following the grid instead of stretching to the container height.\n4. Header type sizes.\n\nNo repo was touched. The deneb-pbir renderer and scripts were only executed, never edited."
+ },
+ "assess": {
+  "visualMatrix": [
+   {
+    "id": "V01",
+    "feature": "Calendar grid: weeks as columns, Monday top row",
+    "verdict": "full",
+    "how": "Vega rect marks at x = week index, y = (day(date) + 6) % 7, both computed in-spec from the Date field (prototype done). Prototype draws a calendar year (53 columns plus faint ghost pills). Add a mode signal for the mock's rolling 52-week window (364 cells, start = latest date minus 363 days snapped to Monday). Grid centred in a 1px #17151d0e r11 well rect.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V02",
+    "feature": "Capsule cells (Round)",
+    "verdict": "full",
+    "how": "cornerRadius = cellW / 2, height = 1.724 x width (prototype caps the aspect at 1.72).",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V03",
+    "feature": "Square cells and the Round to Square shape control",
+    "verdict": "full",
+    "how": "A shape signal 0..1 interpolates cornerRadius from w/2 down to a fixed 3px, optionally coupled to the gap so high density drops the pill. The look is exact; the slider becomes a top-level signal (or an optional bound range input inside the visual), not a format-pane slider (see V42).",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V04",
+    "feature": "Density / gap control",
+    "verdict": "full",
+    "how": "gap signal in px (3.16 Balanced, 1 Dense, 2 to 5 elsewhere) or a named density preset. Prototype uses gap = 0.21 x cell width; switch to absolute px to match the mock.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V05",
+    "feature": "Height-driven cell size, derived week count",
+    "verdict": "full",
+    "how": "Signals from pbiContainerWidth/Height: h = (innerH - 6g) / 7, w = 0.58h, weeks = min(52, floor((innerW + g) / (w + g))); when 52 fit, shrink the well and centre it. Prototype does height-bound sizing with an aspect cap but not the week truncation, and spare height pools below the legend. Decide which weeks truncation keeps (the mock never shows it; latest N is the sensible choice).",
+    "effort": "M",
+    "lens": "rendering"
+   },
+   {
+    "id": "V06",
+    "feature": "Colour bins: 5 steps, 3 to 9, or continuous",
+    "verdict": "full",
+    "how": "quantize scale over [0, max] with a steps signal 3..9 (ramp resampled by interpolating the 5 anchor hexes); linear scale for 'continuous'; a Vega quantile scale if a true quantile option is wanted. Prototype counts 40/121/88/35/6 vs target 37/106/93/45/8, which shows the target is equal-interval despite its 'quantile' label.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V07",
+    "feature": "Blank days render as empty, never zero",
+    "verdict": "full",
+    "how": "SUMMARIZECOLUMNS drops blank-measure days, so the spec generates every date (sequence + datetime(y, m, d + i)) and looks up dataset rows; unmatched days fill #17151d0d (#f3f3f3 on white); 'Show days with no data' off = opacity 0. Prototype draws all 75 blanks. Caveat: generated blank cells carry no __row__, so no page tooltip, context menu or cross-filter on them.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V08",
+    "feature": "Peak-day ring",
+    "verdict": "full",
+    "how": "Second rect filtered to the argmax day at x+0.9, y+0.9, w-1.8, h-1.8, stroke 1.8 ink (#17151d light, #f6f4fa dark), same cornerRadius, fill unchanged. Prototype currently draws a wider near-circular pill with a 2.5px ring (copies the product-page bug); switch to the home-page inset ring. Toggle = boolean signal.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V09",
+    "feature": "Month labels and month separators",
+    "verdict": "full",
+    "how": "Text marks 10px #716d78 above the column holding each month's 1st (prototype; better than the mock's evenly spaced sixths, which can be copied via a signal if exact mimicry is wanted). Separators (toggle exists, never drawn by Lumeric) = stepped path along month boundaries.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V10",
+    "feature": "Weekday labels M, W, F, S",
+    "verdict": "full",
+    "how": "Text marks on rows 0, 2, 4, 6 (prototype centres them on the rows; the mock's space-between lands on the same rows). Letters rotate with week start.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V11",
+    "feature": "Less / More legend",
+    "verdict": "full",
+    "how": "Done in prototype: 'Less', 11px r3 swatches, 'More'. Swatch count follows the steps signal; toggle signal.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V12",
+    "feature": "Header: title, subtitle, total",
+    "verdict": "approximate",
+    "how": "Text marks; subtitle placed off the measured title bounds with Vega reactive geometry (prototype); total via d3 format '.3~s' (house rule: d3, not pbiFormat); title can default to the bound field name through the token string. Compromise: Sora cannot load, so Segoe UI Semibold (and the showcase generator forces Arial).",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V13",
+    "feature": "Live contrast readout chip",
+    "verdict": "full",
+    "how": "WCAG ratio computed in a Vega expression from rgb(hex).r/g/b of the deepest step vs the well colour (8.35:1 light, 12.00:1 dark); green circle symbol + check path + mono text. Not drawn in the prototype yet. The well colour must be known in-spec because Deneb cannot read the canvas background.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V14",
+    "feature": "Selection readout chip ('Filtered to week 29')",
+    "verdict": "full",
+    "how": "After Power BI applies the selection, rows carry __selected__ 'on'; a selectedRows dataset yields min/max date, chip text = week number or date range. Depends on V15 working in Desktop.",
+    "effort": "S",
+    "lens": "interactivity"
+   },
+   {
+    "id": "V15",
+    "feature": "Every cell is a slicer: click to filter, rest dims to .24",
+    "verdict": "approximate",
+    "how": "Vega advanced selection (objects.vega enableSelection true, selectionMode 'advanced'), pbiCrossFilterApply per click, cells not 'on' at opacity .24. Wired in the prototype and replayed in headless Edge with shims; never run in Desktop. Compromises: it is a cross-filter by selection IDs, not a slicer or filter-pane filter (no persistence, no cross-page sync); filter vs highlight on other visuals is set in Edit interactions; blank generated days are not clickable; house usermeta and build_showcase.deneb_visual hard-code selection off.",
+    "effort": "M",
+    "lens": "interactivity"
+   },
+   {
+    "id": "V16",
+    "feature": "Drag for a date range",
+    "verdict": "approximate",
+    "how": "Top-level downIdx/headIdx signals on @cell mousedown/mouseover, one pbiCrossFilterApply on view mouseup with an inrange(time(...)) predicate (prototype, limit 400; set options.limit up to 2500). Range travels as row identities capped at 2,500 (about 6.8 years of days); no true 'between' filter; Vega only (VL interval params cannot call apply); unverified whether Deneb accepts a filter string with no _{Field}_ placeholder.",
+    "effort": "M",
+    "lens": "interactivity"
+   },
+   {
+    "id": "V17",
+    "feature": "Ctrl-click to add",
+    "verdict": "full",
+    "how": "Deneb's default multiSelect keys ['ctrl','shift'] in advanced mode; set options.limit explicitly (omitted = 50, ignoring the pane value).",
+    "effort": "S",
+    "lens": "interactivity"
+   },
+   {
+    "id": "V18",
+    "feature": "Cross-filter and cross-highlight both ways",
+    "verdict": "approximate",
+    "how": "Inbound filter removes rows, which the generated grid then draws as empty (indistinguishable from no-data unless styled differently). Inbound highlight: enableHighlight true, dim cells by Sales__highlight / Sales, test __highlight for null (__highlightStatus is wrong for null rows in 2.0.0.0); author enableHighlight before the first 2.0 open. Generator hard-codes highlight off.",
+    "effort": "M",
+    "lens": "interactivity"
+   },
+   {
+    "id": "V19",
+    "feature": "Report page tooltips",
+    "verdict": "approximate",
+    "how": "Each generated day copies __row__ from its matched row (prototype does); tooltip page with visualTooltip.type 'Canvas'. Default tooltip built with timeFormat + pbiFormat (Date values are not auto-formatted). Blank days fall back to the default tooltip only.",
+    "effort": "S",
+    "lens": "interactivity"
+   },
+   {
+    "id": "V20",
+    "feature": "Drill-through (Day detail)",
+    "verdict": "full",
+    "how": "enableContextMenu true + enableContextMenuSelector true (2.0 only, under objects.vega) resolves the right-clicked day's __row__, so Drill through works on real days. 1.9.1 viewers get the menu without row resolution; no drill down/up (Deneb declares no drilldown).",
+    "effort": "S",
+    "lens": "interactivity"
+   },
+   {
+    "id": "V21",
+    "feature": "KPI row inside the visual",
+    "verdict": "full",
+    "how": "aggregate/joinaggregate transforms for total, daily mean, peak, best month and over-target count; five-cell bordered strip of rect + text marks behind a toggle signal. Settle mock contradictions first (365 days vs 364 grid, 3.6k vs 3.6K).",
+    "effort": "M",
+    "lens": "rendering"
+   },
+   {
+    "id": "V22",
+    "feature": "Month totals strip",
+    "verdict": "full",
+    "how": "aggregate by month, 12 rect marks r3 coloured from the ramp, labels Jan..Dec 9.5px, toggle signal. Use real data heights (the mock's always-rising bars contradict 'best month Oct').",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V23",
+    "feature": "Goal / target line and performance colouring",
+    "verdict": "approximate",
+    "how": "Lumeric never draws it, so the look is invented: optional Target field or a 'target = 80% of mean' signal; over-target days get an outline or a pbiColor good/bad or divergent ramp; KPI count; a rule on the month totals strip.",
+    "effort": "M",
+    "lens": "rendering"
+   },
+   {
+    "id": "V24",
+    "feature": "Day markers",
+    "verdict": "approximate",
+    "how": "Invented look: optional Marker field drives a small symbol mark centred in marked cells. Claimed only by Lumeric.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V25",
+    "feature": "Longest streak",
+    "verdict": "approximate",
+    "how": "window transform over the generated day sequence (run id = idx minus running count of active days) finds the longest run; show as an outline around the run or a KPI. No Lumeric treatment to match.",
+    "effort": "M",
+    "lens": "rendering"
+   },
+   {
+    "id": "V26",
+    "feature": "Value labels in cells",
+    "verdict": "full",
+    "how": "Text mark per cell, shown only when cell height is at least about 15px, compact d3 format, white text on the two darkest bins.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V27",
+    "feature": "Race playback with scrubber",
+    "verdict": "approximate",
+    "how": "Vega timer event stream drives a frame signal, clickable play/pause mark, scrubber as a drawn drag slider or bound range input; colour domain fixed to full-year max; days after the playhead empty; chip text. Compromises: 'the report follows the playhead' only by firing a cross-filter per step (not recommended); export captures the initial state; every tick re-renders (use canvas); a data update resets it; Vega only; untested in Desktop.",
+    "effort": "M",
+    "lens": "interactivity"
+   },
+   {
+    "id": "V28",
+    "feature": "Small multiples on one shared scale",
+    "verdict": "full",
+    "how": "Add a Region column (4 x 365 = 1,460 rows, fits 1.9 and 2.0), Vega group marks laid out by a columns signal (not VL facet, which breaks autosize fit), one quantize domain across panels, shared legend, panel titles with totals. Lumeric's section lock has no equivalent; Lumeric has not shipped this, Deneb can.",
+    "effort": "M",
+    "lens": "rendering"
+   },
+   {
+    "id": "V29",
+    "feature": "Week start",
+    "verdict": "full",
+    "how": "weekStart signal 0..6: row = (day(date) - weekStart + 7) % 7, weekday labels rotate. Hand-rolled (isoweek is 2.0 only). Viewer choice possible via a disconnected table measure.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V30",
+    "feature": "Fiscal year",
+    "verdict": "full",
+    "how": "fyStartMonth signal sets the grid start (FY first day snapped to week start) and month label order; the report filters the dataset to one FY with a native slicer or visual filter.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V31",
+    "feature": "Leap years and time zones",
+    "verdict": "approximate",
+    "how": "Leap years exact (datetime(y, m, d + i) sequence, 366-day years, never add 864e5). Time zones: Deneb casts dates to local midnight in the viewer's browser, so use local (not utc*) functions; there is no time-zone setting, and how the Date arrives is unverified in Desktop (prototype flag).",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V32",
+    "feature": "Granularity: day / week / month",
+    "verdict": "approximate",
+    "how": "granularity signal aggregates to week (one cell per week column) or month (12 cells per year row). Aggregated cells lose __row__, but advanced-mode range predicates still cross-filter them. Lumeric shows no week/month look, so the layout is invented.",
+    "effort": "M",
+    "lens": "rendering"
+   },
+   {
+    "id": "V33",
+    "feature": "Aggregation (sum, avg, min, max, count, distinct count)",
+    "verdict": "approximate",
+    "how": "Belongs in the measure (DAX, or the Values well aggregation). An in-spec op signal only works if rows arrive finer than a day, which spends the row window and breaks one-row-per-day selection.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V34",
+    "feature": "Up to 10 years of daily data; static export",
+    "verdict": "approximate",
+    "how": "3,650 rows fit both windows (10k on 1.9.1, 30k on 2.0); stack one 7-row band per year with Deneb overflow scroll; 3,650 rects ~72 ms offline in SVG, canvas better with hover (the generator hard-codes SVG). Certified Deneb exports to PDF/PPT/subscriptions but only the initial state. Drag range caps at 2,500 days.",
+    "effort": "M",
+    "lens": "rendering"
+   },
+   {
+    "id": "V35",
+    "feature": "Edge cases: one week, 200px tile, gaps",
+    "verdict": "full",
+    "how": "unit-scaled layout with thresholds (hide labels/legend below a size, minimum cell size); one week still fills a column; gaps render empty. Ship each as a showcase variant instance with its own CSV.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V36",
+    "feature": "Dark theme inversion / follows report theme",
+    "verdict": "approximate",
+    "how": "Deneb cannot read the background or detect dark mode. Expose a theme signal, or feed a mode flag from a disconnected table measure; dark swaps ramp (#362d51 to #d1ccdc), well #12101a, empty #f6f4fa0d, ring #f6f4fa. 'Match the report theme' can only mean data colours via pbiColor.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V37",
+    "feature": "Palettes grouped by job (10 plus custom)",
+    "verdict": "approximate",
+    "how": "All ten ramps as hex arrays in a palette signal keyed by name, plus 'theme' (pbiColor(0, shade) steps or pbiColorLinear), a custom-ramp signal and pbiColorDivergent for diverging. No grouped picker UI. Showcase rule Q18 pushes the default to theme colours, not Signature hex.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V38",
+    "feature": "Accessibility checks card",
+    "verdict": "approximate",
+    "how": "Contrast, step spacing and monotonic lightness are computable with Vega colour functions (rgb(), lab()), so a checks panel could be drawn, but it is authoring feedback with no pane to live in; better as a check in tools/ and a README note. CVD and gamma-mixing claims would be documented, not live.",
+    "effort": "M",
+    "lens": "rendering"
+   },
+   {
+    "id": "V39",
+    "feature": "Keyboard, screen reader, high contrast, reduce motion",
+    "verdict": "not-possible",
+    "how": "Vega marks cannot take focus (no arrow-key cell navigation; bound inputs are the only Tab stops); Deneb exposes no isHighContrast or HC colours, so 'Follow Windows' is impossible. Partial: SVG-only aria-label per cell or one group description plus visual alt text; reduce motion is moot without animation.",
+    "effort": "S",
+    "lens": "interactivity"
+   },
+   {
+    "id": "V40",
+    "feature": "Compact number format",
+    "verdict": "full",
+    "how": "d3 format '.3~s' for 1.33M / 847K; pick one casing (mock mixes 3.6k and 3.6K). Tooltips auto-format numeric fields from the model format string.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V41",
+    "feature": "IBCS compliance mode",
+    "verdict": "approximate",
+    "how": "An 'ibcs' value on a preset signal can switch to greys/black, notation and spacing. 'Locks typography and notation' is impossible (no locks, no pane). Claimed only, so the target look is undefined.",
+    "effort": "M",
+    "lens": "rendering"
+   },
+   {
+    "id": "V42",
+    "feature": "Studio custom format pane (drawer)",
+    "verdict": "not-possible",
+    "how": "Deneb's format pane is fixed by its capabilities.json and template usermeta allows no extra options. Equivalent: top-level signals at the head of the spec, documented in the README Options table and edited in Deneb's editor; viewer-facing options via bound inputs or disconnected-table measures.",
+    "effort": "S",
+    "lens": "report"
+   },
+   {
+    "id": "V43",
+    "feature": "Studio full screen (three panes)",
+    "verdict": "not-possible",
+    "how": "Nearest equivalent is Deneb's own Edit mode (spec editor, live preview, data/signal/log debug pane).",
+    "effort": "S",
+    "lens": "report"
+   },
+   {
+    "id": "V44",
+    "feature": "Change history / Review changes, undo/redo",
+    "verdict": "not-possible",
+    "how": "Only editor-level undo in Deneb; history lives in git on the template JSON and PBIR.",
+    "effort": "S",
+    "lens": "report"
+   },
+   {
+    "id": "V45",
+    "feature": "Suggestions cards",
+    "verdict": "not-possible",
+    "how": "No hook for in-pane suggestions; README 'Use it' notes can carry the advice (e.g. show values when cells are 15px or taller).",
+    "effort": "S",
+    "lens": "report"
+   },
+   {
+    "id": "V46",
+    "feature": "Presets and tones; per-section locking",
+    "verdict": "approximate",
+    "how": "A preset signal (Signature, Executive = Slate, Analytical = Forest, Presentation = Ember) sets palette, gap and shape together, which is exact. Per-section locks are impossible.",
+    "effort": "S",
+    "lens": "report"
+   },
+   {
+    "id": "V47",
+    "feature": "First-run setup (landing, intent, appearance, done)",
+    "verdict": "not-possible",
+    "how": "Nearest is Deneb's template import dialog (maps fields to __0__ placeholders) plus README steps; the four intents ship as preset values or showcase variants.",
+    "effort": "S",
+    "lens": "report"
+   },
+   {
+    "id": "V48",
+    "feature": "Cell build-in animation",
+    "verdict": "approximate",
+    "how": "Not recommended. A timer signal could reveal columns with a 9 ms stagger, but Vega has no enter transitions, it would replay on every data update or cross-filter, re-render every tick, and export captures the initial state, so it must start fully drawn. Prototype treats it as a Deneb limit; skip it.",
+    "effort": "S",
+    "lens": "rendering"
+   },
+   {
+    "id": "V49",
+    "feature": "Certification constraints",
+    "verdict": "full",
+    "how": "Deneb is AppSource-certified and blocks external resources, so the template inherits no network calls, privacy review and PDF/PPT/subscription export without certifying anything itself.",
+    "effort": "S",
+    "lens": "report"
+   },
+   {
+    "id": "V50",
+    "feature": "Typography (Sora display, Segoe body, mono)",
+    "verdict": "approximate",
+    "how": "Deneb cannot load web fonts: Segoe UI Semibold for display, Segoe UI body, Consolas for mono. The showcase generator also forces Arial into every Deneb jsonConfig, so the showcase render differs from the template's Segoe UI unless the generator changes.",
+    "effort": "S",
+    "lens": "rendering"
+   }
+  ],
+  "reportMatrix": [
+   {
+    "id": "R01",
+    "element": "Daily Sales FY26: page canvas and outer frame",
+    "buildWith": "background SVG",
+    "verdict": "full",
+    "how": "Page about 1280 x 969 (mock 1080 x 817.5 x 1.185) or re-flowed to 1600 x 900; SVG draws page #f8f7fb and the #faf9fc r20 hairline frame with soft shadow. make_background.py only draws the Duggan band/curve/grid today, so it needs a second renderer or a hand-authored SVG in showcase/theme.",
+    "lens": "report"
+   },
+   {
+    "id": "R02",
+    "element": "Top bar and title 'Daily Sales · FY26'",
+    "buildWith": "background SVG (white bar, bottom hairline) + generator textbox",
+    "verdict": "approximate",
+    "how": "Textbox in Segoe UI Semibold 13px #17151d; Sora is unavailable.",
+    "lens": "report"
+   },
+   {
+    "id": "R03",
+    "element": "Top bar pills 'Calendar Heatmap' (active) and 'All regions'",
+    "buildWith": "native button/shape + native slicer",
+    "verdict": "approximate",
+    "how": "'Calendar Heatmap' = rounded button or shape (or static SVG + textbox); 'All regions' = native Region dropdown or button slicer styled as a pill. Generator emits neither, and a Region slicer only works on a shared model (R23).",
+    "lens": "report"
+   },
+   {
+    "id": "R04",
+    "element": "Left rail PAGES (Daily overview, By region, Targets)",
+    "buildWith": "native page navigator",
+    "verdict": "approximate",
+    "how": "Vertical text-only page navigator, active page bold ink, others ink3, over three real pages: Daily overview, By region (small multiples calendar, V28), Targets (target-coloured calendar, V23). Generator supports one dashboard page and no navigator; needs extension.",
+    "lens": "report"
+   },
+   {
+    "id": "R05",
+    "element": "Left rail DATE RANGE mini-calendar",
+    "buildWith": "native date slicer (functional) or new calendar template instance (lookalike)",
+    "verdict": "approximate",
+    "how": "A native Between date slicer is the working equivalent but looks like two date boxes. Lookalike: a small month-granularity instance of the new calendar whose drag cross-filters (row identities, not a filter-pane filter). A static SVG copy is decoration only.",
+    "lens": "report"
+   },
+   {
+    "id": "R06",
+    "element": "Left rail FILTERS (Year · FY26, Channel · All)",
+    "buildWith": "native slicers",
+    "verdict": "approximate",
+    "how": "Dropdown slicers, header off, styled as text rows, on DimDate[Fiscal Year] and Sales[Channel]. They filter only if every visual reads one shared model (R23); the generator emits no slicers.",
+    "lens": "report"
+   },
+   {
+    "id": "R07",
+    "element": "Rail section keys (PAGES, DATE RANGE, FILTERS) and rail border",
+    "buildWith": "background SVG",
+    "verdict": "full",
+    "how": "Static mono 9px uppercase text with .14em letter-spacing drawn in the SVG (textboxes cannot set letter-spacing), plus the 1px right border.",
+    "lens": "report"
+   },
+   {
+    "id": "R08",
+    "element": "Main column layout (15px padding, 13px gaps)",
+    "buildWith": "page layout slot coordinates",
+    "verdict": "full",
+    "how": "Scale mock px by the chosen page factor into dashboard-style slots; FitToPage is fixed, and the 1.32 aspect needs the crop maths checked.",
+    "lens": "report"
+   },
+   {
+    "id": "R09",
+    "element": "KPI card shells (4 white cards, r11 hairline, no shadow)",
+    "buildWith": "visual container formatting",
+    "verdict": "full",
+    "how": "Slot container background white, border #17151d0e 1px, radius 11, shadow off (the generator's slot container supports all of these).",
+    "lens": "report"
+   },
+   {
+    "id": "R10",
+    "element": "KPI TOTAL 1.33M + area sparkline",
+    "buildWith": "new Deneb spec (one mini KPI card with chart-mode signal); existing kpi-line-card as fallback",
+    "verdict": "approximate",
+    "how": "Mono uppercase label, 20px value, 17px area chart. The mock's line path is malformed (area only); draw the line or keep area only deliberately. Value font Sora becomes Segoe UI Semibold.",
+    "lens": "report"
+   },
+   {
+    "id": "R11",
+    "element": "KPI MEAN / DAY 3.6K + bullet",
+    "buildWith": "new mini KPI card spec (bullet mode); existing bullet-chart as fallback",
+    "verdict": "approximate",
+    "how": "Track r4 100%, band 66%, bar 51%, accent target tick at 73%, driven by mean, target and max measures. Font compromise as R10.",
+    "lens": "report"
+   },
+   {
+    "id": "R12",
+    "element": "KPI PEAK DAY 16 Dec + 100% stacked bar",
+    "buildWith": "new mini KPI card spec (share-bar mode)",
+    "verdict": "approximate",
+    "how": "Value is a date string (DAX TOPN or in-spec argmax over daily rows); the stacked bar is undefined in the mock, read as share of total by colour bin with 1.5px gaps. Font compromise as R10.",
+    "lens": "report"
+   },
+   {
+    "id": "R13",
+    "element": "KPI ACTIVE DAYS 289 / 364 + 15 columns",
+    "buildWith": "new mini KPI card spec (columns mode); existing kpi-bar-card as fallback",
+    "verdict": "approximate",
+    "how": "Count of non-blank days over days in range; 15 bars, last 3 darker. Font compromise as R10.",
+    "lens": "report"
+   },
+   {
+    "id": "R14",
+    "element": "Main heatmap card (52 weeks, capsules, peak ring)",
+    "buildWith": "new calendar-heatmap template instance",
+    "verdict": "full",
+    "how": "Header, legend and chip off; gap 3.16, Signature ramp, inset ring; container white r14 hairline, shadow approximated by the container shadow settings.",
+    "lens": "report"
+   },
+   {
+    "id": "R15",
+    "element": "Row 2 and Row 3 grids (1.55fr : 1fr)",
+    "buildWith": "page layout slot coordinates",
+    "verdict": "full",
+    "how": "Fixed slots; white r12 hairline containers, no shadow.",
+    "lens": "report"
+   },
+   {
+    "id": "R16",
+    "element": "'Support tickets · square cells' card",
+    "buildWith": "calendar-heatmap template instance",
+    "verdict": "full",
+    "how": "shape square (r3), gap 3.16, weeks derived from size (47), Tickets sample CSV, legend off; card title as a textbox or in-spec title.",
+    "lens": "report"
+   },
+   {
+    "id": "R17",
+    "element": "'Sales by month' column card",
+    "buildWith": "new small Deneb spec (or the template's month-totals mode); native column chart only if the generator learns native visuals",
+    "verdict": "full",
+    "how": "12 columns, accent at .85 opacity, top corners r3, J..D labels 8.5px, no axis. Use real data (the mock's Oct 100% disagrees with its own month strip).",
+    "lens": "report"
+   },
+   {
+    "id": "R18",
+    "element": "'Web sessions · high density' card",
+    "buildWith": "calendar-heatmap template instance",
+    "verdict": "full",
+    "how": "gap 1, capsule cells, Sessions sample data (weekend-heavy, no bin 1).",
+    "lens": "report"
+   },
+   {
+    "id": "R19",
+    "element": "'Top days' ranked list",
+    "buildWith": "new Deneb spec (Vega-Lite layered)",
+    "verdict": "full",
+    "how": "Top 5 by window rank; date label 50px, pill track #17151d0e, accent fill by value/max, mono compact value right-aligned. Native table with data bars is the visibly weaker fallback.",
+    "lens": "report"
+   },
+   {
+    "id": "R20",
+    "element": "Card titles (11.5px 600 ink2)",
+    "buildWith": "generator textboxes or in-spec title text",
+    "verdict": "approximate",
+    "how": "Segoe UI Semibold in place of the site font.",
+    "lens": "report"
+   },
+   {
+    "id": "R21",
+    "element": "Caption below the mock",
+    "buildWith": "README / showcase caption",
+    "verdict": "full",
+    "how": "Not part of the page; goes in the README hero caption with the design credit.",
+    "lens": "report"
+   },
+   {
+    "id": "R22",
+    "element": "Dark variant of the report",
+    "buildWith": "Deneb mode signal + second background SVG + bookmarks",
+    "verdict": "approximate",
+    "how": "One theme per report. Deneb visuals switch via a Mode slicer measure; the page background cannot switch, so a full-page image toggled by bookmarks is needed, and textboxes/slicers need per-mode copies.",
+    "lens": "report"
+   },
+   {
+    "id": "R23",
+    "element": "Cross-visual behaviour (heatmap drives KPIs and Top days; rail slicers drive everything)",
+    "buildWith": "shared semantic model (fact table + DimDate) instead of per-instance DATATABLEs",
+    "verdict": "approximate",
+    "how": "The generator writes one isolated calculated table per instance with no relationships and hard-codes selection/highlight off, so today the page can only be a static lookalike. A working page needs one fact table (Date, Sales, Tickets, Sessions, Region, Channel), a DimDate with fiscal year, relationships and selection turned on.",
+    "lens": "report"
+   },
+   {
+    "id": "R24",
+    "element": "A second multi-visual showcase page",
+    "buildWith": "build_showcase.py / make_background.py / crop_previews.py extensions",
+    "verdict": "approximate",
+    "how": "Only one dashboard page is supported (page 1, README hero); crop_previews writes every dashboard page to dashboard.png; hand-built pages are deleted on rebuild. Needs a pages list, a per-page background and a per-page PNG, plus native slicers, navigator and buttons. Alternative: a separate hand-built PBIP outside the generator.",
+    "lens": "report"
+   },
+   {
+    "id": "R25",
+    "element": "Colour identity and branding",
+    "buildWith": "Deneb signals + background SVG (policy decision)",
+    "verdict": "approximate",
+    "how": "The Signature ramp and ink/accent tokens reproduce exactly, but the showcase is locked to the BI Nexus theme (Q18 'no colour overrides'); the Q14 precedent restyles into BI Nexus colours and credits the designer in a footer. 'Looks the same' needs a Q18 exception or a separate report. No Lumeric logo.",
+    "lens": "report"
+   },
+   {
+    "id": "R26",
+    "element": "Home hero 'Sales by Order Date' card",
+    "buildWith": "calendar-heatmap template instance",
+    "verdict": "full",
+    "how": "Header, legend and contrast chip on; container r24 + shadow. Prototype is close; fix the ring (V08) and add the chip (V13).",
+    "lens": "report"
+   },
+   {
+    "id": "R27",
+    "element": "Home 'Sessions by Visit Date' card",
+    "buildWith": "calendar-heatmap template instance",
+    "verdict": "full",
+    "how": "Sessions data, peak on the last Saturday, total 847K.",
+    "lens": "report"
+   },
+   {
+    "id": "R28",
+    "element": "Home 'Tickets' selection demo (week 29 selected)",
+    "buildWith": "calendar-heatmap variant instance",
+    "verdict": "approximate",
+    "how": "A preview-selection param dims all but week 29 to .24 and sets the chip, for a static capture; live selection depends on V15. The site's auto-cycling demo is web JS.",
+    "lens": "report"
+   },
+   {
+    "id": "R29",
+    "element": "Home catalogue shelf and standard cards",
+    "buildWith": "template-page variant instances (content only)",
+    "verdict": "approximate",
+    "how": "Marketing chrome (shelf, 'In development' pill, ghost slots) is not reproduced; the standard cards' content (week-start rows, light/dark ramps, 1 WEEK / 200PX / GAPS tiles) becomes variant instances.",
+    "lens": "report"
+   },
+   {
+    "id": "R30",
+    "element": "Product page hero heatmap",
+    "buildWith": "calendar-heatmap template instance",
+    "verdict": "full",
+    "how": "Same as R26 at 15 x 25.86 cells; use the home-page inset ring, not the widened product-page peak cell.",
+    "lens": "report"
+   },
+   {
+    "id": "R31",
+    "element": "Pinned 'Four decisions' stage and colour picker",
+    "buildWith": "four template variant instances + palette signal",
+    "verdict": "approximate",
+    "how": "Default, density 1px, shape square and a preselected last week as static variants; the scroll-pinned stage is web-only; the pill-swatch picker becomes a palette signal or a bound radio input inside the visual.",
+    "lens": "report"
+   },
+   {
+    "id": "R32",
+    "element": "First-run setup tile (landing, intent, appearance, done)",
+    "buildWith": "none (README + Deneb import dialog)",
+    "verdict": "not-possible",
+    "how": "No wizard hook in Deneb; see V47.",
+    "lens": "report"
+   },
+   {
+    "id": "R33",
+    "element": "Studio drawer panels (colour, accessibility, suggestions, changes)",
+    "buildWith": "none (README Options table)",
+    "verdict": "not-possible",
+    "how": "No custom pane; the mini preview is just a small instance; palettes and checks are documented in the README.",
+    "lens": "report"
+   },
+   {
+    "id": "R34",
+    "element": "Full screen Studio",
+    "buildWith": "none; preview content = full-canvas variant (R36)",
+    "verdict": "not-possible",
+    "how": "The three-pane UI cannot exist; its preview (KPI strip, 34-week grid, month totals, legend chip) is reproducible as R36.",
+    "lens": "report"
+   },
+   {
+    "id": "R35",
+    "element": "Ten pages explorer",
+    "buildWith": "README Options table",
+    "verdict": "not-possible",
+    "how": "Documentation of every signal replaces the interactive explorer.",
+    "lens": "report"
+   },
+   {
+    "id": "R36",
+    "element": "On the report: 'The full canvas'",
+    "buildWith": "calendar-heatmap template instance (KPI strip + month totals on)",
+    "verdict": "full",
+    "how": "Header, five-cell KPI strip, 52-week grid, month totals, legend and chip toggled on at about 1080 x 502.",
+    "lens": "report"
+   },
+   {
+    "id": "R37",
+    "element": "On the report: small multiples by Region",
+    "buildWith": "calendar-heatmap template instance (split mode) on a 'By region' page",
+    "verdict": "full",
+    "how": "2x2 panels, 45 weeks each, one shared scale, panel totals, shared legend and chip (V28).",
+    "lens": "report"
+   },
+   {
+    "id": "R38",
+    "element": "On the report: race playback",
+    "buildWith": "calendar-heatmap template instance (playback on)",
+    "verdict": "approximate",
+    "how": "Showcase capture shows a fixed playhead (e.g. 18 Sep via param); live play needs the timer tested in Desktop; the rest of the report does not follow the playhead.",
+    "lens": "report"
+   },
+   {
+    "id": "R39",
+    "element": "Feature demos (fv0 to fv4) and spec table",
+    "buildWith": "variant instances + README",
+    "verdict": "approximate",
+    "how": "fv0a/fv0b = two instance sizes (44 and 19 weeks); fv1 = preselected-week variant; fv2 = palette swatch cards (small Deneb or SVG); fv3 = Sessions; fv4 setup steps not possible; spec table becomes README Fields/Options.",
+    "lens": "report"
+   }
+  ],
+  "overallVisualVerdict": "Yes. The visual itself can be rebuilt as a Vega (not Vega-Lite) Deneb template that looks close to identical: grid, capsule and square cells, gap, bins, empty days, inset peak ring, labels, legend, contrast chip, KPI strip, month totals, week start, fiscal year and small multiples. The prototype already matches the hero card. Click, ctrl-click and drag cross-filtering work only as a capped selection-ID cross-filter, not a real slicer, and none of it has been tested in Desktop yet. The Studio pane, setup wizard, suggestions, history, locks, keyboard navigation, high contrast, dark-mode detection and the Sora font cannot be done in Deneb.",
+  "overallReportVerdict": "Partly. Every chart on the Daily Sales page can be matched with the new calendar template plus two or three small new Deneb specs, and the frame and cards come from a background SVG and container formatting. The left rail becomes a native page navigator, a date slicer and slicers, but the showcase generator can't produce those yet: it supports one dashboard page, emits no native visuals, gives every visual its own unrelated table and turns selection off. The page's colours also clash with the locked BI Nexus theme (Q18), so a faithful, working copy needs generator and model work or a separate PBIP.",
+  "keyRisks": [
+   "IP and courtesy: Lumeric's visual is marked 'in development' and the site presents it as a product. A free MIT near-copy (same geometry, Signature ramp, peak ring and report layout) is a sharper case than the Tabular Editor precedent. The site's 'Free. For good.' headline suggests the visuals may be free, but that is unverified. Follow Q5: read their terms, write the spec from scratch (only CSS tokens were read, no JS), invent the data, copy no logo or branding, credit 'Timothy Osborn, after Lumeric Visuals' in all five places, and draft a courtesy note before publishing. Not legal advice.",
+   "'Looks the same' conflicts with locked decisions. Q18 forbids colour overrides and Q14 says a recreated page gets BI Nexus colours and branding. Matching the Signature purple needs an exception or a separate report.",
+   "Showcase generator limits: only one multi-visual page (page 1, the Duggan hero). make_background.py draws one geometry, and crop_previews writes every dashboard page to dashboard.png. It emits no native slicers, page navigator or buttons, gives each instance an isolated DATATABLE with no relationships, and hard-codes selection and highlight off. Hand-built pages are deleted on rebuild.",
+   "Interactivity has not been run in Power BI Desktop. It was only replayed in headless Edge with shimmed pbiCrossFilterApply. Unknowns: whether Deneb accepts a filter string with no _{Field}_ placeholder, and the DAX cost of large identity selections. The selection is a cross-filter capped at 2,500 row identities, not a filter-pane filter, so it doesn't persist or sync across pages. The house convention also sets selection off.",
+   "Date handling is unverified in Desktop. The prototype expects dates at local midnight, but a UTC-midnight value would shift every day by one for viewers west of UTC. The spec must use local, not utc*, functions. Check this in Deneb's debug Source tab first.",
+   "Blank days are generated in the spec, so they have no __row__: no report-page tooltip, context menu, drill-through or cross-filter on them.",
+   "Deneb 1.9.1 vs 2.0: the showcase stamps 1.9.1 and templates must use pbiContainerWidth/Height. enableContextMenuSelector (drill-through row resolution), denebContainer, the 30k row window and isoweek are 2.0 only, and a Desktop save re-stamps visuals to 2.0.0.0.",
+   "The mock contradicts itself, so decide before building: 364-cell grid vs '365 days'; the 'quantile' label vs actually equal-interval bins; evenly spaced vs date-aligned month labels; peak 16 Dec (grid from 5 Jan) vs 18 Sep = day 261 (grid from 1 Jan); 3.6k vs 3.6K; rising month bars vs best month Oct; and the product-page widened peak cell, which is a bug.",
+   "Fonts: Sora cannot load in Deneb, and the generator forces Arial into every Deneb config, so showcase captures will not match the site's type.",
+   "Playback timer and any build-in animation are untested in Desktop. Export and subscriptions capture only the initial state, and a data update resets the signal state.",
+   "Capture and preview: FitToPage is hard-coded, and a 1.32-aspect page (or a 16:9 re-flow) needs the crop maths re-checked. build_showcase.py --check is unusable on this checkout because of CRLF line endings.",
+   "Downstream: a 13th template changes the hard-coded counts in the Background Designer harvest and needs an explicit 'heatmap' shape classification. The new 'calendar' category also needs adding to CATEGORY_ORDER.",
+   "Prototype files to start from (scratchpad, not in the repo): prototype\\calendar-heatmap.json, config.json, gen_data.py, compare-1to1.png"
+  ],
+  "effortEstimate": "Template (templates/calendar/calendar-heatmap, Vega): about 2 sessions to harden the prototype into a repo template. That covers the rolling 52-week mode, derived week count, inset ring, gap/shape/steps/week-start/fiscal/palette/preset signals, contrast chip, KPI strip and month totals toggles, README and credit, checks and previews. Add 1 session to verify it in Power BI Desktop: date arrival, click/drag/ctrl cross-filter, tooltips and drill-through, on both 1.9.1 and 2.0. Optional extras (small multiples, goal/streak, race playback) take 1 to 2 more. Showcase page: 1 to 2 sessions to extend build_showcase.py, make_background.py and crop_previews.py for a second page, then 1 session for the mini KPI card, Top days and month-bar specs plus the layout. Add 1 to 2 sessions if the page must really filter (shared model, native slicers, page navigator, selection on). Total: about 5 sessions for the template plus a static lookalike page, or 7 to 9 for a working interactive page with By region and Targets pages."
+ },
+ "disputes": [
+  {
+   "id": "V19",
+   "claimedVerdict": "approximate",
+   "correctVerdict": "full",
+   "agree": false,
+   "evidence": "Upgrade. The tooltip handler takes the identity from item.datum, not from the tooltip object: resolveDatumFromItem, then getResolvedRowIdentities. That accepts a copied __row__ if it is an in-range integer (data-point.ts 58-67) and passes it as identities to tooltipService.show (interactivity-manager.ts ~445). The prototype's tooltip object leaves out __row__ but still resolves. The only compromise cited (blank days) is a design choice, not a Deneb limit. Bind DimDate[Date] plus a helper measure that is non-blank for every date (e.g. COUNTROWS(DimDate)), or turn on 'Show items with no data'. Every day then arrives with a real __row__ and a null Sales value, so it draws empty and still gets the page tooltip. The Date formatting note is correct: getFieldsEligibleForAutoFormat only auto-formats numeric fields. Needs visualTooltip type 'Canvas'. Not tested in Desktop.",
+   "lens": "interactivity"
+  },
+  {
+   "id": "V39",
+   "claimedVerdict": "not-possible",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "Downgrade from not-possible: two of the four parts have concrete mechanisms. (1) Keyboard. Deneb 2.0 supportsKeyboardFocus (Enter moves focus into the visual), and its handler intercepts only Tab (src/lib/keyboard-focus.ts), so arrow keys reach a Vega window:keydown stream (vega-view events() supports source 'window'). A focusIdx signal plus a ring mark gives arrow-key cell navigation. Enter can call pbiCrossFilterApply(event, \"datum.Date == ...\"), because a KeyboardEvent passes the instanceof Event gate and no placeholder is needed. Esc can call pbiCrossFilterClear(). (2) Screen reader. Vega 6 writes a per-item aria-label with role graphics-symbol from the 'description' encode channel (vega-scenegraph ariaItemAttributes), SVG renderer only. (3) High contrast is impossible: no isHighContrast or HC colours are exposed (Deneb registers only six expression functions; isHighContrast appears only in a dev theme shim). (4) Reduce motion is moot. Caveats: the focused cell is not announced (no aria-live), screen-reader browse mode captures arrow keys, SVG aria conflicts with the canvas advice for large data, and none of it is tested in Desktop.",
+   "lens": "interactivity"
+  },
+  {
+   "id": "V21",
+   "claimedVerdict": "full",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "Aggregates are fine, but the look is not reproducible exactly: KPI labels are uppercase with letter-spacing .1 to .11em (.kpi-k, .lp-kpi .k) and vega-scenegraph 6.4.0 has no letterSpacing text property at all (grep: 0 hits), and the values are Sora (--display, letter-spacing -.025em). By the same standard that made V12 approximate, this row is approximate.",
+   "lens": "rendering"
+  },
+  {
+   "id": "V39",
+   "claimedVerdict": "not-possible",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "Deneb 2.0 declares supportsKeyboardFocus (capabilities.md: Enter moves focus into the visual). Deneb's own document keydown listener only handles Tab wrap-around (apps/deneb/src/lib/keyboard-focus.ts handleTabWrapAround), so arrow keys should reach a Vega 'window:keydown' event stream: a focusIdx signal + drawn focus ring + Enter calling pbiCrossFilterApply(event, predicate) is buildable (2.0 only, untested in Desktop). SVG aria descriptions give partial screen-reader support. Only 'follow Windows high contrast' is truly impossible, so the bundled row is approximate, not not-possible.",
+   "lens": "rendering"
+  },
+  {
+   "id": "R14",
+   "claimedVerdict": "full",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "The row admits the shadow is approximated. Site card shadow is two stacked layers with a negative spread (.shot.tight light: 0 1px 2px #17151d0d, 0 34px 70px -42px #17151d2e; el_light_rep.png shows it); a Power BI visual container has one shadow. Grid content itself is full. The same applies to R26/R30.",
+   "lens": "rendering"
+  },
+  {
+   "id": "R05",
+   "claimedVerdict": "approximate",
+   "correctVerdict": "full",
+   "agree": false,
+   "evidence": "home.html .side-dp is a static aria-hidden <svg viewBox='0 0 112 64'>: 7 header bars (#c6bede), then 5 rows x 7 rects, #e8e3f3 at .75 opacity, with a fixed highlighted run (#9c90bc) and one #504a67 cell. It has no dates, numbers or handlers. So the site's element is decoration, and copying its rects into the background SVG reproduces it exactly. The matrix's lookalike is also wrong: V32 month granularity gives 12 cells per year row, not a 7-weekday-column month grid. Only a functional picker is approximate (native Between slicer).",
+   "lens": "report"
+  },
+  {
+   "id": "R14",
+   "claimedVerdict": "full",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "The row's own 'how' says the shadow is 'approximated'. The mock .shot shadow is two layers with negative spread: '0 1px 2px #17151d0d, 0 34px 70px -42px #17151d2e'. The generator emits only dropShadow show:true (line 659), which inherits BI Nexus '*' dropShadow (#0B1E3F, blur 14, distance 2, 92% transparency). In the showcase, to_arial() plus config font=Arial turn the Segoe UI month/weekday labels into Arial, and Q18 forbids the Signature hex ramp. The grid itself is full.",
+   "lens": "report"
+  },
+  {
+   "id": "R20",
+   "claimedVerdict": "approximate",
+   "correctVerdict": "full",
+   "agree": false,
+   "evidence": "The premise is wrong. .mc-t sets no font-family (11.5px, 600, ink2), so it inherits --body = 'Segoe UI Variable Text','Segoe UI', not Sora. A generator textbox with run font 'Segoe UI Semibold' (text_run supports 'font') is effectively exact. The only gap is Segoe UI Variable's optical sizing. Arial would come only from sticking with the default FONT.",
+   "lens": "report"
+  },
+  {
+   "id": "R26",
+   "claimedVerdict": "full",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "The header is on here. home.html .shot-t 'Sales' is var(--display) = Sora 15px 600 with -.012em tracking, which V12 itself rates approximate. The container r24 with a two-layer negative-spread shadow can only be approximated by a single Power BI shadow (see R14). .shot-s and .shot-v are body Segoe UI and exact.",
+   "lens": "report"
+  },
+  {
+   "id": "R27",
+   "claimedVerdict": "full",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "Same header: home.html has shot-t 'Sessions' (Sora), shot-s 'by Visit Date', shot-v '847K'. The Sora title and the .shot shadow make it approximate, consistent with V12 and R26.",
+   "lens": "report"
+  },
+  {
+   "id": "R30",
+   "claimedVerdict": "full",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "heatmap.html repeats shot-t 'Sales' (Sora) / 'by Order Date' / '1.33M' on the product hero. 'Same as R26' means the same Sora title and shadow compromise, so approximate.",
+   "lens": "report"
+  },
+  {
+   "id": "R32",
+   "claimedVerdict": "not-possible",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "As a showcase element it can be built. Four bookmark states (landing, intent, appearance, done) with buttons, and intent/appearance as button slicers on disconnected tables. SELECTEDVALUE measures bound into the Deneb dataset drive preset and palette signals, the same mechanism V29 already accepts. It is not a first-run of the visual (V47 stays not-possible), but the tile's look and flow are reproducible.",
+   "lens": "report"
+  },
+  {
+   "id": "R33",
+   "claimedVerdict": "not-possible",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "el_light_explorer.png shows the drawer panels: Palette list, Steps slider, toggles, Accessibility '2 of 4 passing'. In a report: a bookmark-toggled panel with a button slicer for palettes (swatch images), a numeric-range what-if slicer for Steps, and button slicers for toggles. The Accessibility card can be a Deneb panel computing contrast and lightness live (V38 says computable). Suggestions and the change count can be DAX text comparing selections to preset defaults. Only undo/redo is impossible.",
+   "lens": "report"
+  },
+  {
+   "id": "R34",
+   "claimedVerdict": "not-possible",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "el_light_xp.png: settings nav, Cell shape and Density sliders, toggles, the preview card and an Accessibility card. A report page can hold the same three panes: page or bookmark navigator on the left, what-if parameter sliders (Round..Square, Spacious..Dense) and button-slicer toggles in the middle, and a Deneb instance plus a Deneb checks panel on the right, live-bound through measures. The footer 'Preset Signature · 1 changed' is a DAX measure. It is a lookalike, not a Deneb editor, but 'cannot exist' is too strong.",
+   "lens": "report"
+  },
+  {
+   "id": "R35",
+   "claimedVerdict": "not-possible",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "The explorer is a 10-section nav, a text block ('02 / 10 Color ...') and a drawer preview. It can be rebuilt with 10 bookmarks or pages, a bookmark or page navigator, textboxes and the R33 panels. It is low value and high effort, but possible as an approximate lookalike.",
+   "lens": "report"
+  },
+  {
+   "id": "R36",
+   "claimedVerdict": "full",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "el_light_cvfull.png: header 'Sales' in Sora; the KPI strip values (1.33M, 3.6k, 188.2k) are Sora; the labels (TOTAL, DAILY AVG) are letter-spaced uppercase. Vega text has no letter-spacing and Deneb cannot load Sora, the same compromise V12, V50 and R10 rate approximate. The grid, month strip, legend and chip are full.",
+   "lens": "report"
+  },
+  {
+   "id": "R37",
+   "claimedVerdict": "full",
+   "correctVerdict": "approximate",
+   "agree": false,
+   "evidence": "el_light_cvsmall.png: the header 'Sales' and panel titles 'North/South/EMEA/APAC' use the display face (Sora), the panel totals are mono. The panels, shared scale, legend and chip are full, but the display type is approximate, as in V12.",
+   "lens": "report"
+  }
+ ],
+ "missed": [
+  "Real row context for blank days: bind DimDate[Date] plus a helper measure that is non-blank for every date (e.g. COUNTROWS(DimDate)), or use 'Show items with no data'. Blank days then get page tooltips, drill-through and click. The drag range also becomes the whole date span instead of only the days with data.",
+  "Prototype bug: the @cell:mousedown and view:mouseup signals have no [event.button === 0] filter, so a right-click (context menu or drill-through) also cross-filters the page to that day.",
+  "Touch and Power BI mobile: a mousedown/mouseover drag does not work on touch, so the range drag is desktop-mouse only and tap gives a single day.",
+  "macOS: advanced multiSelect accepts only ctrl, shift or alt (no meta), and ctrl-click opens the context menu on Mac, so 'ctrl-click to add' has to be shift-click there.",
+  "Multi-select semantics: selectionManager.select(ids, true) toggles, so a ctrl-drag over days already selected most likely removes them instead of adding the range.",
+  "A drag released outside the Deneb iframe never fires view:mouseup or window:mouseup, so the drag state sticks until the next click. Needs a reset path.",
+  "Keyboard cell navigation is buildable: window:keydown arrow keys drive a focusIdx signal and focus ring; Enter calls pbiCrossFilterApply with the KeyboardEvent; Esc calls pbiCrossFilterClear.",
+  "Per-cell screen-reader labels via the Vega 'description' encode (aria-label, SVG only). This trades off against the canvas recommendation for 10-year data.",
+  "Timer events cannot cross-filter at all (not instanceof Event). Only user mouse or keyboard events can, which limits the playback and animation ideas.",
+  "Top-level signals are usable inside the advanced filter string. The headless view is seeded with them, verified offline, so the range filter can reference selLo/selHi instead of concatenating epoch numbers.",
+  "Bookmarks can capture and restore the heatmap's selection (Deneb docs), which partly answers 'no persistence'.",
+  "2.0 continuous view (enableIncrementalDataUpdates) keeps signal state (playhead, drag, toggles) across cross-filter and slicer updates for datasets up to 5,000 rows.",
+  "Tooltip values: auto-format applies only to numeric fields whose tooltip value is the raw number. The prototype passes pbiFormat strings with a hard-coded '#,0', so model and dynamic format strings are ignored. Use Sales__formatted (opt-in via supportFieldConfiguration on stamped 2.0) or pass the raw number.",
+  "Sentence-template tooltips (June 2026) read only fields explicitly present in the tooltip object, so enumerate Date and Sales there.",
+  "Outbound range cross-filter carries only rows present in the heatmap's own dataset: days removed by an inbound filter cannot be selected, and without the helper measure blank days are never part of the filter.",
+  "Letter-spacing: Vega text marks have no letterSpacing property (vega-scenegraph 6.4.0), yet the site tracks every uppercase mono/display label (.kpi-k .1em, .lp-kpi .k .11em, .sk .14em). Inside Deneb this can only be faked by joining characters with hair spaces (split/join); affects V21, R10 to R13 and any in-spec card labels.",
+  "Font fallback for non-Windows viewers: Segoe UI and Consolas are not on macOS/iOS/Android, and a custom-visual iframe does not obviously inherit the host's web fonts (unverified). Ship a font stack in jsonConfig and preview on a Mac browser. The site's Win11 body font is 'Segoe UI Variable Text', which is also not plain Segoe UI.",
+  "Unverified Sora route: static display text could be drawn as an image mark whose data:image/svg+xml;base64 URI embeds a base64 WOFF subset of Sora (OFL licence), since Deneb's loader accepts that prefix. Heavy, static-text-only, and layout cannot measure it; worth a spike only if exact type matters.",
+  "Anchor-preserving step resampling: a naive {scheme, count} range drops the two end hexes; use extent [-1/(n-1), 1+1/(n-1)] (tested: 5 steps returns the exact Signature anchors).",
+  "Blank days as real rows: 'Show items with no data' on a DimDate[Date] column in the Values well could deliver empty days with __row__, restoring tooltips, drill-through and cross-filter on blank cells. Unverified in Deneb; generated blanks remain the safe default.",
+  "Pixel snapping at Dense gap 1px: fractional x/width values anti-alias into uneven, shimmering gaps (the site's CSS grid snaps). Round cell positions to whole or half pixels, or accept it; not called out in V04/V05.",
+  "Export plus overflow: PDF/PPT export and subscriptions capture only the visible viewport, so the V34 10-year scroll layout exports truncated. Exported layouts must fit the container.",
+  "Canvas crispness on 1.9.1: canvas mode (advised for 10-year/hover) has no scaleToZoom before 2.0, so capsule edges blur at report zoom on 1.9.1 viewers.",
+  "Small-multiple blanks: Vega's cross transform only crosses a stream with itself, so region x day cells must come from a sequence over nRegions*nDays indexed into a regions dataset (tested: 1,460 cells, 132 blanks).",
+  "Mock artefact: the product-page/full-canvas captures show one entirely absent week column right after the peak column (el_light_cvfull.png, compare-1to1.png top). It belongs to the widened-peak bug the matrix already flags; do not reproduce it.",
+  "Keyboard navigation (V39): Deneb 2.0 supportsKeyboardFocus plus a Vega window:keydown stream allows an arrow-key cell cursor with a drawn focus ring and Enter-to-filter. The matrix wrote this off as impossible.",
+  "Vega text marks have no letter-spacing property. The mock's KPI labels (.kpi-k .1em) and the full-canvas KPI labels are tracked uppercase mono. The workaround is hair-space joins or per-character marks at a fixed Consolas advance (0.55em). Only the rail keys can use SVG letter-spacing.",
+  "The font gap is smaller than the matrix says, but the repo makes it bigger. Only the page title (.rep-t), KPI values (.kpi-v) and hero/panel titles (.shot-t) use Sora. Body text is Segoe UI, and mono renders as Consolas on Windows, so most text could be exact. However, build_showcase.py forces FONT='Arial' on textboxes, to_arial() plus config font=Arial on every Deneb visual, and bi-nexus.json textClasses are Arial. An exact look needs a showcase font exception to Q18.",
+  "Untested route for static Sora text: a page-background SVG carrying a subset Sora (OFL) @font-face as a data URI could render the title and other static labels in Sora. It cannot help dynamic KPI values. It needs checking in Desktop and in the PDF export.",
+  "Colour token format: the site's alpha tokens are CSS #RRGGBBAA (--line2 #17151d0e, --empty #17151d0d), but PBIR 8-digit hex is ARGB (pbir-format expressions.md). Write container colours as '#0E17151D', or precomposite them; a pasted CSS value gives the wrong colour. Deneb/Vega accepts the CSS form.",
+  "Shadows: container_objects() emits only dropShadow show:true, which inherits the BI Nexus '*' custom navy shadow (#0B1E3F, blur 14, distance 2, 92% transparency). Tuning it to the mock's two-layer negative-spread shadows needs the generator to emit color, blur, distance and transparency, or a per-report theme.",
+  "BI Nexus theme defaults clash with the rail and pill look. actionButton has navy #0B3D91 fill with amber selected, advancedSlicerVisual has blue/amber accent bars, slicer has a bold 14pt navy header and #1E6FD9 outline, and '*' adds a #EEF4FB r8 border plus a shadow to every visual. There is no pageNavigator style. Restyling each native visual needs visual-level overrides that Q18 ('No colour overrides anywhere') forbids.",
+  "Q7 (templates theme-driven via pbiColor) means a Signature-hex default breaks the template rule itself, not only the showcase rule Q18. Under BI Nexus, pbiColor(0) = #1E6FD9.",
+  "v1 template usermeta (kept for the Background Designer harvest) cannot declare selectionMode 'advanced', so imported copies arrive in simple mode. Click and ctrl-click work in simple mode; drag-range needs a manual switch.",
+  "The generator writes no page visualInteractions. In a shared model, a click on the Sales heatmap would also filter the Tickets and Sessions heatmaps and Sales by month down to one day, unless interactions are set per pair in page.json.",
+  "The generator creates only SUM-of-column measures. Peak day (a date), Active days 289/364, mean per calendar day and the bullet target must be computed in-spec from daily rows, or the generator must accept authored DAX measures. The 364 denominator has to come from the date extent, because SUMMARIZECOLUMNS drops blank days.",
+  "Viewer-facing controls: native what-if (numeric range) parameter sliders, button slicers with per-button swatch images, and bookmarks can drive Deneb signals through measure fields. That makes working report-level lookalikes of the Studio, the drawer and the setup flow (R32-R35) possible.",
+  "A page navigator on the showcase would list the Duggan page and all 12 template pages. It must be limited to Daily overview, By region and Targets.",
+  "'Daily Sales · FY26' and 'Year · FY26' are static in the mock. Once the Year slicer works, a static or background-SVG title goes stale, and a dynamic title means a measure-driven textbox, so no Sora.",
+  "The DATE RANGE mini-calendar is a static aria-hidden 112x64 SVG: 7 columns, header bars, 5 rows and a fixed highlighted run. An exact copy is static decoration, and a working picker is a separate, visibly different native slicer."
+ ]
+}
