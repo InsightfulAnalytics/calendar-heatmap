@@ -92,6 +92,7 @@ table Sales
 				        __Days,
 				        MOD ( [@Serial] * [@Serial] + 11 * [@Serial], 97 ) >= 4
 				    )
+				// The grain: every sales day crossed with every channel and every region
 				VAR __Grid =
 				    CROSSJOIN ( __SalesDays, __Channels, __Regions )
 				// Weekends at 45% of a weekday; the season rises from January to a December peak;
@@ -118,6 +119,8 @@ table Sales
 				                    0
 				                )
 				    )
+				// Keep the fact table's columns: the date the relationship uses, channel, region and a
+				// whole-number amount, so a measure and a sum over the rows agree exactly
 				VAR __Result =
 				    SELECTCOLUMNS (
 				        __Rows,
