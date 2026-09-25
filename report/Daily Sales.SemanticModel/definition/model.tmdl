@@ -24,6 +24,8 @@ annotation PBI_QueryOrder = ["DimDate","Measure Table","FunctionDateTable"]
 ref table Sales
 ref table DimDate
 ref table 'Measure Table'
+ref table Channel
+ref table Region
 
 ref cultureInfo en-US
 

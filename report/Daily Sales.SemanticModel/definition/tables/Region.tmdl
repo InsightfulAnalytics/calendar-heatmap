@@ -1,0 +1,42 @@
+/// Sales regions, the members a region filter or slicer lists, in display order. A DAX calculated table, so no mashup container is started.
+table Region
+	lineageTag: d138b544-db0b-4b4d-a64d-0b9bc88d7dd9
+
+	column Region
+		dataType: string
+		lineageTag: 9acd38ef-83d9-4fa8-93c7-16802ca5fbb4
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Region]
+		sortByColumn: 'Region Order'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Region Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ce223e0d-5f9f-4e94-bca6-3ec1de4983d6
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Region Order]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Region = calculated
+		mode: import
+		source =
+				// One row per region, in display order (largest share first). The names match the
+				// regions the Sales generator writes; the seam's tie-out checks every sales row
+				// finds its member.
+				DATATABLE (
+				    "Region", STRING,
+				    "Region Order", INTEGER,
+				    {
+				        { "North", 1 },
+				        { "South", 2 },
+				        { "EMEA", 3 },
+				        { "APAC", 4 }
+				    }
+				)
+

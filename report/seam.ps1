@@ -15,6 +15,8 @@
       2. Validate the Report by its absolute path. The first output line must read
          "Validating Daily Sales", which proves no active pbir connection hijacked the path. Then a
          full validate (--all --json) whose errors must all be on the known-false-positive list below.
+         Then the model's offline round trip (validate-model.ps1): the TMDL deserializes, and every
+         measure and format string written comes back.
       3. Apply the on-disk model and report: click Desktop's "Apply external changes" banner when
          Desktop has noticed an on-disk change. No banner means Desktop already holds what is on
          disk. If Desktop then asks "Overwrite your unsaved edits", the loop confirms only when
@@ -185,7 +187,7 @@ $DesktopPid = [int]$mine[0].pid
 Pass "PID $DesktopPid holds $Pbip (unsaved changes: $($mine[0].hasUnsavedChanges))"
 
 # ---------------------------------------------------------------------------------------------
-Step '2. Validate the Report by absolute path'
+Step '2. Validate the Report by absolute path, and the model offline'
 $v = Invoke-Pbir @('validate', $Report)
 $first = ($v.Lines | Where-Object { $_.Trim() -ne '' } | Select-Object -First 1)
 if ($first -ne "Validating $ReportName") { Fail "first validate line was '$first', not 'Validating $ReportName' (a pbir connection may have hijacked the path)" }
@@ -206,6 +208,13 @@ else {
     else { Pass "pbir validate --all: 0 unexpected errors ($forgiven known false positive(s) forgiven)" }
     @($vj.warnings) | Where-Object { $_ } | ForEach-Object { Write-Host "  WARN  $($_.code) at $($_.location): $($_.message)" -ForegroundColor Yellow }
 }
+Stop-IfFailed
+
+# The model's TMDL, round-tripped offline before Desktop sees it (validate-model.ps1 beside this
+# script). It runs in its own process, so its TOM assembly never meets this one's.
+$rt = Start-Process -FilePath 'powershell' -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $Here 'validate-model.ps1')`"") -NoNewWindow -Wait -PassThru
+if ($rt.ExitCode -ne 0) { Fail "the offline model round trip failed (validate-model.ps1 exited $($rt.ExitCode))" }
+else { Pass 'offline model round trip (validate-model.ps1)' }
 Stop-IfFailed
 
 # ---------------------------------------------------------------------------------------------

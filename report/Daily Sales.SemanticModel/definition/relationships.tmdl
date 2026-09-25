@@ -2,3 +2,11 @@ relationship c79951de-12c6-4b4b-81e9-1154bcc28c85
 	fromColumn: Sales.Date
 	toColumn: DimDate.Date
 
+relationship dd6d90aa-53e9-4480-a189-b219bdc824c2
+	fromColumn: Sales.Channel
+	toColumn: Channel.Channel
+
+relationship c3ce9157-afd6-4c44-850a-e04f3ee8519d
+	fromColumn: Sales.Region
+	toColumn: Region.Region
+

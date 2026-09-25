@@ -19,6 +19,7 @@ table Sales
 
 	column Channel
 		dataType: string
+		isHidden
 		lineageTag: a40803fa-ee5a-4fcf-bd2b-72f40b52af52
 		summarizeBy: none
 		isNameInferred
@@ -28,6 +29,7 @@ table Sales
 
 	column Region
 		dataType: string
+		isHidden
 		lineageTag: 8b0ab248-335f-4083-bba9-325f886ff57d
 		summarizeBy: none
 		isNameInferred

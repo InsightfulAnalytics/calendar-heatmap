@@ -4,7 +4,8 @@
     { "name": "sales rows", "expr": "COUNTROWS ( 'Sales' )" },
     { "name": "sales amount", "expr": "SUM ( 'Sales'[Amount] )" },
     { "name": "sales position checksum", "expr": "SUMX ( 'Sales', 'Sales'[Amount] * MOD ( CONVERT ( 'Sales'[Date], INTEGER ), 101 ) )" },
-    { "name": "date rows", "expr": "COUNTROWS ( 'DimDate' )" }
+    { "name": "date rows", "expr": "COUNTROWS ( 'DimDate' )" },
+    { "name": "channel and region rows", "expr": "COUNTROWS ( 'Channel' ) * 100 + COUNTROWS ( 'Region' )" }
   ],
   "checks": [
     {
@@ -134,15 +135,63 @@
     },
     {
       "name": "model tables (no hidden local date tables)",
-      "ticket": "T01",
+      "ticket": "T01, T05",
       "report": "CONCATENATEX ( INFO.TABLES (), [Name], \", \", [Name], ASC )",
-      "independent": "\"DimDate, Measure Table, Sales\""
+      "independent": "\"Channel, DimDate, Measure Table, Region, Sales\""
     },
     {
-      "name": "one relationship, active and single direction, many to one",
-      "ticket": "T01",
+      "name": "three relationships (date, channel, region), each active and single direction, many to one",
+      "ticket": "T01, T05",
       "report": "COUNTROWS ( FILTER ( INFO.RELATIONSHIPS (), [IsActive] && [CrossFilteringBehavior] = 1 && [FromCardinality] = 2 && [ToCardinality] = 1 ) ) & \" of \" & COUNTROWS ( INFO.RELATIONSHIPS () )",
-      "independent": "\"1 of 1\""
+      "independent": "\"3 of 3\""
+    },
+    {
+      "name": "the Channel dimension lists its members in display order, with no blank row",
+      "ticket": "T05",
+      "report": "CONCATENATEX ( ALL ( 'Channel' ), 'Channel'[Channel], \", \", 'Channel'[Channel Order], ASC )",
+      "independent": "\"Online, Retail, Wholesale\""
+    },
+    {
+      "name": "the Region dimension lists its members in display order, with no blank row",
+      "ticket": "T05",
+      "report": "CONCATENATEX ( ALL ( 'Region' ), 'Region'[Region], \", \", 'Region'[Region Order], ASC )",
+      "independent": "\"North, South, EMEA, APAC\""
+    },
+    {
+      "name": "every sales row finds its Channel member",
+      "ticket": "T05",
+      "report": "COUNTROWS ( FILTER ( 'Sales', NOT ISBLANK ( RELATED ( 'Channel'[Channel] ) ) ) ) + 0",
+      "independent": "COUNTROWS ( 'Sales' )"
+    },
+    {
+      "name": "every sales row finds its Region member",
+      "ticket": "T05",
+      "report": "COUNTROWS ( FILTER ( 'Sales', NOT ISBLANK ( RELATED ( 'Region'[Region] ) ) ) ) + 0",
+      "independent": "COUNTROWS ( 'Sales' )"
+    },
+    {
+      "name": "every Channel member has sales rows",
+      "ticket": "T05",
+      "report": "COUNTROWS ( FILTER ( ALL ( 'Channel'[Channel] ), CALCULATE ( COUNTROWS ( 'Sales' ) ) > 0 ) ) + 0",
+      "independent": "COUNTROWS ( ALL ( 'Sales'[Channel] ) )"
+    },
+    {
+      "name": "every Region member has sales rows",
+      "ticket": "T05",
+      "report": "COUNTROWS ( FILTER ( ALL ( 'Region'[Region] ), CALCULATE ( COUNTROWS ( 'Sales' ) ) > 0 ) ) + 0",
+      "independent": "COUNTROWS ( ALL ( 'Sales'[Region] ) )"
+    },
+    {
+      "name": "total sales, channel Retail (filtered through the Channel dimension)",
+      "ticket": "T05",
+      "report": "CALCULATE ( [Total Sales], 'Channel'[Channel] = \"Retail\" )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Channel] = \"Retail\" ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "total sales, region EMEA (filtered through the Region dimension)",
+      "ticket": "T05",
+      "report": "CALCULATE ( [Total Sales], 'Region'[Region] = \"EMEA\" )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Region] = \"EMEA\" ), 'Sales'[Amount] )"
     },
     {
       "name": "title text for calendar 2025",

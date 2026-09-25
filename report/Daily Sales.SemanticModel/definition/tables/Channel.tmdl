@@ -1,0 +1,40 @@
+/// Sales channels, the members a channel filter or slicer lists, in display order. A DAX calculated table, so no mashup container is started.
+table Channel
+	lineageTag: d0c2f782-710e-476d-be97-6db3076cd229
+
+	column Channel
+		dataType: string
+		lineageTag: 71c07282-1b39-4e2e-811b-db1cfea28f29
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Channel]
+		sortByColumn: 'Channel Order'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Channel Order'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 3d92702b-bca1-404b-a00f-3b9ed530259f
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Channel Order]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Channel = calculated
+		mode: import
+		source =
+				// One row per channel, in display order. The names match the channels the Sales
+				// generator writes; the seam's tie-out checks every sales row finds its member.
+				DATATABLE (
+				    "Channel", STRING,
+				    "Channel Order", INTEGER,
+				    {
+				        { "Online", 1 },
+				        { "Retail", 2 },
+				        { "Wholesale", 3 }
+				    }
+				)
+
