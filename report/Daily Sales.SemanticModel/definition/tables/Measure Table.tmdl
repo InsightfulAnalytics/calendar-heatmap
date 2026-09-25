@@ -337,6 +337,47 @@ table 'Measure Table'
 		displayFolder: Sales
 		lineageTag: 486cbe23-470d-4dd9-a9e3-7a95adcad9f7
 
+	/// A day's total sales when it is one of the five best days in the visual's filter (slicers, page filters and any Calendar Selection), blank otherwise, so a visual that binds the date and this measure shows exactly the Top days. Ties go to the earlier date; days without sales never appear.
+	measure 'Top Day Sales' =
+
+			// The day on the current row, when there is exactly one
+			VAR __Day =
+			    SELECTEDVALUE ( 'DimDate'[Date] )
+			// Every day in the visual's filter, with its sales. ALLSELECTED on the date table, as a
+			// filter, drops the row's own date and keeps the outer filters; ALLSELECTED on the date
+			// column, as a table, would return every date whatever the page filter says
+			VAR __Days =
+			    ADDCOLUMNS (
+			        CALCULATETABLE (
+			            VALUES ( 'DimDate'[Date] ),
+			            ALLSELECTED ( 'DimDate' )
+			        ),
+			        "@Sales", [Total Sales]
+			    )
+			// The five best days that have sales; ties go to the earlier date
+			VAR __Top =
+			    TOPN (
+			        5,
+			        FILTER (
+			            __Days,
+			            NOT ISBLANK ( [@Sales] )
+			        ),
+			        [@Sales], DESC,
+			        'DimDate'[Date], ASC
+			    )
+			// The current day's sales when it is one of the five, blank otherwise
+			VAR __Result =
+			    IF (
+			        NOT ISBLANK ( __Day )
+			            && __Day IN SELECTCOLUMNS ( __Top, "@Date", 'DimDate'[Date] ),
+			        [Total Sales]
+			    )
+			RETURN
+			    __Result
+		formatString: #,##0
+		displayFolder: Sales
+		lineageTag: 4bb725df-85af-4eda-84a0-ab419ee3232b
+
 	column Column1
 		dataType: string
 		isHidden

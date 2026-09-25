@@ -381,6 +381,45 @@
       "blankExpected": true
     },
     {
+      "name": "Top days, {{name}}: a visual of date and Top Day Sales gets exactly five rows",
+      "ticket": "T05",
+      "each": "filters",
+      "report": "CALCULATE ( COUNTROWS ( SUMMARIZECOLUMNS ( 'DimDate'[Date], \"@Top\", [Top Day Sales] ) ), {{report}} ) + 0",
+      "independent": "5"
+    },
+    {
+      "name": "Top days, {{name}}: the five rows, best first, are the top five days of the sales rows",
+      "ticket": "T05",
+      "each": "filters",
+      "report": [
+        "CALCULATE (",
+        "    VAR __Rows = SUMMARIZECOLUMNS ( 'DimDate'[Date], \"@Top\", [Top Day Sales] )",
+        "    RETURN CONCATENATEX ( __Rows, FORMAT ( 'DimDate'[Date], \"yyyy-mm-dd\" ) & \" \" & [@Top], \", \", [@Top], DESC, 'DimDate'[Date], ASC ),",
+        "    {{report}}",
+        ")"
+      ],
+      "independent": [
+        "VAR __ByDay = GROUPBY ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Date], \"@Sales\", SUMX ( CURRENTGROUP (), 'Sales'[Amount] ) )",
+        "VAR __Top = TOPN ( 5, __ByDay, [@Sales], DESC, 'Sales'[Date], ASC )",
+        "RETURN CONCATENATEX ( __Top, FORMAT ( 'Sales'[Date], \"yyyy-mm-dd\" ) & \" \" & [@Sales], \", \", [@Sales], DESC, 'Sales'[Date], ASC )"
+      ]
+    },
+    {
+      "name": "Top days lists only the days with sales when the filter holds fewer than five (31 Jul to 3 Aug 2025, 1 Aug has none)",
+      "ticket": "T05",
+      "report": [
+        "CALCULATE (",
+        "    VAR __Rows = SUMMARIZECOLUMNS ( 'DimDate'[Date], \"@Top\", [Top Day Sales] )",
+        "    RETURN CONCATENATEX ( __Rows, FORMAT ( 'DimDate'[Date], \"yyyy-mm-dd\" ), \", \", [@Top], DESC, 'DimDate'[Date], ASC ),",
+        "    DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 31 ), DATE ( 2025, 8, 3 ) )",
+        ")"
+      ],
+      "independent": [
+        "VAR __ByDay = GROUPBY ( FILTER ( 'Sales', 'Sales'[Date] >= DATE ( 2025, 7, 31 ) && 'Sales'[Date] <= DATE ( 2025, 8, 3 ) ), 'Sales'[Date], \"@Sales\", SUMX ( CURRENTGROUP (), 'Sales'[Amount] ) )",
+        "RETURN CONCATENATEX ( __ByDay, FORMAT ( 'Sales'[Date], \"yyyy-mm-dd\" ), \", \", [@Sales], DESC, 'Sales'[Date], ASC )"
+      ]
+    },
+    {
       "name": "the model's format functions are loaded in Desktop",
       "ticket": "T05",
       "report": "CONCATENATEX ( INFO.USERDEFINEDFUNCTIONS (), [Name], \", \", [Name], ASC )",
