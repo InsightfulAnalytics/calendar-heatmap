@@ -103,6 +103,36 @@
       "source": "dailyTable",
       "target": "titleText",
       "type": "NoFilter"
+    },
+    {
+      "source": "calendar",
+      "target": "meanPerDayCard",
+      "type": "DataFilter"
+    },
+    {
+      "source": "calendar",
+      "target": "peakDayCard",
+      "type": "DataFilter"
+    },
+    {
+      "source": "calendar",
+      "target": "activeDaysCard",
+      "type": "DataFilter"
+    },
+    {
+      "source": "dailyTable",
+      "target": "meanPerDayCard",
+      "type": "NoFilter"
+    },
+    {
+      "source": "dailyTable",
+      "target": "peakDayCard",
+      "type": "NoFilter"
+    },
+    {
+      "source": "dailyTable",
+      "target": "activeDaysCard",
+      "type": "NoFilter"
     }
   ]
 }

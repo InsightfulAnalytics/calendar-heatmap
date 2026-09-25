@@ -11,7 +11,8 @@
     "test": "node --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "desktop": "node src/cli/desktop.ts",
-    "probe": "node src/cli/probe.ts"
+    "probe": "node src/cli/probe.ts",
+    "cards": "node src/cli/cards.ts"
   },
   "devDependencies": {
     "@types/node": "24.13.6",
