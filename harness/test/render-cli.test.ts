@@ -1,62 +1,76 @@
 // The render command: one command renders a named spec over a named fixture, size, theme and
 // options, writes the PNG and the scene, prints one pass or fail line per check and exits non-zero
-// on any failure. No Power BI is involved.
+// on any failure. No Power BI is involved. With no --vega and no --tz it runs every check in all
+// six cells, each line prefixed with its cell's label as the test names are; the flags narrow it.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { HARNESS_DIR, OUT_DIR } from '../src/paths.ts';
+import { CELLS, cellLabel, type Cell } from '../src/index.ts';
 
 const run = (args: string[]) => {
-  const r = spawnSync(process.execPath, ['src/cli/render.ts', ...args], { cwd: HARNESS_DIR, encoding: 'utf8', timeout: 120000 });
+  const r = spawnSync(process.execPath, ['src/cli/render.ts', ...args], { cwd: HARNESS_DIR, encoding: 'utf8', timeout: 300000 });
   return { code: r.status, out: `${r.stdout}${r.stderr}` };
 };
+const resultLines = (out: string) => out.split(/\r?\n/).filter((l) => /^(pass|fail) /.test(l));
 const COMMON = ['--spec', 'prototype', '--fixture', 'prototype-sample', '--size', '1080x362', '--theme', 'bi-nexus', '--option', 'titleText=Revenue'];
+const pngOf = ({ vega, timeZone }: Cell) =>
+  path.join(OUT_DIR, `prototype__prototype-sample__1080x362__vega${vega}__${timeZone.replace(/\//g, '-')}.png`);
 
-test('the render command writes the PNG and the scene, and prints one pass line per passing check', () => {
-  const png = path.join(OUT_DIR, 'prototype__prototype-sample__1080x362__vega6.4__UTC.png');
-  const scene = png.replace(/\.png$/, '.scene.json');
-  rmSync(png, { force: true });
-  rmSync(scene, { force: true });
-  const { code, out } = run([
-    ...COMMON,
-    '--check', 'fill 2025-12-17 #113d77',
-    '--check', 'label Revenue',
-    '--check', 'tooltip 2025-12-17 Sales=11,620',
-    '--check', 'ring 2025-12-17',
-    '--check', 'drag 2025-07-07 2025-08-20 selects 36',
-    '--check', 'click 2025-12-17 selects 1',
-    '--check', 'scan',
-  ]);
+test('with no --vega and no --tz the render command runs every check in all six cells, and writes each cell\'s PNG and scene', () => {
+  for (const cell of CELLS) {
+    rmSync(pngOf(cell), { force: true });
+    rmSync(pngOf(cell).replace(/\.png$/, '.scene.json'), { force: true });
+  }
+  const checks = [
+    'fill 2025-12-17 #113d77',
+    'label Revenue',
+    'tooltip 2025-12-17 Sales=11,620',
+    'ring 2025-12-17',
+    'drag 2025-07-07 2025-08-20 selects 36',
+    'click 2025-12-17 selects 1',
+    'scan',
+  ];
+  const { code, out } = run([...COMMON, ...checks.flatMap((c) => ['--check', c])]);
   assert.equal(code, 0, out);
-  const lines = out.split(/\r?\n/).filter((l) => /^(pass|fail) /.test(l));
-  assert.equal(lines.length, 7, out);
-  assert.ok(lines.every((l) => l.startsWith('pass ')), out);
-  assert.ok(existsSync(png), `${png} was not written`);
-  const written = JSON.parse(readFileSync(scene, 'utf8'));
-  assert.equal(written.days.length, 365);
-  assert.ok(written.labels.some((l: { text: string }) => l.text === 'Revenue'));
+  const expected = CELLS.flatMap(({ label }) => checks.map((c) => `pass ${label} ${c}`));
+  assert.deepEqual(resultLines(out), expected, out);
+  for (const cell of CELLS) {
+    assert.ok(existsSync(pngOf(cell)), `${pngOf(cell)} was not written`);
+    const written = JSON.parse(readFileSync(pngOf(cell).replace(/\.png$/, '.scene.json'), 'utf8'));
+    assert.equal(written.days.length, 365, cell.label);
+    assert.ok(written.labels.some((l: { text: string }) => l.text === 'Revenue'), cell.label);
+  }
 });
 
 test('the render command prints a fail line and exits non-zero when a check fails', () => {
-  const { code, out } = run([...COMMON, '--check', 'fill 2025-12-17 #113d77', '--check', 'fill 2025-12-17 #000000']);
+  const { code, out } = run([...COMMON, '--vega', '6.4', '--tz', 'UTC', '--check', 'fill 2025-12-17 #113d77', '--check', 'fill 2025-12-17 #000000']);
   assert.notEqual(code, 0);
-  const lines = out.split(/\r?\n/).filter((l) => /^(pass|fail) /.test(l));
-  assert.deepEqual(lines.map((l) => l.slice(0, 4)), ['pass', 'fail'], out);
+  assert.deepEqual(resultLines(out).map((l) => l.slice(0, 4)), ['pass', 'fail'], out);
 });
 
-test('the render command renders under Vega 6.2 in another time zone when asked', () => {
-  const png = path.join(OUT_DIR, 'prototype__prototype-sample__1080x362__vega6.2__Pacific-Auckland.png');
-  rmSync(png, { force: true });
+test('--vega and --tz together narrow the render command to that one cell', () => {
+  const cell: Cell = { vega: '6.2', timeZone: 'Pacific/Auckland' };
+  rmSync(pngOf(cell), { force: true });
   const { code, out } = run([...COMMON, '--vega', '6.2', '--tz', 'Pacific/Auckland', '--check', 'click 2025-12-17 selects 1']);
   assert.equal(code, 0, out);
-  assert.match(out, /^pass click 2025-12-17 selects 1$/m);
-  assert.ok(existsSync(png), `${png} was not written`);
+  assert.deepEqual(resultLines(out), [`pass ${cellLabel(cell)} click 2025-12-17 selects 1`], out);
+  assert.ok(existsSync(pngOf(cell)), `${pngOf(cell)} was not written`);
+});
+
+test('--vega alone narrows the render command to that Vega version in all three time zones, and --tz alone to both Vega versions in that zone', () => {
+  const byVega = run([...COMMON, '--vega', '6.2', '--check', 'fill 2025-12-17 #113d77']);
+  assert.equal(byVega.code, 0, byVega.out);
+  assert.deepEqual(resultLines(byVega.out), CELLS.filter((c) => c.vega === '6.2').map(({ label }) => `pass ${label} fill 2025-12-17 #113d77`), byVega.out);
+  const byZone = run([...COMMON, '--tz', 'America/Los_Angeles', '--check', 'fill 2025-12-17 #113d77']);
+  assert.equal(byZone.code, 0, byZone.out);
+  assert.deepEqual(resultLines(byZone.out), CELLS.filter((c) => c.timeZone === 'America/Los_Angeles').map(({ label }) => `pass ${label} fill 2025-12-17 #113d77`), byZone.out);
 });
 
 test('the render command fails loudly on an unknown check', () => {
-  const { code, out } = run([...COMMON, '--check', 'sparkle 2025-12-17']);
+  const { code, out } = run([...COMMON, '--vega', '6.4', '--tz', 'UTC', '--check', 'sparkle 2025-12-17']);
   assert.notEqual(code, 0);
-  assert.match(out, /^fail sparkle 2025-12-17/m);
+  assert.match(out, /^fail \[Vega 6\.4, UTC\] sparkle 2025-12-17/m);
 });

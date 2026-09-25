@@ -20,12 +20,17 @@ npm install          # once: TypeScript, Playwright's library (no browser downlo
 npm test             # every check; one pass or fail line each; exits 1 on any failure
 npm run typecheck    # tsc --noEmit
 npm run render -- --spec prototype --fixture base-2025 --size 1080x362 --theme bi-nexus `
-  --option titleText=Revenue --vega 6.2 --tz Pacific/Auckland `
+  --option titleText=Revenue `
   --check "fill 2025-12-19 #113d77" --check "drag 2025-07-07 2025-08-20 selects 42"
 ```
 
-`render` writes `out/<spec>__<fixture>__<size>__vega<v>__<zone>.png` and `.scene.json` (the folder
-is ignored by git), then prints a pass or fail line per `--check`. The check forms are listed at
+With no `--vega` and no `--tz`, `render` runs every `--check` in all six cells. `--vega 6.2` keeps
+one Vega version (three cells), `--tz Pacific/Auckland` replaces the three zones with that one (two
+cells), and both together narrow it to one cell. For each cell it writes
+`out/<spec>__<fixture>__<size>__vega<v>__<zone>.png` and `.scene.json` (the folder is ignored by
+git), then prints a pass or fail line per `--check`, prefixed with the cell's label as the test
+names are: `pass [Vega 6.2, Pacific/Auckland] fill 2025-12-19 #113d77`. It exits 1 when any check
+fails in any cell. The check forms are listed at
 the top of `src/checks.ts`: `fill`, `label`, `tooltip`, `ring`, `drag ... selects n`,
 `click ... selects n` and `scan`. A single test file runs with
 `node --test --test-reporter=./src/reporter.ts test/apply.test.ts`.
