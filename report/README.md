@@ -11,6 +11,7 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
 | `Daily Sales.Report/` | The Report (PBIR, BI Nexus theme), one page so far: Daily overview |
 | `seam.ps1` | The report seam loop, below |
 | `tieout.json` | The DAX tie-out suite the loop runs. Later tickets add checks here |
+| `desktop/` | The Desktop driver: replays gestures in Desktop through remote debugging, and the #2 probe. See "Gestures in Desktop" below |
 
 ## The model
 
@@ -90,6 +91,80 @@ decide which copy wins first, and say which: saving from Desktop writes its copy
 edits waiting to be applied, and `-OverwriteUnsaved` discards the canvas work.
 
 The loop never saves. Do not save from Desktop while on-disk edits are waiting to be applied.
+
+## Gestures in Desktop (remote debugging)
+
+Desktop's report canvas is a WebView2 page, and a Deneb visual is an iframe inside it. Started with
+a localhost debugging port, Desktop accepts a Chrome DevTools Protocol client, so a script can
+press, move and release the real mouse over a Calendar's days and then read what every visual
+shows. #2 proved it on Desktop 2.157.1354.0 (26.08) with Deneb 2.0.0.0: a drag, clicks, shift
+gestures, a right click and a background click all replayed, and Deneb's editor opened and read.
+**Later tickets replay every Desktop gesture this way.**
+
+`desktop/` is a small Node package (Node 24 runs its TypeScript directly). Run from that folder:
+
+```powershell
+npm install                          # once: Playwright's library (no browser download) and TypeScript
+npm run desktop -- open              # start Desktop on the PBIP with the debugging port 9339
+npm run desktop -- open --plain      # start it without a port
+npm run desktop -- save              # save through the title bar Save button
+npm run desktop -- close             # close it, answering the save prompt with Don't save
+npm run probe                        # the #2 probe, end to end (below)
+npm run typecheck
+```
+
+The recipe, which `src/desktop.ts` implements:
+
+1. **Start Desktop with the port in its own environment only.** `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`
+   is set to `--remote-debugging-port=9339` in the environment of the child process that launches
+   `PBIDesktop.exe` with the `.pbip`, never for the user or the machine. The port listens on
+   127.0.0.1 only. WebView2 reads the variable only when it starts its browser process, and Desktop
+   instances share one, so `open` refuses while any Desktop is running. Without the port, nothing
+   below works; close Desktop and open it with `open`.
+2. **Connect** with Playwright's `chromium.connectOverCDP('http://127.0.0.1:9339')` and take the page
+   whose URL ends `/minerva/reportView.html` (the other pages are the model, DAX query, TMDL and
+   dialog views). `browser.close()` only disconnects: Desktop keeps running.
+3. **Find a visual** by its accessible name: `.visualContainer` whose `aria-label` (spaces
+   normalised) is a Deneb visual's alt text or a native visual's title. A Deneb visual's frame is
+   the `iframe` inside it, named `visual-sandbox`.
+4. **Read the Calendar.** Vega's SVG renderer binds each scene item to its element as `__data__`,
+   so a day is the element whose item belongs to the adapter's day mark with the day's date in the
+   adapter's date field (`harness/src/adapter.ts`, shared). The root item's `context.dataflow` is
+   the Vega view, and `view.data('dataset')` is the dataset exactly as Deneb delivered it: Date
+   objects, `__row__`, `__selected__` and every companion field. This needs the SVG renderer.
+5. **Replay gestures** with Playwright's mouse at a day's on-screen centre (the element's bounding
+   box, which Playwright maps through the iframe and the canvas's CSS scale). These are real,
+   trusted input events (`Input.dispatchMouseEvent`), so Deneb accepts the apply call as a browser
+   event. Shift and ctrl are held with the keyboard, and the mouse events carry them. A background
+   click lands in the view's top-left padding.
+6. **Read every other visual** from the canvas DOM: a card's value, a text box's text, and a
+   table's rows (an ARIA grid whose `aria-rowcount` counts the header and Total rows; the body is
+   virtualised, so it is scrolled through and read by `aria-rowindex`). An open context menu is a
+   visible `pbi-menu[role=menu]`. `settle()` waits until all of it reads the same for three
+   seconds, rather than sleeping a guessed time.
+7. **Deneb's editor**: More options (`data-testid=visual-more-options-btn`), then
+   `pbimenu-item.Edit`. The debug pane's tabs are `button[name=debugMode]` with values `source`
+   (the dataset as received), `data`, `signal` and `log`; the Source table pages 50 rows at a time.
+   `data-testid=back-to-report-button` leaves.
+8. **Save and close** go through UI Automation (`src/uia.ps1`). The save prompt on close is an
+   MSHTML page that UI Automation cannot see into, so it is answered through its DOM. See the
+   project LEARNINGS.
+
+DAX for the expected values goes through `pbir model -q` exactly as the seam loop does.
+
+### The #2 probe
+
+`npm run probe -- [--out <folder>] [--west "Pacific Standard Time"]` answers every gating Desktop
+question on this Report without a human, and writes its screenshots and `probe.json` (every answer
+and every check) to `--out`, by default `checklists/probe/screenshots/`. It closes any Desktop on the
+PBIP (Don't save), opens it with the port, and checks the baseline, the dataset and 1 July 2025 as
+received, the drag, the clicks, the right click, the background click and three shift gestures,
+each against the table, both cards, the title and the Calendar's own selected flags; then saves and
+audits the saved `visual.json`. It then switches Windows to the `--west` zone, restarts Desktop,
+reads 1 July 2025 again, restores the zone (always, even after a failure) and leaves Desktop open
+without a port. It prints a pass or fail line per check and exits 1 on any failure. Expected values
+come from literals, from date arithmetic in the probe, and from independent DAX over the rows. The
+answers are recorded in the SPEC.
 
 ## Adding a tie-out check
 
