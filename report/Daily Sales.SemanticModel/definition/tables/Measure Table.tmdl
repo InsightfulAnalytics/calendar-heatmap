@@ -264,7 +264,7 @@ table 'Measure Table'
 
 	/// Total sales over every calendar day in the current date filter, blank days counted as zero, so the divisor is the days in the filter, not the days with sales. Reads 0 on a filter whose days have no sales, and blank only when the filter holds no days.
 	measure 'Mean per Day' =
-
+			
 			// Every calendar day in the current date filter, counted from the date table, so days
 			// with no sales rows are in the divisor
 			VAR __Days =
@@ -283,7 +283,7 @@ table 'Measure Table'
 
 	/// Days with sales in the current date filter, both the days and their sales read through the date table. Formatted out of the calendar days in the filter, such as 37 / 45, while the value stays a number. Reads 0 on a filter whose days have no sales, and blank only when the filter holds no days.
 	measure 'Active Days' =
-
+			
 			// Every calendar day in the current date filter, from the date table
 			VAR __Days =
 			    VALUES ( 'DimDate'[Date] )
@@ -308,7 +308,7 @@ table 'Measure Table'
 
 	/// The date of the best day in the current date filter: the day with the highest total sales, the earliest date on a tie. Blank when no day in the filter has sales.
 	measure 'Peak Day' =
-
+			
 			// Each calendar day in the current date filter, with its sales
 			VAR __Days =
 			    ADDCOLUMNS (
@@ -339,7 +339,7 @@ table 'Measure Table'
 
 	/// A day's total sales when it is one of the five best days in the visual's filter (slicers, page filters and any Calendar Selection), blank otherwise, so a visual that binds the date and this measure shows exactly the Top days. Ties go to the earlier date; days without sales never appear.
 	measure 'Top Day Sales' =
-
+			
 			// The day on the current row, when there is exactly one
 			VAR __Day =
 			    SELECTEDVALUE ( 'DimDate'[Date] )

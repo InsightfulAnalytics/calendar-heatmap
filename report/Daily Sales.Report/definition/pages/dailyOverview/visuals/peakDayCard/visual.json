@@ -1,5 +1,14 @@
 {
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "peakDayCard",
+  "position": {
+    "x": 944,
+    "y": 648,
+    "z": 0,
+    "height": 136,
+    "width": 296,
+    "tabOrder": 0
+  },
   "visual": {
     "visualType": "card",
     "query": {
@@ -7,7 +16,6 @@
         "Values": {
           "projections": [
             {
-              "queryRef": "Measure Table.Peak Day",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -18,6 +26,7 @@
                   "Property": "Peak Day"
                 }
               },
+              "queryRef": "Measure Table.Peak Day",
               "nativeQueryRef": "Peak Day"
             }
           ]
@@ -42,8 +51,6 @@
         "isDefaultSort": true
       }
     },
-    "objects": {},
-    "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
         {
@@ -78,15 +85,7 @@
           }
         }
       ]
-    }
-  },
-  "position": {
-    "x": 944,
-    "y": 648,
-    "width": 296,
-    "height": 136,
-    "z": 0,
-    "tabOrder": 0
-  },
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json"
+    },
+    "drillFilterOtherVisuals": true
+  }
 }
