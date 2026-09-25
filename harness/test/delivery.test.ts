@@ -2,7 +2,7 @@
 // midnight or text) changes the date field's shape and nothing else, in every time zone.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CELLS, type DateDelivery } from '../src/index.ts';
+import { CELLS, DATE_DELIVERIES } from '../src/index.ts';
 import { loadFixture } from '../src/fixtures.ts';
 import { useHarness } from './helpers.ts';
 
@@ -14,7 +14,7 @@ const harness = useHarness();
 for (const { vega, timeZone, label: cell } of CELLS) {
   test(`${cell} switching date delivery between local midnight, UTC midnight and text changes the rows' date shape and nothing else`, async () => {
     const delivered: Record<string, Record<string, unknown>[]> = {};
-    for (const dateDelivery of ['local', 'utc', 'text'] as DateDelivery[]) {
+    for (const dateDelivery of DATE_DELIVERIES) {
       const cal = await harness.render({ spec: 'prototype', fixture: 'base-2025', vega, timeZone, dateDelivery });
       assert.equal(await cal.timeZone(), timeZone);
       delivered[dateDelivery] = await cal.deliveredRows();

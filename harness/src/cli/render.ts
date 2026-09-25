@@ -8,7 +8,7 @@
 import { parseArgs } from 'node:util';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { openHarness, VEGA_VERSIONS, type DateDelivery, type RenderInput, type VegaVersion } from '../index.ts';
+import { openHarness, DATE_DELIVERIES, VEGA_VERSIONS, type DateDelivery, type RenderInput, type VegaVersion } from '../index.ts';
 import { runChecks } from '../checks.ts';
 import { OUT_DIR } from '../paths.ts';
 import type { Json } from '../spec.ts';
@@ -32,11 +32,11 @@ function fail(message: string): never {
   process.exit(2);
 }
 
-if (!values.spec || !values.fixture) fail('usage: npm run render -- --spec <name|path.json> --fixture <name> [--size WxH] [--theme name] [--option k=v] [--vega 6.2|6.4] [--tz zone] [--date-delivery local|utc|text] [--check "..."]');
+if (!values.spec || !values.fixture) fail(`usage: npm run render -- --spec <name|path.json> --fixture <name> [--size WxH] [--theme name] [--option k=v] [--vega 6.2|6.4] [--tz zone] [--date-delivery ${DATE_DELIVERIES.join('|')}] [--check "..."]`);
 const size = /^(\d+)x(\d+)$/.exec(values.size ?? '');
 if (!size) fail(`--size must look like 1080x362, not '${values.size}'`);
 if (!VEGA_VERSIONS.includes(values.vega as VegaVersion)) fail(`--vega must be one of ${VEGA_VERSIONS.join(', ')}`);
-if (!['local', 'utc', 'text'].includes(values['date-delivery'] ?? '')) fail('--date-delivery must be local, utc or text');
+if (!DATE_DELIVERIES.includes(values['date-delivery'] as DateDelivery)) fail(`--date-delivery must be one of ${DATE_DELIVERIES.join(', ')}`);
 
 const parseValue = (text: string): Json => {
   try {
