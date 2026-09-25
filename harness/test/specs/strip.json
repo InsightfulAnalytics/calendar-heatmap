@@ -1,0 +1,64 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Harness test strip (valid). Every day of 2025 as a small square, in day order down 7 rows and across 53 columns (not weekday-aligned). A left drag selects a date range with an expression over a base dataset field and top-level signals only. The apply limit is the top-level signal selectionLimit, so a check can set it.",
+  "width": {"signal": "pbiContainerWidth"},
+  "height": {"signal": "pbiContainerHeight"},
+  "padding": 0,
+  "signals": [
+    {"name": "selectionLimit", "value": 2500},
+    {
+      "name": "downIdx",
+      "value": null,
+      "on": [
+        {"events": "@cell:mousedown[event.button === 0]", "update": "datum.idx"},
+        {"events": "view:mousedown[event.button === 0][!event.item || event.item.mark.name !== 'cell']", "update": "null"}
+      ]
+    },
+    {
+      "name": "headIdx",
+      "value": null,
+      "on": [
+        {"events": "@cell:mousedown[event.button === 0]", "update": "datum.idx"},
+        {"events": "[@cell:mousedown[event.button === 0], window:mouseup] > @cell:mouseover", "update": "datum.idx"}
+      ]
+    },
+    {"name": "loMs", "update": "downIdx == null ? 0 : time(datetime(2025, 0, 1 + min(downIdx, headIdx)))"},
+    {"name": "hiMs", "update": "downIdx == null ? 0 : time(datetime(2025, 0, 2 + max(downIdx, headIdx))) - 1"},
+    {
+      "name": "applyResult",
+      "value": {},
+      "on": [
+        {
+          "events": "view:mouseup[event.button === 0]",
+          "update": "downIdx == null ? pbiCrossFilterClear() : pbiCrossFilterApply(event, \"inrange(time(toDate(datum['Date'])), [loMs, hiMs])\", {limit: selectionLimit})"
+        }
+      ]
+    }
+  ],
+  "data": [
+    {"name": "dataset"},
+    {
+      "name": "days",
+      "transform": [
+        {"type": "sequence", "start": 0, "stop": 365, "as": "idx"},
+        {"type": "formula", "as": "date", "expr": "datetime(2025, 0, 1 + datum.idx)"}
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "type": "rect",
+      "name": "cell",
+      "from": {"data": "days"},
+      "encode": {
+        "update": {
+          "x": {"signal": "8 + floor(datum.idx / 7) * 14"},
+          "y": {"signal": "8 + (datum.idx % 7) * 14"},
+          "width": {"value": 12},
+          "height": {"value": 12},
+          "fill": {"value": "#5693e3"}
+        }
+      }
+    }
+  ]
+}
