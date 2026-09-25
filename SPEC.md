@@ -1,6 +1,8 @@
 # Spec: Calendar Heatmap template and working report
 
-Status: ready for agent. Tim confirmed both test seams on 2026-09-25 (see Testing Decisions).
+Status: ready for agent. Tim confirmed both test seams on 2026-09-25 (see Testing Decisions). On
+2026-09-26 he dropped the click-through checklists: agents build everything and verify it
+themselves, and only the outward steps (the courtesy note, publishing, the library PR) stay his.
 Written 2026-09-25 from the feasibility study and prototype session, then reviewed by three critics
 for completeness, technical accuracy and spec craft.
 
@@ -578,11 +580,15 @@ so no third harness is built.
    compared with the mock and the layout decisions above. Schema validation does not catch a
    malformed measure-driven text run, so the title is checked on screen. DAX tie-out queries evaluate
    the report's own measures (total, mean per day, peak day, active days) and the Top days rows
-   under a test's filters, and compare them with independent queries over the fact tables. Clicking
-   and dragging inside a Deneb visual cannot yet be driven reliably from outside, so the agent writes
-   a click-through checklist (each step, the expected result on every other visual, and the
-   screenshot to take), Tim performs it, and the agent reviews the screenshots. The checklist is an
-   acceptance step, not an automated test.
+   under a test's filters, and compare them with independent queries over the fact tables. There are
+   no human click-through checklists (Tim's decision, 2026-09-26). Clicks and drags inside a Deneb
+   visual are proven at the template seam, whose apply evaluator copies Deneb's source. In Desktop,
+   the agent first tries to drive real gestures through the report canvas's WebView2 remote
+   debugging (Desktop started with a local debugging port for the test run only). Where that works,
+   the gestures are replayed in Desktop and their effect on every other visual is checked by
+   screenshot and DAX. Where it does not, the Desktop evidence is what renders without a gesture:
+   screenshots, DAX tie-outs, temporary debug text drawn by the spec, and filters set in the filter
+   pane on disk, each removed afterwards.
 
 ### Prior art
 
@@ -630,10 +636,12 @@ so no third harness is built.
 
 - The prototype reproduces the calendar card at the top of Lumeric's Calendar Heatmap page and has
   been re-rendered in BI Nexus. Its click, drag, right-click and clear behaviour has only been
-  replayed in a headless browser. Nothing has run inside Power BI Desktop yet. The first Desktop
-  checks, before anything else is built on them: how the date column arrives (type and time zone),
-  that blank dates arrive as rows with the helper measure, that Deneb accepts the range expression,
-  and how shift-drag over a selection behaves.
+  replayed in a headless browser. The first Desktop checks, before anything else is built on them:
+  how the date column arrives (type and time zone), that blank dates arrive as rows with the helper
+  measure, that Deneb accepts the range expression, and how shift-drag over a selection behaves.
+  Since 2026-09-26 an agent answers them without a human (see the report seam), and records each
+  answer and how it was found in this spec. An answer that cannot be observed without a gesture
+  falls back to Deneb's source at 1.9.1.0 and 2.0.0.0, which the harness copies.
 - The mock contradicts itself in places: 364 cells against "365 days", a "quantile" label on
   equal-interval steps, evenly spaced month labels, rising month bars against a "best month" of
   October, and a peak cell drawn wider than its column. Where it does, this spec follows what reads
