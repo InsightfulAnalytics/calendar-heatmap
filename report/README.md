@@ -34,8 +34,11 @@ Start-Process "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales
 Then run the loop with Windows PowerShell 5.1, from any folder, naming where the screenshots go:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\seam.ps1" -OutDir "<folder>"
+powershell -NoProfile -ExecutionPolicy Bypass -File "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\seam.ps1" -OutDir "<folder>" -OverwriteUnsaved
 ```
+
+Pass `-OverwriteUnsaved` only after checking that nobody has canvas work open in that Desktop
+instance (see "Unsaved changes in Desktop" below).
 
 It exits 0 only when every step passes:
 
@@ -45,7 +48,8 @@ It exits 0 only when every step passes:
    validate (`--all`) must show no errors beyond one known false positive: pbir reads the text box
    dynamic value that Desktop itself writes as a Column bound to a measure.
 3. Applies the on-disk model and report by clicking Desktop's **Apply external changes** banner,
-   and confirming its overwrite dialog, when Desktop has noticed a change on disk.
+   when Desktop has noticed a change on disk. If Desktop then asks **Overwrite your unsaved
+   edits**, the loop confirms only with `-OverwriteUnsaved`.
 4. Refreshes data inside Desktop (the Home ribbon Refresh, through UI Automation) twice, and fails
    unless both refreshes give the same data fingerprint.
 5. Reloads the canvas.
@@ -55,13 +59,37 @@ It exits 0 only when every step passes:
 
 `-SkipScreenshot` skips step 6 for a quick DAX-only rerun.
 
-The loop never saves, and it leaves Desktop with unsaved changes after the data refresh. That is
-safe for the next run, whose step 3 puts the disk copy over them. Do not save from Desktop while
-on-disk edits are waiting to be applied: a Desktop save writes its own copy over them.
+Every DAX query the loop runs (the compatibility level, the refresh-completion poll, the
+fingerprint and the tie-out) goes through `pbir model "<absolute Report path>" -q --json`, which
+queries the engine of the Desktop instance that has this Report open. `pbir model` has no `--pid`
+flag (pbir 0.9.32); step 1 fails unless exactly one instance holds the PBIP, so the match is never
+ambiguous. pbir's JSON output cannot serialize a datetime cell ("Object of type datetime is not
+JSON serializable"), so the loop never returns one: each value comes back as flags, text and a
+number. The loop opens no connection of its own. If `pbir model -q` ever cannot run a query, the
+fallback is the ADOMD route in the `pbi-desktop:connect-pbid` skill (`scripts/query-dax.ps1`, with
+the assembly found per its `references/assembly-discovery.md`), not a connection written into this
+script.
 
 Two routes are deliberately not used. `pbir desktop refresh -m` refuses a model that defines a
 culture, and Desktop writes `cultures/en-US.tmdl` on its first save. An external TMSL full refresh
 hangs Desktop after an external model apply. Both are in the project LEARNINGS.
+
+### Unsaved changes in Desktop
+
+Desktop marks this PBIP as changed as soon as it opens, before anyone touches it, and every seam
+run leaves its data refresh unsaved. So when step 3 has something to apply, Desktop almost always
+asks **Overwrite your unsaved edits**, and confirming it discards whatever the canvas holds.
+
+- Without `-OverwriteUnsaved`, the loop cancels that dialog, changes nothing, prints why, and exits
+  1. Desktop and the disk stay as they were.
+- With it, the loop confirms the dialog and the disk copy replaces Desktop's.
+
+Before passing it, check that nobody has canvas work open in that instance: an agent build with no
+human edits, or a Desktop that has only been opened, is safe. If someone does have canvas work,
+decide which copy wins first, and say which: saving from Desktop writes its copy over the on-disk
+edits waiting to be applied, and `-OverwriteUnsaved` discards the canvas work.
+
+The loop never saves. Do not save from Desktop while on-disk edits are waiting to be applied.
 
 ## Adding a tie-out check
 
@@ -78,5 +106,23 @@ Each check in `tieout.json` is two DAX scalar expressions that must agree:
 
 `report` uses the Report's own measures under the test's filters. `independent` is a query straight
 over the fact and date tables, or the expected constant. Either may be an array of lines. Numbers
-must match exactly unless the check sets `tolerance`. A check that counts rows should add `+ 0`,
-because `COUNTROWS` of an empty table is blank, not 0.
+must match exactly unless the check sets `tolerance`.
+
+A blank on either side fails the check, even when both sides are blank: two blanks agree just as
+well when the rows a check is about are missing. A check whose answer really is blank says so with
+`"blankExpected": true`, and then passes only when both sides are blank:
+
+```json
+{
+  "name": "17 Jul 2025 has no sales (the checklist's no-sales click)",
+  "ticket": "T01",
+  "report": "CALCULATE ( [Total Sales], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
+  "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] = DATE ( 2025, 7, 17 ) ), 'Sales'[Amount] )",
+  "blankExpected": true
+}
+```
+
+So write an existence check as a non-blank condition against a constant
+(`NOT ISBLANK ( ... )` against `TRUE ()`) or as a count, never as two values that could both be
+blank. A check that counts rows should add `+ 0`, because `COUNTROWS` of an empty table is blank,
+not 0.

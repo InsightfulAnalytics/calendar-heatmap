@@ -1,5 +1,5 @@
 {
-  "about": "Report seam tie-out suite for the Daily Sales PBIP, run by seam.ps1 against the open Desktop model. Each check evaluates two DAX scalar expressions, 'report' (the report's own measures or model state) and 'independent' (a query straight over the fact and date tables, or the expected constant), and fails when they differ. Expressions may be a string or an array of lines. 'tolerance' is an absolute difference allowed between numbers (default 0). 'fingerprint' is evaluated after each of two data refreshes, and the two results must match.",
+  "about": "Report seam tie-out suite for the Daily Sales PBIP, run by seam.ps1 against the open Desktop model. Each check evaluates two DAX scalar expressions, 'report' (the report's own measures or model state) and 'independent' (a query straight over the fact and date tables, or the expected constant), and fails when they differ. A blank on either side fails the check, unless the check sets 'blankExpected': true, which passes only when both sides are blank. So an existence check compares a non-blank condition (NOT ISBLANK ( ... ) against TRUE ()) or a count ending in + 0, never two values that could both be blank. Expressions may be a string or an array of lines. 'tolerance' is an absolute difference allowed between numbers (default 0). 'fingerprint' is evaluated after each of two data refreshes, and the two results must match.",
   "fingerprint": [
     { "name": "sales rows", "expr": "COUNTROWS ( 'Sales' )" },
     { "name": "sales amount", "expr": "SUM ( 'Sales'[Amount] )" },
@@ -34,6 +34,18 @@
     {
       "name": "29 Feb 2024 has sales",
       "ticket": "T01",
+      "report": "NOT ISBLANK ( CALCULATE ( [Total Sales], 'DimDate'[Date] = DATE ( 2024, 2, 29 ) ) )",
+      "independent": "TRUE ()"
+    },
+    {
+      "name": "29 Feb 2024 has a row for every channel and region",
+      "ticket": "T01",
+      "report": "CALCULATE ( COUNTROWS ( 'Sales' ), 'DimDate'[Date] = DATE ( 2024, 2, 29 ) ) + 0",
+      "independent": "COUNTROWS ( CROSSJOIN ( ALL ( 'Sales'[Channel] ), ALL ( 'Sales'[Region] ) ) )"
+    },
+    {
+      "name": "total sales, 29 Feb 2024",
+      "ticket": "T01",
       "report": "CALCULATE ( [Total Sales], 'DimDate'[Date] = DATE ( 2024, 2, 29 ) )",
       "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] = DATE ( 2024, 2, 29 ) ), 'Sales'[Amount] )"
     },
@@ -55,6 +67,13 @@
         ") >= 1"
       ],
       "independent": "TRUE ()"
+    },
+    {
+      "name": "17 Jul 2025 has no sales (the checklist's no-sales click)",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Total Sales], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] = DATE ( 2025, 7, 17 ) ), 'Sales'[Amount] )",
+      "blankExpected": true
     },
     {
       "name": "weekdays outsell weekends (mean per day)",
@@ -122,8 +141,8 @@
     {
       "name": "one relationship, active and single direction, many to one",
       "ticket": "T01",
-      "report": "COUNTROWS ( FILTER ( INFO.RELATIONSHIPS (), [IsActive] && [CrossFilteringBehavior] = 1 && [FromCardinality] = 2 && [ToCardinality] = 1 ) )",
-      "independent": "COUNTROWS ( INFO.RELATIONSHIPS () )"
+      "report": "COUNTROWS ( FILTER ( INFO.RELATIONSHIPS (), [IsActive] && [CrossFilteringBehavior] = 1 && [FromCardinality] = 2 && [ToCardinality] = 1 ) ) & \" of \" & COUNTROWS ( INFO.RELATIONSHIPS () )",
+      "independent": "\"1 of 1\""
     },
     {
       "name": "title text for calendar 2025",
