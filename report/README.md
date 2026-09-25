@@ -110,6 +110,7 @@ npm run desktop -- open --plain      # start it without a port
 npm run desktop -- save              # save through the title bar Save button
 npm run desktop -- close             # close it, answering the save prompt with Don't save
 npm run probe                        # the #2 probe, end to end (below)
+npm test                             # offline checks, no Desktop needed
 npm run typecheck
 ```
 
@@ -154,17 +155,21 @@ DAX for the expected values goes through `pbir model -q` exactly as the seam loo
 
 ### The #2 probe
 
-`npm run probe -- [--out <folder>] [--west "Pacific Standard Time"]` answers every gating Desktop
-question on this Report without a human, and writes its screenshots and `probe.json` (every answer
-and every check) to `--out`, by default `checklists/probe/screenshots/`. It closes any Desktop on the
-PBIP (Don't save), opens it with the port, and checks the baseline, the dataset and 1 July 2025 as
-received, the drag, the clicks, the right click, the background click and three shift gestures,
-each against the table, both cards, the title and the Calendar's own selected flags; then saves and
-audits the saved `visual.json`. It then switches Windows to the `--west` zone, restarts Desktop,
-reads 1 July 2025 again, restores the zone (always, even after a failure) and leaves Desktop open
-without a port. It prints a pass or fail line per check and exits 1 on any failure. Expected values
-come from literals, from date arithmetic in the probe, and from independent DAX over the rows. The
-answers are recorded in the SPEC.
+`npm run probe -- [--out <folder>]` answers every gating Desktop question on this Report without a
+human, and writes its screenshots and `probe.json` (every answer and every check) to `--out`, by
+default `checklists/probe/screenshots/`. It closes any Desktop on the PBIP (Don't save), opens it
+with the port, and checks the baseline, the dataset and 1 July 2025 as received, the drag, the
+clicks, the right click, the background click and three shift gestures, each against the table,
+both cards, the title and the Calendar's own selected flags; then saves, audits the saved
+`visual.json`, and leaves Desktop open without a port. It prints a pass or fail line per check and
+exits 1 on any failure. Expected values come from literals, from date arithmetic in the probe, and
+from independent DAX over the rows. The answers are recorded in the SPEC.
+
+The probe reads dates in the machine's own time zone only. **Never change Windows' time zone** to
+read another one (Tim, 2026-09-26): other zones are proved in the harness only. The probe checks at
+the end that the zone is the one it started in, and `npm test` fails if any script here sets the
+zone. #2's first probe run did switch Windows to Pacific Time after this was decided; see the
+project LEARNINGS.
 
 ## Adding a tie-out check
 

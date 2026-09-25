@@ -167,66 +167,13 @@ must be as built for the rest of the checklist.
 
 Screenshot: `F2-show-items-no-data-off.png` (the editor's row count back to A1's)
 
-## B. One reading west of UTC
+## B. One reading west of UTC (dropped)
 
-**B1** Close Desktop. When it asks to save, choose **Don't save**.
-
-Screenshot: `07-close-prompt.png` (the save prompt, before you choose **Don't save**)
-
-**B2** Switch Windows to Pacific Time. In a terminal:
-
-```powershell
-tzutil /s "Pacific Standard Time"
-tzutil /g
-```
-
-Expected: `Pacific Standard Time`. (Or Settings, Time & language, Date & time, Time zone
-"(UTC-08:00) Pacific Time (US & Canada)". Automatic time zone is off on this machine.) On 1 July,
-Pacific Time is on daylight time, UTC-7.
-
-**Record:** the `tzutil /g` output.
-
-Screenshot: `08-zone-west.png` (the terminal showing the `tzutil /g` output, or the Date & time
-settings page showing the zone)
-
-**B3** Open the PBIP again:
-
-```powershell
-Start-Process "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales.pbip"
-```
-
-Expected: the table, both cards and the title exactly as in 0.2 (the model does not depend on the
-zone). The Calendar should also look as in 0.2. **Record** if it does not: under UTC-midnight
-delivery every day draws one day early here, so 1 Jan 2025 (a Wednesday) lands on Tuesday 31 Dec
-2024.
-
-Screenshot: `09-west-canvas.png`
-
-**B4** Open the Calendar in Deneb's editor (A1) and find the 1 July 2025 row again.
-
-**Record:** the `Date` cell, the hover, the type.
-
-| If the value shows as | It means |
-|---|---|
-| 1751353200000, or 2025-07-01T07:00:00.000Z, or Tue Jul 01 2025 00:00:00 GMT-0700 | local midnight (expected: the raw value changed from A3) |
-| 1751328000000, or 2025-07-01T00:00:00.000Z, or Mon Jun 30 2025 17:00:00 GMT-0700 | UTC midnight (the raw value did not change) |
-
-Screenshot: `10-debug-1jul-west.png`
-
-**B5** Back to report. Close Desktop, **Don't save**. Restore your zone:
-
-```powershell
-tzutil /s "AUS Eastern Standard Time"
-tzutil /g
-```
-
-Expected: `AUS Eastern Standard Time`. Then open the PBIP again (B3's command). Expected: the page
-as in 0.2.
-
-**Record:** the `tzutil /g` output.
-
-Screenshot: `11-zone-restored.png` (the terminal showing the `tzutil /g` output, with the reopened
-page beside it if it fits)
+**Do not run this section, and never change Windows' time zone.** Tim dropped the west-of-UTC
+reading on 2026-09-26 (#2): the date delivery is read in the machine's own zone only (A3), and other
+zones are proved in the harness only. The steps that switched Windows to Pacific Time and back are
+removed. #2's first probe run still ran them after the scope change; the project LEARNINGS record
+why, and the probe no longer can.
 
 ## C. Clicks and drags on the Calendar
 
@@ -381,10 +328,6 @@ Leave Desktop open.
 | A1 | `Sales__highlight` listed in the debug view | |
 | A3 | 1 Jul 2025 in own zone: shown as, hover, type | |
 | F1 | Rows with Show items with no data (only if A1 was short) | |
-| B2 | Zone set west of UTC: `tzutil /g` output (Pacific Standard Time expected) | |
-| B3 | Calendar drawn on the right weekdays in Pacific Time | |
-| B4 | 1 Jul 2025 in Pacific Time: shown as, hover, type; changed from A3? | |
-| B5 | Zone restored: `tzutil /g` output (AUS Eastern Standard Time expected); page as in 0.2 | |
 | C1 | Drag gave 45 rows, blank days included, 148,343 | |
 | C1 | Title followed the Selection | |
 | C2 | Flags after the drag (6 Jul, 7 Jul, 17 Jul, 20 Aug, 21 Aug) | |

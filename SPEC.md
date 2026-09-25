@@ -451,16 +451,17 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   and highlight off, and the README says why. The README's first setup step lists every setting the
   template needs. The working report applies the same settings to every calendar.
 - **Dates and time zones.** Deneb delivers the date column as a JavaScript Date at local midnight
-  in the viewer's time zone (#2, read in Desktop from the Calendar's Vega view and from Deneb's
-  debug view through remote debugging). 1 July 2025 arrived as 1751292000000
-  (2025-06-30T14:00:00.000Z, midnight in Sydney) in the machine's own zone, and as 1751353200000
-  (2025-07-01T07:00:00.000Z, midnight in Los Angeles) after Windows was set to Pacific Time and
-  Desktop restarted; in both, every day of 2025 drew in its weekday's row showing its own row. The
-  harness's host setting is therefore `dateDelivery: 'local'`, its default. Should a later Deneb
-  deliver dates another way (UTC midnight, or strings), change only the step that parses the date,
-  not the lookup or the selection expression. The spec uses local date functions only and builds
-  the lookup key and the selection bounds the same way. Leap years are handled by stepping calendar
-  dates, never by adding a fixed number of milliseconds.
+  in the viewer's time zone (#2, read in Desktop in the machine's own zone, Sydney, from the
+  Calendar's Vega view and from Deneb's debug view through remote debugging). 1 July 2025 arrived
+  as 1751292000000 (2025-06-30T14:00:00.000Z, midnight in Sydney), and every day of 2025 drew in
+  its weekday's row showing its own row. Windows' time zone is never changed to read another zone
+  (Tim, 2026-09-26). Other zones are proved in the harness only: every template check runs in UTC,
+  Pacific/Auckland and America/Los_Angeles with local-midnight delivery. The harness's host setting
+  is therefore `dateDelivery: 'local'`, its default. Should a later Deneb deliver dates another way
+  (UTC midnight, or strings), change only the step that parses the date, not the lookup or the
+  selection expression. The spec uses local date functions only and builds the lookup key and the
+  selection bounds the same way. Leap years are handled by stepping calendar dates, never by adding
+  a fixed number of milliseconds.
 - **Deneb versions.** The spec reads the container size through the legacy signals (pbiContainer
   width and height), which Deneb 1.9 needs and Deneb 2.0 rewrites to its own names when it loads the
   spec. It references them only in the top-level width and height, and everything inside uses
@@ -677,9 +678,9 @@ so no third harness is built.
   `report/desktop`; its screenshots and every reading are in `checklists/probe/screenshots/`). None
   is left unchecked and none forced a fallback, so Deneb's source at 1.9.1.0 and 2.0.0.0 was not
   needed for any answer. Each answer sits in the section it decides:
-  - How the date column arrives: a Date at local midnight in the viewer's time zone, in the
-    machine's zone and west of UTC ("Dates and time zones"; the Calendar's Vega view and Deneb's
-    debug view).
+  - How the date column arrives: a Date at local midnight in the viewer's time zone, read in the
+    machine's own zone, Sydney ("Dates and time zones"; the Calendar's Vega view and Deneb's debug
+    view). Other zones are proved in the harness only, and Windows' time zone is never changed.
   - Blank dates with the helper: they arrive as rows, one per day in the filter ("Every day is
     drawn"; the Vega view, the debug view and DAX).
   - The range expression: Deneb accepts it, and a drag filters the page to exactly its days

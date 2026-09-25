@@ -41,8 +41,9 @@ export const CELLS: (Cell & { label: string })[] = VEGA_VERSIONS.flatMap((vega) 
 /**
  * How the host delivers a date column: local midnight, UTC midnight or the date as text. Desktop
  * delivers a Date at local midnight in the viewer's time zone (SPEC, "Dates and time zones": read
- * by #2 in two Windows time zones), so 'local' is the default and the other two are the
- * alternatives the spec must not depend on.
+ * by #2 in the machine's own zone, Sydney; Windows' time zone is never changed, so the other zones
+ * are proved here only), so 'local' is the default and the other two are the alternatives the
+ * spec must not depend on.
  */
 export const DATE_DELIVERIES = ['local', 'utc', 'text'] as const;
 export type DateDelivery = (typeof DATE_DELIVERIES)[number];
