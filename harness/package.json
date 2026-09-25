@@ -1,0 +1,22 @@
+{
+  "name": "calendar-heatmap-harness",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The template seam: a Deneb calendar spec as a black box in headless Edge, with Deneb-style cross-filter evaluation.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test --test-concurrency=2 --test-reporter=./src/reporter.ts \"test/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "render": "node src/cli/render.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.6",
+    "playwright-core": "1.63.0",
+    "typescript": "5.9.3",
+    "vega-6.2": "npm:vega@6.2.0",
+    "vega-6.4": "npm:vega@6.4.0"
+  }
+}
