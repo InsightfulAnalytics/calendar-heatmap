@@ -364,6 +364,23 @@
       "independent": "0"
     },
     {
+      "name": "Peak day, {{name}}: the date with the highest daily sales (the earliest on a tie)",
+      "ticket": "T05",
+      "each": "filters",
+      "report": "CALCULATE ( [Peak Day], {{report}} )",
+      "independent": [
+        "VAR __ByDay = GROUPBY ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Date], \"@Sales\", SUMX ( CURRENTGROUP (), 'Sales'[Amount] ) )",
+        "RETURN MAXX ( TOPN ( 1, __ByDay, [@Sales], DESC, 'Sales'[Date], ASC ), 'Sales'[Date] )"
+      ]
+    },
+    {
+      "name": "Peak day is blank when the filter holds no sales (17 Jul 2025)",
+      "ticket": "T05",
+      "report": "CALCULATE ( [Peak Day], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
+      "independent": "MAXX ( FILTER ( 'Sales', 'Sales'[Date] = DATE ( 2025, 7, 17 ) ), 'Sales'[Date] )",
+      "blankExpected": true
+    },
+    {
       "name": "the model's format functions are loaded in Desktop",
       "ticket": "T05",
       "report": "CONCATENATEX ( INFO.USERDEFINEDFUNCTIONS (), [Name], \", \", [Name], ASC )",

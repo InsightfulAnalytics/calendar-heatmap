@@ -306,6 +306,37 @@ table 'Measure Table'
 
 		formatStringDefinition = Fmt.OutOf ( [Days in Filter] )
 
+	/// The date of the best day in the current date filter: the day with the highest total sales, the earliest date on a tie. Blank when no day in the filter has sales.
+	measure 'Peak Day' =
+
+			// Each calendar day in the current date filter, with its sales
+			VAR __Days =
+			    ADDCOLUMNS (
+			        VALUES ( 'DimDate'[Date] ),
+			        "@Sales", [Total Sales]
+			    )
+			// Only a day with sales can be the peak
+			VAR __SalesDays =
+			    FILTER (
+			        __Days,
+			        NOT ISBLANK ( [@Sales] )
+			    )
+			// The best day; on a tie, the earliest date wins
+			VAR __Peak =
+			    TOPN (
+			        1,
+			        __SalesDays,
+			        [@Sales], DESC,
+			        'DimDate'[Date], ASC
+			    )
+			VAR __Result =
+			    MAXX ( __Peak, 'DimDate'[Date] )
+			RETURN
+			    __Result
+		formatString: d mmm yyyy
+		displayFolder: Sales
+		lineageTag: 486cbe23-470d-4dd9-a9e3-7a95adcad9f7
+
 	column Column1
 		dataType: string
 		isHidden
