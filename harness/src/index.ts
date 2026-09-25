@@ -7,9 +7,12 @@ import { ADAPTER } from './adapter.ts';
 import { loadFixture, type Fixture } from './fixtures.ts';
 import { loadTheme } from './theme.ts';
 import {
-  applyOptions, loadSpec, prepareForDeneb, resolveSpecSource,
-  type DenebVersion, type Json, type SpecSource,
+  applyOptions, loadSpec, prepareForDeneb, resolveSpecSource, scanContainerNames,
+  type DenebVersion, type Json, type ScanResult, type SpecSource,
 } from './spec.ts';
+
+export type { ScanResult, ScanFinding, SpecSource } from './spec.ts';
+export type { Fixture, FixtureRow } from './fixtures.ts';
 
 export type VegaVersion = '6.2' | '6.4';
 /** Deneb 1.9 runs Vega 6.2.0; Deneb 2.0 runs Vega 6.4.0. */
@@ -338,6 +341,11 @@ export class Harness {
   async close(): Promise<void> {
     await this.#browser.close();
   }
+}
+
+/** The container-name scan of a spec as authored: container size names only in the top-level width and height. */
+export function containerScan(spec: string | SpecSource): ScanResult {
+  return scanContainerNames(loadSpec(resolveSpecSource(spec)));
 }
 
 /** Launch headless Microsoft Edge (the installed browser; nothing is downloaded). */

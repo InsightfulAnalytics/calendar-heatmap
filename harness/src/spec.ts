@@ -68,6 +68,47 @@ const MODERN = 'denebContainer';
 export const CONTAINER_NAMES = ['pbiContainerWidth', 'pbiContainerHeight', 'pbiContainer', MODERN];
 export const wordPattern = (name: string) => new RegExp(`\\b${name}\\b`, 'g');
 
+export interface ScanFinding {
+  /** Where the name appears, as a JSON path ('marks[1].encode.update.text.signal'). */
+  path: string;
+  name: string;
+}
+export interface ScanResult {
+  ok: boolean;
+  findings: ScanFinding[];
+}
+
+/**
+ * The container-name scan. The container size names (pbiContainerWidth, pbiContainerHeight,
+ * pbiContainer, denebContainer) may appear only in the top-level width and height. Anywhere else
+ * a name is a finding: Deneb 2.0 rewrites them textually, labels included, and the library
+ * checker rejects the 2.0 names. Keys and string values are both scanned.
+ */
+export function scanContainerNames(spec: JsonObject): ScanResult {
+  const allowed = new Set(['width', 'width.signal', 'height', 'height.signal']);
+  const findings: ScanFinding[] = [];
+  const check = (text: string, at: string) => {
+    if (allowed.has(at)) return;
+    for (const name of CONTAINER_NAMES) {
+      const hits = text.match(wordPattern(name)) ?? [];
+      for (let i = 0; i < hits.length; i++) findings.push({ path: at, name });
+    }
+  };
+  const walk = (node: Json, at: string) => {
+    if (typeof node === 'string') return check(node, at);
+    if (Array.isArray(node)) return node.forEach((child, i) => walk(child, `${at}[${i}]`));
+    if (node && typeof node === 'object') {
+      for (const [key, child] of Object.entries(node)) {
+        const here = at ? `${at}.${key}` : key;
+        check(key, `${here} (key)`);
+        walk(child, here);
+      }
+    }
+  };
+  walk(spec, '');
+  return { ok: findings.length === 0, findings };
+}
+
 /**
  * Supply the container size as the given Deneb version does. Deneb 1.9 defines pbiContainerWidth,
  * pbiContainerHeight and pbiContainer. Deneb 2.0 rewrites those names in the spec text to
