@@ -42,7 +42,7 @@ the top of `src/checks.ts`: `fill`, `label`, `tooltip`, `ring`, `drag ... select
 | Spec loading | `src/spec.ts` | Merges a config the way `prototype/prep.py` does; option overrides set top-level signal values. Deneb 1.9 gets `pbiContainerWidth`, `pbiContainerHeight` and `pbiContainer`; Deneb 2.0 gets its textual rewrite to `denebContainer` |
 | Report visuals | `src/spec.ts` | A `{ visual }` source reads a Deneb `visual.json` read-only, as the deneb-pbir skill decodes it: `jsonSpec` and `jsonConfig` are single-quoted PBIR literals with `''` for `'`, JSONC comments allowed. A missing file fails, naming it. `report-calendar` is the Report's sales Calendar on Daily overview |
 | Row delivery | `src/page/runtime.js` | Fixture fields, then `<measure>__highlight` when highlight values are given, then `__row__` and `__selected__` (`on`, `off`, or `neutral` when nothing is selected) |
-| Date delivery | `dateDelivery` | `local` midnight (default, the working assumption), `utc` midnight, or `text`. Only the date field's shape changes |
+| Date delivery | `dateDelivery` | `local` midnight (default: what Desktop delivers, read by #2 in two time zones), `utc` midnight, or `text`. Only the date field's shape changes |
 | Apply evaluation | `src/page/runtime.js` | A mirror of Deneb's own source at tags 2.0.0.0 and 1.9.1.0, rule by rule, with the source lines in the comment block at the top of the file |
 | Host | `src/page/runtime.js` | Records `select` and `clear`; a selection is fed back into the dataset and the spec is embedded again, as Deneb does on a data update |
 | Theme | `src/theme.ts` | `pbiColor` with Deneb's shade maths over the theme's data colours and named colours. `pbiFormat` and `pbiFormatAutoUnit` are stand-ins |
@@ -51,6 +51,8 @@ the top of `src/checks.ts`: `fill`, `label`, `tooltip`, `ring`, `drag ... select
 Not modelled yet: Deneb's simple selection mode and the host's multi-select merge (both arrive
 with Selection, T09; a shift or ctrl select is recorded, but the selection is left as it was), and
 the context menu and tooltip host calls (the scene reports each day's tooltip and row identity).
+#2 read the merge in Desktop: each identity a multi-select apply sends flips, so T09 builds it as
+`multiSelectMerge: 'toggle'` (SPEC, "Adding to a selection").
 
 One Deneb rule worth knowing: `limit: 0` is not rejected. Deneb only range-checks a limit that is
 truthy, and a zero limit falls back to the format pane's data point limit (50 by default), so a
