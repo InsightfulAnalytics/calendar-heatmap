@@ -46,6 +46,15 @@ test('the render command prints a fail line and exits non-zero when a check fail
   assert.deepEqual(lines.map((l) => l.slice(0, 4)), ['pass', 'fail'], out);
 });
 
+test('the render command renders under Vega 6.2 in another time zone when asked', () => {
+  const png = path.join(OUT_DIR, 'prototype__prototype-sample__1080x362__vega6.2__Pacific-Auckland.png');
+  rmSync(png, { force: true });
+  const { code, out } = run([...COMMON, '--vega', '6.2', '--tz', 'Pacific/Auckland', '--check', 'click 2025-12-17 selects 1']);
+  assert.equal(code, 0, out);
+  assert.match(out, /^pass click 2025-12-17 selects 1$/m);
+  assert.ok(existsSync(png), `${png} was not written`);
+});
+
 test('the render command fails loudly on an unknown check', () => {
   const { code, out } = run([...COMMON, '--check', 'sparkle 2025-12-17']);
   assert.notEqual(code, 0);
