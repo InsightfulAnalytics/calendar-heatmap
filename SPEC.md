@@ -1,8 +1,8 @@
 # Spec: Calendar Heatmap template and working report
 
-Status: ready for agent, once Tim confirms the two test seams (see Testing Decisions). Written
-2026-09-25 from the feasibility study and prototype session, then reviewed by three critics for
-completeness, technical accuracy and spec craft.
+Status: ready for agent. Tim confirmed both test seams on 2026-09-25 (see Testing Decisions).
+Written 2026-09-25 from the feasibility study and prototype session, then reviewed by three critics
+for completeness, technical accuracy and spec craft.
 
 ## Problem Statement
 
@@ -405,9 +405,15 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   "7 Jul to 20 Aug 2025, 45 days".
 - **Target mode.** A day that meets or beats its target draws in the theme's good colour, and a day
   that falls short draws in the bad colour. Empty days stay empty, and the legend reads Under and
-  Over. The target is the target column when one is named, otherwise 80% of the window's mean per
-  day. In BI Nexus the good colour is the same blue as theme colour 1, which is acceptable because
-  the Targets page shows target mode only.
+  Over. The target is the target column when one is named, otherwise 80% of the mean per day. In BI
+  Nexus the good colour is the same blue as theme colour 1, which is acceptable because the Targets
+  page shows target mode only.
+- **Mean per day inside the template.** The template uses the report's definition: the total over
+  the calendar days in the current date filter, blank days counted as zero. It is not taken over
+  the window. The template reads those days from its dataset. With "every date has a row" on, they
+  are the dates that arrive as rows. With it off, they are every day from the earliest to the latest
+  date that arrives. Target mode and the KPI strip both use this figure, so the KPI strip's mean per
+  day matches the report's Mean per day card under the same filters.
 - **Markers and value labels.** A day whose marker column is not blank gets a small dot in the ink
   colour at the centre of its cell and the marker text in its tooltip. This look is our own, because
   Lumeric shows no marker design. Value labels print each day's compact value inside its cell, only
@@ -642,5 +648,5 @@ so no third harness is built.
   with the highest value in the window. Ramp: the ordered colours; steps: its equal-interval bands.
   Density: the gap between cells. Selection: the days a calendar sends out as a cross-filter.
   Cross-highlight: dimming driven by another visual's selection. Mean per day: the total over the
-  calendar days in the current date filter. The mock: the "Daily Sales · FY26" report on the Lumeric
+  calendar days in the current date filter, in the report and the template alike. The mock: the "Daily Sales · FY26" report on the Lumeric
   site.
