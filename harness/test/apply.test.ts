@@ -86,6 +86,15 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     assert.deepEqual(await cal.selection(), [0, 1, 2]);
   });
 
+  test(`${cell} an apply call with limit -1 (below 1 to 2,500) is rejected and leaves the previous Selection unchanged`, async () => {
+    const cal = await render('strip', { options: { selectionLimit: -1 }, selected: [0, 1, 2] });
+    await cal.drag('2025-07-07', '2025-08-20');
+    const [apply] = await cal.applyCalls();
+    assert.deepEqual(apply.result, { warning: OPTIONS_WARNING, rowNumbers: [] });
+    assert.deepEqual(await cal.hostCalls(), []);
+    assert.deepEqual(await cal.selection(), [0, 1, 2]);
+  });
+
   test(`${cell} an apply call with a non-browser event is rejected and leaves the previous Selection unchanged`, async () => {
     const cal = await render('apply-non-browser-event', { selected: [0, 1, 2] });
     await cal.drag('2025-07-07', '2025-08-20');

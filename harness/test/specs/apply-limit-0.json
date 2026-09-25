@@ -1,6 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega/v6.json",
-  "description": "Harness test spec, deliberately wrong: the apply call passes limit 0. Deneb accepts a limit of 1 to 2,500 only when one is given.",
+  "description": "Harness test spec, deliberately wrong: the apply call passes limit 0. Deneb does not reject it: it range-checks a limit (1 to 2,500) only when the limit is truthy, and a limit of 0 falls back to the format pane's data point limit (50 by default).",
   "width": {
     "signal": "pbiContainerWidth"
   },
