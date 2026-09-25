@@ -40,6 +40,7 @@ the top of `src/checks.ts`: `fill`, `label`, `tooltip`, `ring`, `drag ... select
 | Piece | Where | Notes |
 |---|---|---|
 | Spec loading | `src/spec.ts` | Merges a config the way `prototype/prep.py` does; option overrides set top-level signal values. Deneb 1.9 gets `pbiContainerWidth`, `pbiContainerHeight` and `pbiContainer`; Deneb 2.0 gets its textual rewrite to `denebContainer` |
+| Report visuals | `src/spec.ts` | A `{ visual }` source reads a Deneb `visual.json` read-only, as the deneb-pbir skill decodes it: `jsonSpec` and `jsonConfig` are single-quoted PBIR literals with `''` for `'`, JSONC comments allowed. A missing file fails, naming it. `report-calendar` is the Report's sales Calendar on Daily overview |
 | Row delivery | `src/page/runtime.js` | Fixture fields, then `<measure>__highlight` when highlight values are given, then `__row__` and `__selected__` (`on`, `off`, or `neutral` when nothing is selected) |
 | Date delivery | `dateDelivery` | `local` midnight (default, the working assumption), `utc` midnight, or `text`. Only the date field's shape changes |
 | Apply evaluation | `src/page/runtime.js` | A mirror of Deneb's own source at tags 2.0.0.0 and 1.9.1.0, rule by rule, with the source lines in the comment block at the top of the file |
@@ -58,11 +59,12 @@ drag over more than 50 rows is refused and a smaller one applies.
 ## The interface
 
 ```ts
-import { openHarness } from './src/index.ts';
+import { openHarness, specAsRun, specFields, applyLimits, withApplyLimit } from './src/index.ts';
 
 const harness = await openHarness();
 const cal = await harness.render({
-  spec: 'prototype',            // or a .json path relative to harness/, or { path, config }
+  spec: 'prototype',            // or 'report-calendar', a .json path relative to harness/,
+                                // { path, config }, or { visual } (a Deneb visual.json)
   fixture: 'base-2025',         // or a Fixture object
   size: { width: 1080, height: 362 },
   theme: 'bi-nexus',
@@ -82,6 +84,12 @@ await cal.day('2025-12-19');    // fill, opacity, ring, position, size, tooltip,
 await cal.labels();             // every drawn label
 await cal.vegaVersion();        // '6.2.0' or '6.4.0', as the page's Vega bundle reports itself
 await harness.close();
+
+// No browser needed for these:
+const spec = specAsRun('report-calendar', '6.2');  // the spec as that Vega version's Deneb runs it
+specFields('report-calendar');   // the fields a Deneb visual binds: ['Date', 'Days in Filter', 'Sales']
+applyLimits(spec);               // each apply call's limit as written: ['2500']
+withApplyLimit(spec, 'L');       // the spec with every apply call's limit written as L
 ```
 
 A page holds one view, so a later `render` in the same Vega version and time zone replaces the
@@ -106,6 +114,12 @@ unchanged" (T06) holds for it only until that ticket.
 Deliberately wrong specs live in `test/specs/`. `strip.json` is the valid baseline they vary.
 `apply-date-placeholder.json` is a valid variant whose click applies a `_{date}_` placeholder, to
 tell Deneb 1.9 from 2.0.
+
+The Report's embedded Calendar (`report-calendar`) is checked in `test/report-calendar.test.ts`:
+it must equal the prototype, config merged, apart from its apply limit of 2,500, and the
+prototype's drag, Peak day click, right click and background click checks in
+`test/prototype.test.ts` also run on it, fed `report-fields-sample` (the prototype sample under the
+Report's field names). The Report is read, never written: it belongs to the report seam.
 
 ## Adding a fixture
 

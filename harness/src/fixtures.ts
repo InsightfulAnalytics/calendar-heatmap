@@ -27,6 +27,16 @@ function prototypeSample(): Fixture {
   return { name: 'prototype-sample', dateField: 'Date', rows };
 }
 
+/**
+ * The prototype's sample under the fields the Report's Calendar binds, in its order: Date, the
+ * Days in Filter helper (a count of date rows, so 1 on every row) and Total Sales under its
+ * display name, Sales. test/report-calendar.test.ts checks these names against the Report.
+ */
+function reportFieldsSample(): Fixture {
+  const rows = prototypeSample().rows.map((r) => ({ Date: r.Date, 'Days in Filter': 1, Sales: r.Sales }));
+  return { name: 'report-fields-sample', dateField: 'Date', rows };
+}
+
 // ------------------------------------------------------------------ the generator
 // Deterministic: a seeded PRNG (mulberry32) and UTC date stepping in Node, so every run and every
 // machine produces the same rows. Dates are generated as text; time zones only apply on delivery.
@@ -119,6 +129,7 @@ function regions2025(): Fixture {
 /** Every named fixture. Later tickets add theirs here. */
 export const FIXTURES: Record<string, () => Fixture> = {
   'prototype-sample': prototypeSample,
+  'report-fields-sample': reportFieldsSample,
   'base-2025': base2025,
   'regions-2025': regions2025,
 };

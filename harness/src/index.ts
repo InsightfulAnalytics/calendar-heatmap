@@ -7,11 +7,12 @@ import { ADAPTER } from './adapter.ts';
 import { loadFixture, type Fixture } from './fixtures.ts';
 import { loadTheme } from './theme.ts';
 import {
-  applyOptions, loadSpec, prepareForDeneb, resolveSpecSource, scanContainerNames,
-  type DenebVersion, type Json, type ScanResult, type SpecSource,
+  applyOptions, loadSpec, prepareForDeneb, readDenebVisual, resolveSpecSource, scanContainerNames,
+  type DenebVersion, type Json, type JsonObject, type ScanResult, type SpecSource,
 } from './spec.ts';
 
-export type { ScanResult, ScanFinding, SpecSource } from './spec.ts';
+export { applyLimits, withApplyLimit } from './spec.ts';
+export type { Json, JsonObject, ScanResult, ScanFinding, SpecSource } from './spec.ts';
 export type { Fixture, FixtureRow } from './fixtures.ts';
 
 export type VegaVersion = '6.2' | '6.4';
@@ -143,6 +144,8 @@ const VEGA_BUNDLE: Record<VegaVersion, string> = {
   '6.4': harnessPath('node_modules', 'vega-6.4', 'build', 'vega.min.js'),
 };
 const RUNTIME = harnessPath('src', 'page', 'runtime.js');
+/** The visual's container size when none is given: the prototype's card. */
+const DEFAULT_SIZE = { width: 1080, height: 362 };
 const MARGIN = 40;
 
 /** The Calendar each page currently shows. A page holds one view: a later render replaces it. */
@@ -335,11 +338,9 @@ export class Harness {
   async render(input: RenderInput): Promise<Calendar> {
     const vega = input.vega ?? DEFAULT_CELL.vega;
     const timeZone = input.timeZone ?? DEFAULT_CELL.timeZone;
-    const size = input.size ?? { width: 1080, height: 362 };
+    const size = input.size ?? DEFAULT_SIZE;
     const fixture = typeof input.fixture === 'string' ? loadFixture(input.fixture) : input.fixture;
-    const source = resolveSpecSource(input.spec);
-    const authored = applyOptions(loadSpec(source), input.options);
-    const spec = prepareForDeneb(authored, DENEB_OF[vega], size.width, size.height);
+    const spec = specAsRun(input.spec, vega, size, input.options);
     const page = await this.#page(timeZone, vega);
     await page.setViewportSize({ width: size.width + 2 * MARGIN + 120, height: size.height + 2 * MARGIN + 80 });
     const cfg = {
@@ -372,6 +373,21 @@ export class Harness {
 /** The container-name scan of a spec as authored: container size names only in the top-level width and height. */
 export function containerScan(spec: string | SpecSource): ScanResult {
   return scanContainerNames(loadSpec(resolveSpecSource(spec)));
+}
+
+/**
+ * A spec as the given Vega version's Deneb runs it, which is what render embeds: its config merged,
+ * any option values set, and the container size supplied the way that Deneb version supplies it.
+ */
+export function specAsRun(spec: string | SpecSource, vega: VegaVersion, size = DEFAULT_SIZE, options?: Record<string, Json>): JsonObject {
+  return prepareForDeneb(applyOptions(loadSpec(resolveSpecSource(spec)), options), DENEB_OF[vega], size.width, size.height);
+}
+
+/** The field names a Deneb visual source delivers to its spec, in projection order. A spec file has none. */
+export function specFields(spec: string | SpecSource): string[] {
+  const source = resolveSpecSource(spec);
+  if (!('visual' in source)) throw new Error('only a Deneb visual source binds fields; a spec file does not');
+  return readDenebVisual(source.visual).fields;
 }
 
 /** Launch headless Microsoft Edge (the installed browser; nothing is downloaded). */
