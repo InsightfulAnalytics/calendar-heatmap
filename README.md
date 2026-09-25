@@ -15,15 +15,22 @@ work is tested.
 | Folder | What |
 |---|---|
 | `prototype/` | The first Vega spec, its synthetic data and the headless render and interaction harness. See its README |
+| `harness/` | The template seam: the spec as a black box in headless Edge, under Vega 6.2 and 6.4 and in three time zones, with Deneb's own apply rules. `npm test` from that folder. See its README |
+| `report/` | The Daily Sales PBIP and its report seam loop (`seam.ps1`: validate, apply, refresh in Desktop, screenshots, DAX tie-out). See its README |
+| `checklists/` | Click-through checklists Tim runs in Desktop, one folder per ticket, with his screenshots |
 | `theme/` | The BI Nexus report theme |
 | `reference/feasibility.json` | The feasibility study: an inventory of the Lumeric visual and report mock, Deneb capabilities, the feature matrix and the verifier findings |
 | `reference/lumeric-site/` | Local only, not committed: captures of the Lumeric site used as the design reference |
 
-The template and the PBIP arrive as the spec is built.
+The template arrives as the spec is built. Learnings and notes live in the Vault, under
+`Vault\Projects\Calendar Heatmap\`.
 
 ## Status
 
 - 2026-09-25: feasibility study done and prototype rendered. Click, drag, right click and clear have
   been replayed in a headless browser only, not yet in Power BI Desktop.
+- 2026-09-25: wave 1 built. The template seam harness (T03) and the probe Report (T01) pass their
+  acceptance checks. The courtesy note to Lumeric Visuals is drafted in the Vault, not yet sent. Next:
+  Tim runs the probe checklist in `checklists/probe/` (T02).
 - The finished template goes to the public [Deneb template library](https://github.com/InsightfulAnalytics/Deneb)
   once a courtesy note has gone to Lumeric Visuals.
