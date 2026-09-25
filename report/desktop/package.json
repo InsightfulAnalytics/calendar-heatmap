@@ -8,6 +8,7 @@
     "node": ">=24"
   },
   "scripts": {
+    "test": "node --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "desktop": "node src/cli/desktop.ts",
     "probe": "node src/cli/probe.ts"

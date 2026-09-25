@@ -2,17 +2,19 @@
 // human, by replaying a viewer's gestures on the Calendar through remote debugging and reading what
 // the Calendar, its dataset, Deneb's editor and every other visual then show.
 //
-//   npm run probe -- [--out <folder>] [--west "Pacific Standard Time"] [--own-zone-only]
+//   npm run probe -- [--out <folder>]
 //
 // It closes any Desktop holding the PBIP (answering Don't save), starts it with the canvas
-// debugging port, and runs, in order:
-//   own zone   baseline; the dataset and 1 July 2025 as the Calendar receives them, read from the
-//              live Vega view and from Deneb's debug view; drag, clicks, right click, background
-//              click, shift-click, shift-drags; the selected flags after each; a save, then the
-//              build stamp and the container names in the saved visual.json.
-//   west zone  Windows switched to the --west zone, Desktop restarted, 1 July 2025 read again, the
-//              days checked against their weekdays; then the zone is restored (always, even after a
-//              failure) and Desktop restarted without a debugging port.
+// debugging port, and runs, in order: the baseline; the dataset and 1 July 2025 as the Calendar
+// receives them, read from the live Vega view and from Deneb's debug view; drag, clicks, right
+// click, background click, shift-click, shift-drags; the selected flags after each; a save, then the
+// build stamp and the container names in the saved visual.json. It then reopens Desktop without a
+// debugging port.
+//
+// Dates are read in the machine's own time zone only. Windows' time zone is never changed (Tim,
+// 2026-09-26, #2): other zones are proved in the harness, and the probe checks at the end that the
+// zone it started in is still the machine's zone.
+//
 // Expected values come from literals (the probe checklist's worked examples), from date arithmetic
 // done here, and from independent DAX over the Sales and DimDate rows, never from the Report's own
 // measures. Each line prints pass or fail; shift outcomes are recorded as answers, and the page is
@@ -27,10 +29,8 @@ import {
   launchDesktop, saveDesktop, WEBVIEW2_ARGS_VARIABLE, type DatasetValue, type Desktop, type DenebVisual, type PageReading,
 } from '../desktop.ts';
 
-const { values } = parseArgs({ options: { out: { type: 'string' }, west: { type: 'string' }, 'deneb-spec': { type: 'string' }, 'own-zone-only': { type: 'boolean' } } });
+const { values } = parseArgs({ options: { out: { type: 'string' }, 'deneb-spec': { type: 'string' } } });
 const OUT = path.resolve(values.out ?? path.join(PROJECT, 'checklists', 'probe', 'screenshots'));
-const WEST_WINDOWS_ZONE = values.west ?? 'Pacific Standard Time';
-const WINDOWS_TO_IANA: Record<string, string> = { 'Pacific Standard Time': 'America/Los_Angeles', 'AUS Eastern Standard Time': 'Australia/Sydney' };
 const DENEB_SPEC = values['deneb-spec'] ?? path.join(process.env.USERPROFILE ?? '', '.claude', 'skills', 'custom-visuals', 'skills', 'deneb-pbir', 'scripts', 'deneb_spec.py');
 const CALENDAR_VISUAL_JSON = path.join(PROJECT, 'report', 'Daily Sales.Report', 'definition', 'pages', 'dailyOverview', 'visuals', 'calendar', 'visual.json');
 const CALENDAR = 'Calendar: daily sales for the year, one cell per day';
@@ -38,8 +38,9 @@ const TABLE = 'Daily rows';
 const TOTAL_CARD = 'Total sales';
 const DAYS_CARD = 'Days in filter';
 
-// Worked examples from the probe checklist: 1 July 2025 at local midnight, and at UTC midnight.
-const KNOWN_LOCAL_MIDNIGHT_1_JUL_2025: Record<string, number> = { 'Australia/Sydney': 1751292000000, 'America/Los_Angeles': 1751353200000 };
+// Worked examples from the probe checklist: 1 July 2025 at local midnight in this machine's zone,
+// and at UTC midnight.
+const KNOWN_LOCAL_MIDNIGHT_1_JUL_2025: Record<string, number> = { 'Australia/Sydney': 1751292000000 };
 const UTC_MIDNIGHT_1_JUL_2025 = 1751328000000;
 
 mkdirSync(OUT, { recursive: true });
@@ -231,13 +232,14 @@ async function openWithDebugPort(): Promise<{ desktop: Desktop; cal: DenebVisual
   return { desktop, cal, pid: instance.pid };
 }
 
-function tzutil(args: string[]): string {
-  const r = spawnSync('tzutil', args, { encoding: 'utf8' });
-  if (r.status !== 0) throw new Error(`tzutil ${args.join(' ')} exited ${r.status}: ${r.stdout}${r.stderr}`);
+/** The Windows time zone, read only. The probe never sets it. */
+function windowsZone(): string {
+  const r = spawnSync('tzutil', ['/g'], { encoding: 'utf8' });
+  if (r.status !== 0) throw new Error(`reading the Windows time zone exited ${r.status}: ${r.stdout}${r.stderr}`);
   return (r.stdout ?? '').trim();
 }
 
-async function ownZone(desktop: Desktop, cal: DenebVisual, pid: number): Promise<{ raw: number | string | null }> {
+async function ownZone(desktop: Desktop, cal: DenebVisual, pid: number): Promise<void> {
   section('A. The page and the dataset, in the machine time zone');
   const RANGE = daysFromTo('2025-07-07', '2025-08-20');
   checkEqual('the page filter holds 365 days of 2025 (independent)', DAYS_2025.length, 365, DAX);
@@ -395,32 +397,6 @@ async function ownZone(desktop: Desktop, cal: DenebVisual, pid: number): Promise
   checkEqual('D3 after the editor was opened and Desktop saved, the spec still uses the legacy container names', [stamp.legacy, stamp.denebContainer], ['total=2 pbiContainerWidth=1 pbiContainerHeight=1 pbiContainer=0', '0'], 'the saved visual.json (deneb-pbir audit)');
   const git = spawnSync('git', ['-C', PROJECT, 'status', '--short', '--', 'report'], { encoding: 'utf8' });
   note('D3 git status of report/ after the save', (git.stdout ?? '').trim() || '(nothing)');
-  return { raw: own.raw };
-}
-
-async function westZone(ownRaw: number | string | null): Promise<void> {
-  section(`B. One reading west of UTC (${WEST_WINDOWS_ZONE})`);
-  const { desktop, cal, pid } = await openWithDebugPort();
-  try {
-    const zone = await cal.timeZone();
-    checkEqual(`the restarted Desktop's canvas runs in ${WINDOWS_TO_IANA[WEST_WINDOWS_ZONE] ?? WEST_WINDOWS_ZONE}`, zone, WINDOWS_TO_IANA[WEST_WINDOWS_ZONE], VIEW);
-    const west = await readJuly1(cal, 'west zone');
-    checkEqual('west zone: dates arrive as Date values at local midnight', west.delivery, 'local', VIEW);
-    check('the raw value of 1 Jul 2025 changed between the two zones', west.raw !== null && ownRaw !== null && west.raw !== ownRaw, VIEW, `${ownRaw} then ${west.raw}`);
-    await expectWeekdays(cal, 'west zone');
-    await expectPage(desktop, 'west zone baseline', DAYS_2025, 'Selected Period: 2025');
-    await shot(desktop, '09-west-canvas.png');
-    await cal.openEditor();
-    const src = await cal.debugSource();
-    const jul1 = await cal.showSourceRow(String(west.rowId));
-    checkEqual("west zone: Deneb's debug view shows 1 Jul 2025's Date as local midnight in ISO form", jul1[src.headers.indexOf('Date')], west.expectedIso, DEBUG_VIEW);
-    note("west zone 1 Jul 2025 in Deneb's debug view", jul1[src.headers.indexOf('Date')]);
-    await shot(desktop, '10-debug-1jul-west.png', false);
-    await desktop.backToReport();
-  } finally {
-    await desktop.disconnect();
-    await closeDesktop(pid);
-  }
 }
 
 function envVariableAt(scope: 'user' | 'machine'): string | null {
@@ -433,9 +409,8 @@ function envVariableAt(scope: 'user' | 'machine'): string | null {
 
 const started = new Date();
 let exitCode = 0;
-const originalZone = tzutil(['/g']);
-let zoneChanged = false;
-note('machine time zone at the start', originalZone);
+const startZone = windowsZone();
+note('machine time zone at the start', startZone);
 try {
   if (desktopProcesses().length > 0) {
     const mine = desktopInstances();
@@ -444,26 +419,16 @@ try {
   }
   const own = await openWithDebugPort();
   loadIndependentDays();
-  let ownRaw: number | string | null = null;
   try {
-    ({ raw: ownRaw } = await ownZone(own.desktop, own.cal, own.pid));
+    await ownZone(own.desktop, own.cal, own.pid);
   } finally {
     await own.desktop.disconnect();
     await closeDesktop(own.pid);
   }
-  if (values['own-zone-only']) throw new Error('--own-zone-only: the west-of-UTC reading was skipped');
-  tzutil(['/s', WEST_WINDOWS_ZONE]);
-  zoneChanged = true;
-  checkEqual('Windows is set west of UTC', tzutil(['/g']), WEST_WINDOWS_ZONE, 'tzutil /g');
-  await westZone(ownRaw);
 } catch (e) {
   check('the probe ran to the end', false, 'the probe', (e as Error).stack ?? String(e));
 } finally {
-  if (zoneChanged) {
-    for (const pid of desktopProcesses()) { try { await closeDesktop(pid); } catch (e) { console.log(`  ....  ${(e as Error).message}`); } }
-    tzutil(['/s', originalZone]);
-    checkEqual('the Windows time zone is restored', tzutil(['/g']), originalZone, 'tzutil /g');
-  }
+  checkEqual('the Windows time zone is the one the run started in (it is never changed)', windowsZone(), startZone, 'tzutil /g, read only');
   checkEqual('the WebView2 debugging variable is set neither for the user nor for the machine', [envVariableAt('user'), envVariableAt('machine')], [null, null], 'reg query');
   if (desktopProcesses().length === 0) {
     const plain = await launchDesktop({ debugPort: null });
