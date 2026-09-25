@@ -4,7 +4,7 @@
 // text into what the spec receives, inside the browser page, so the time zone is the page's own.
 // Row order is the row identity: row i is delivered with __row__ = i.
 import { readFileSync } from 'node:fs';
-import { projectPath } from './paths.ts';
+import { harnessPath, projectPath } from './paths.ts';
 
 export type FixtureValue = string | number | null;
 export type FixtureRow = Record<string, FixtureValue>;
@@ -126,12 +126,26 @@ function regions2025(): Fixture {
   return { name: 'regions-2025', dateField: 'Date', rows };
 }
 
+// ------------------------------------------------------------------ exported from the Report
+
+/**
+ * The sales Calendar's own query rows for FY26, exported from the Report's model in Desktop by
+ * report/desktop (npm run export-fixture): Date, the Days in Filter helper and Sales, one row per
+ * date from 1 Jul 2025 to 30 Jun 2026, blank sales as null. The shape the Report delivers. Read
+ * only; a new export replaces the file.
+ */
+function reportSalesFy26(): Fixture {
+  const raw = JSON.parse(readFileSync(harnessPath('fixtures', 'report-sales-fy26.json'), 'utf8')) as { fields: string[]; rows: FixtureRow[] };
+  return { name: 'report-sales-fy26', dateField: 'Date', rows: raw.rows };
+}
+
 /** Every named fixture. Later tickets add theirs here. */
 export const FIXTURES: Record<string, () => Fixture> = {
   'prototype-sample': prototypeSample,
   'report-fields-sample': reportFieldsSample,
   'base-2025': base2025,
   'regions-2025': regions2025,
+  'report-sales-fy26': reportSalesFy26,
 };
 
 export function loadFixture(name: string): Fixture {
