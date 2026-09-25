@@ -155,6 +155,66 @@
       "ticket": "T01",
       "report": "CALCULATE ( [Dates Selected], DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ) )",
       "independent": "\"Selected Period: 7 Jul - 20 Aug 2025\""
+    },
+    {
+      "name": "total sales, 1 Jul 2025 (the row the date delivery reading used)",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Total Sales], 'DimDate'[Date] = DATE ( 2025, 7, 1 ) )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] = DATE ( 2025, 7, 1 ) ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "total sales, 7 Jul 2025 (the probe's single-day click)",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Total Sales], 'DimDate'[Date] = DATE ( 2025, 7, 7 ) )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] = DATE ( 2025, 7, 7 ) ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "days in filter, 17 Jul 2025 (a click on a no-sales day still gives one day)",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Days in Filter], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
+      "independent": "1"
+    },
+    {
+      "name": "title text for 7 Jul 2025",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Dates Selected], 'DimDate'[Date] = DATE ( 2025, 7, 7 ) )",
+      "independent": "\"Selected Period: 7 Jul 2025\""
+    },
+    {
+      "name": "title text for 17 Jul 2025 (no sales)",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Dates Selected], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
+      "independent": "\"Selected Period: 17 Jul 2025\""
+    },
+    {
+      "name": "total sales, 7 Jul to 20 Aug 2025 without 14 Aug (the shift-click answer)",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Total Sales], DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ), 'DimDate'[Date] <> DATE ( 2025, 8, 14 ) )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] >= DATE ( 2025, 7, 7 ) && 'Sales'[Date] <= DATE ( 2025, 8, 20 ) && 'Sales'[Date] <> DATE ( 2025, 8, 14 ) ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "total sales, 7 Jul to 20 Aug 2025 without 4 to 10 Aug (the shift-drag answer)",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Total Sales], EXCEPT ( DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ), DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 8, 4 ), DATE ( 2025, 8, 10 ) ) ) )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] >= DATE ( 2025, 7, 7 ) && 'Sales'[Date] <= DATE ( 2025, 8, 20 ) && NOT ( 'Sales'[Date] >= DATE ( 2025, 8, 4 ) && 'Sales'[Date] <= DATE ( 2025, 8, 10 ) ) ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "total sales, 7 Jul to 17 Aug and 21 to 26 Aug 2025 (the mixed shift-drag answer)",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Total Sales], UNION ( DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 17 ) ), DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 8, 21 ), DATE ( 2025, 8, 26 ) ) ) )",
+      "independent": "SUMX ( FILTER ( 'Sales', ( 'Sales'[Date] >= DATE ( 2025, 7, 7 ) && 'Sales'[Date] <= DATE ( 2025, 8, 17 ) ) || ( 'Sales'[Date] >= DATE ( 2025, 8, 21 ) && 'Sales'[Date] <= DATE ( 2025, 8, 26 ) ) ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "days in filter, 7 Jul to 17 Aug and 21 to 26 Aug 2025",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Days in Filter], UNION ( DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 17 ) ), DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 8, 21 ), DATE ( 2025, 8, 26 ) ) ) )",
+      "independent": "48"
+    },
+    {
+      "name": "title text for a Selection that is not one run of days",
+      "ticket": "T02",
+      "report": "CALCULATE ( [Dates Selected], DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ), 'DimDate'[Date] <> DATE ( 2025, 8, 14 ) )",
+      "independent": "\"Selected Period: See Date Slicers\""
     }
   ]
 }
