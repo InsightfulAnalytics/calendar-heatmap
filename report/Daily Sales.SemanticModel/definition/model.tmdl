@@ -19,6 +19,8 @@ annotation __PBI_TimeIntelligenceEnabled = 0
 
 annotation PBI_ProTooling = ["DevMode"]
 
+annotation PBI_QueryOrder = ["DimDate","Measure Table","FunctionDateTable"]
+
 ref table Sales
 ref table DimDate
 ref table 'Measure Table'
