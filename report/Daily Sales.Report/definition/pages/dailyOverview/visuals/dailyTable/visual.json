@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "dailyTable",
   "position": {
-    "x": 336,
-    "y": 496,
+    "x": 336.17733990147786,
+    "y": 495.92118226600985,
     "z": 0,
-    "height": 448,
-    "width": 920,
+    "height": 448.23645320197045,
+    "width": 401.74384236453204,
     "tabOrder": 0
   },
   "visual": {
