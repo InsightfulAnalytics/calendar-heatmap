@@ -121,6 +121,9 @@ const VEGA_BUNDLE: Record<VegaVersion, string> = {
 const RUNTIME = harnessPath('src', 'page', 'runtime.js');
 const MARGIN = 40;
 
+/** The Calendar each page currently shows. A page holds one view: a later render replaces it. */
+const current = new WeakMap<Page, Calendar>();
+
 /** One rendered Calendar: the scene, the host's view of it, and gestures. */
 export class Calendar {
   readonly input: RenderInput;
@@ -134,6 +137,9 @@ export class Calendar {
   }
 
   #call<T>(fn: string, ...args: unknown[]): Promise<T> {
+    if (current.get(this.#page) !== this) {
+      throw new Error('this Calendar was replaced by a later render in the same Vega version and time zone; read it before rendering again');
+    }
     return this.#page.evaluate(([f, a]) => (window as any).__harness[f as string](...(a as unknown[])), [fn, args] as const) as Promise<T>;
   }
 
@@ -324,7 +330,9 @@ export class Harness {
     const status = await page.evaluate((c: unknown) => (window as any).__harness.mount(c), cfg as unknown) as { errors: string[]; harnessErrors: string[] };
     const problems = [...status.harnessErrors, ...status.errors];
     if (problems.length) throw new Error(`render failed: ${problems.join('; ')}`);
-    return new Calendar(page, input, fixture);
+    const calendar = new Calendar(page, input, fixture);
+    current.set(page, calendar);
+    return calendar;
   }
 
   async close(): Promise<void> {
