@@ -7,6 +7,48 @@
     { "name": "date rows", "expr": "COUNTROWS ( 'DimDate' )" },
     { "name": "channel and region rows", "expr": "COUNTROWS ( 'Channel' ) * 100 + COUNTROWS ( 'Region' )" }
   ],
+  "filters": [
+    {
+      "name": "FY26",
+      "report": "'DimDate'[FYear] = \"FY26\"",
+      "salesRows": "'Sales'[Date] >= DATE ( 2025, 7, 1 ) && 'Sales'[Date] <= DATE ( 2026, 6, 30 )",
+      "from": "DATE ( 2025, 7, 1 )",
+      "to": "DATE ( 2026, 6, 30 )",
+      "days": "365"
+    },
+    {
+      "name": "FY24",
+      "report": "'DimDate'[FYear] = \"FY24\"",
+      "salesRows": "'Sales'[Date] >= DATE ( 2023, 7, 1 ) && 'Sales'[Date] <= DATE ( 2024, 6, 30 )",
+      "from": "DATE ( 2023, 7, 1 )",
+      "to": "DATE ( 2024, 6, 30 )",
+      "days": "366"
+    },
+    {
+      "name": "7 Jul to 20 Aug 2025",
+      "report": "DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) )",
+      "salesRows": "'Sales'[Date] >= DATE ( 2025, 7, 7 ) && 'Sales'[Date] <= DATE ( 2025, 8, 20 )",
+      "from": "DATE ( 2025, 7, 7 )",
+      "to": "DATE ( 2025, 8, 20 )",
+      "days": "45"
+    },
+    {
+      "name": "FY26, channel Retail",
+      "report": "'DimDate'[FYear] = \"FY26\", 'Channel'[Channel] = \"Retail\"",
+      "salesRows": "'Sales'[Date] >= DATE ( 2025, 7, 1 ) && 'Sales'[Date] <= DATE ( 2026, 6, 30 ) && 'Sales'[Channel] = \"Retail\"",
+      "from": "DATE ( 2025, 7, 1 )",
+      "to": "DATE ( 2026, 6, 30 )",
+      "days": "365"
+    },
+    {
+      "name": "FY26, region EMEA",
+      "report": "'DimDate'[FYear] = \"FY26\", 'Region'[Region] = \"EMEA\"",
+      "salesRows": "'Sales'[Date] >= DATE ( 2025, 7, 1 ) && 'Sales'[Date] <= DATE ( 2026, 6, 30 ) && 'Sales'[Region] = \"EMEA\"",
+      "from": "DATE ( 2025, 7, 1 )",
+      "to": "DATE ( 2026, 6, 30 )",
+      "days": "365"
+    }
+  ],
   "checks": [
     {
       "name": "date table starts 1 Jul 2023",
@@ -264,6 +306,42 @@
       "ticket": "T02",
       "report": "CALCULATE ( [Dates Selected], DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ), 'DimDate'[Date] <> DATE ( 2025, 8, 14 ) )",
       "independent": "\"Selected Period: See Date Slicers\""
+    },
+    {
+      "name": "Total sales, {{name}}",
+      "ticket": "T05",
+      "each": "filters",
+      "report": "CALCULATE ( [Total Sales], {{report}} )",
+      "independent": "SUMX ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "Mean per day, {{name}}: the total over {{days}} calendar days",
+      "ticket": "T05",
+      "each": "filters",
+      "report": "CALCULATE ( [Mean per Day], {{report}} )",
+      "independent": "DIVIDE ( SUMX ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Amount] ), {{days}} )",
+      "tolerance": 1e-9
+    },
+    {
+      "name": "Mean per day, {{name}}, divides the total by {{days}} calendar days",
+      "ticket": "T05",
+      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "report": "CALCULATE ( DIVIDE ( [Total Sales], [Mean per Day] ), {{report}} )",
+      "independent": "{{days}}",
+      "tolerance": 1e-9
+    },
+    {
+      "name": "{{name}} holds days with no sales, so that divisor counts blank days",
+      "ticket": "T05",
+      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "report": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), ISBLANK ( [Total Sales] ) ) ), {{report}} ) >= 1",
+      "independent": "TRUE ()"
+    },
+    {
+      "name": "Mean per day reads 0, not blank, on a day with no sales (17 Jul 2025)",
+      "ticket": "T05",
+      "report": "CALCULATE ( [Mean per Day], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
+      "independent": "0"
     }
   ]
 }

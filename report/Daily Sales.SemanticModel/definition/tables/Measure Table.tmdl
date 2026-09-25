@@ -262,6 +262,25 @@ table 'Measure Table'
 		displayFolder: Dates
 		lineageTag: c3c8a66a-7e84-4faf-9da1-ade0215a086e
 
+	/// Total sales over every calendar day in the current date filter, blank days counted as zero, so the divisor is the days in the filter, not the days with sales. Reads 0 on a filter whose days have no sales, and blank only when the filter holds no days.
+	measure 'Mean per Day' =
+
+			// Every calendar day in the current date filter, counted from the date table, so days
+			// with no sales rows are in the divisor
+			VAR __Days =
+			    COUNTROWS ( 'DimDate' )
+			// The total over those days; a day with no sales adds zero
+			VAR __Total =
+			    COALESCE ( [Total Sales], 0 )
+			// The mean per calendar day; blank only when the filter holds no days at all
+			VAR __Result =
+			    DIVIDE ( __Total, __Days )
+			RETURN
+			    __Result
+		formatString: #,##0
+		displayFolder: Sales
+		lineageTag: ae8e88c7-918a-4613-84c8-2afe0abd1d89
+
 	column Column1
 		dataType: string
 		isHidden

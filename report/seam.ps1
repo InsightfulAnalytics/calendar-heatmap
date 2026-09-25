@@ -59,6 +59,10 @@
 .PARAMETER SkipScreenshot
     Skip step 6 (for a quick DAX-only rerun).
 
+.PARAMETER ListChecks
+    Load the tie-out suite, expand every check that runs once per filter, print each check's two
+    expressions and exit 0, without touching Desktop. A malformed suite fails here too.
+
 .PARAMETER OverwriteUnsaved
     Confirm Desktop's "Overwrite your unsaved edits" dialog in step 3, putting the disk copy over
     whatever Desktop holds. Pass it only after checking that nobody has canvas work open in that
@@ -66,10 +70,11 @@
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory = $true)][string]$OutDir,
+    [string]$OutDir,
     [string]$Suite,
     [switch]$SkipScreenshot,
-    [switch]$OverwriteUnsaved
+    [switch]$OverwriteUnsaved,
+    [switch]$ListChecks
 )
 
 $ErrorActionPreference = 'Stop'
@@ -80,6 +85,7 @@ $env:PYTHONUTF8 = '1'
 # $PSScriptRoot is empty inside a param default under Windows PowerShell 5.1, so resolve here.
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 if (-not $Suite) { $Suite = Join-Path $Here 'tieout.json' }
+if (-not $OutDir -and -not $ListChecks) { Write-Host 'pass -OutDir <folder> for the screenshots (or -ListChecks to print the suite)' -ForegroundColor Red; exit 1 }
 $ReportName = 'Daily Sales'
 $Pbip = Join-Path $Here "$ReportName.pbip"
 $Report = Join-Path $Here "$ReportName.Report"
@@ -173,6 +179,59 @@ function Find-ById([int]$ProcessId, [string]$AutomationId) {
 }
 function Invoke-Element($Element) { $Element.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke() }
 
+# The tie-out suite, loaded and expanded before anything touches Desktop.
+function ConvertTo-Dax($Expr) { if ($Expr -is [array]) { return ($Expr -join "`n") } else { return [string]$Expr } }
+$suiteJson = Get-Content -LiteralPath $Suite -Raw -Encoding UTF8 | ConvertFrom-Json
+
+# The suite's fixed set of filters. A check with "each" runs once per filter it names ("each":
+# "filters" means every one), with each {{key}} in its name and expressions replaced by that
+# filter's own value for the key. A key the filter does not define fails the loop.
+function Resolve-Template($Value, $Filter, [string]$CheckName) {
+    if ($Value -is [array]) { return , @($Value | ForEach-Object { Resolve-Template $_ $Filter $CheckName }) }
+    if ($Value -isnot [string]) { return $Value }
+    $evaluator = [System.Text.RegularExpressions.MatchEvaluator] {
+        param($m)
+        $key = $m.Groups[1].Value
+        $p = $Filter.PSObject.Properties[$key]
+        if (-not $p) { throw "check '$CheckName' uses {{$key}}, which filter '$($Filter.name)' does not define" }
+        ConvertTo-Dax $p.Value
+    }
+    return [regex]::Replace($Value, '\{\{(\w+)\}\}', $evaluator)
+}
+function Expand-Checks($SuiteObject) {
+    $filters = @()
+    if ($SuiteObject.PSObject.Properties['filters']) { $filters = @($SuiteObject.filters) }
+    $out = New-Object System.Collections.ArrayList
+    foreach ($c in $SuiteObject.checks) {
+        if (-not $c.PSObject.Properties['each']) { [void]$out.Add($c); continue }
+        $names = if ($c.each -eq 'filters') { @($filters | ForEach-Object { $_.name }) } else { @($c.each) }
+        foreach ($n in $names) {
+            $f = $filters | Where-Object { $_.name -eq $n } | Select-Object -First 1
+            if (-not $f) { throw "check '$($c.name)' names filter '$n', which the suite does not define" }
+            $copy = [ordered]@{ filter = $n }
+            foreach ($p in $c.PSObject.Properties) {
+                if ($p.Name -ne 'each') { $copy[$p.Name] = Resolve-Template $p.Value $f $c.name }
+            }
+            [void]$out.Add([pscustomobject]$copy)
+        }
+    }
+    return , $out.ToArray()
+}
+try { $checks = Expand-Checks $suiteJson }
+catch { Fail "tie-out suite: $($_.Exception.Message)"; Stop-IfFailed }
+if ($ListChecks) {
+    foreach ($c in $checks) {
+        Write-Host ""
+        Write-Host "$($c.name)" -ForegroundColor Cyan
+        Write-Host "  report:      $((ConvertTo-Dax $c.report) -replace "`n", "`n               ")"
+        Write-Host "  independent: $((ConvertTo-Dax $c.independent) -replace "`n", "`n               ")"
+    }
+    Write-Host ""
+    Write-Host "$(@($checks).Count) checks"
+    exit 0
+}
+
+# ---------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------
 Step '1. Desktop instance'
 if (-not $PbirExe) { Fail 'pbir is not on PATH'; Stop-IfFailed }
@@ -284,7 +343,6 @@ if ($applying) {
 
 # ---------------------------------------------------------------------------------------------
 # DAX through pbir model -q, against the engine of the Desktop instance that has $Report open.
-function ConvertTo-Dax($Expr) { if ($Expr -is [array]) { return ($Expr -join "`n") } else { return [string]$Expr } }
 function Get-Col($Row, [string]$Name) {
     $p = $Row.PSObject.Properties | Where-Object { $_.Name -eq $Name -or $_.Name -eq "[$Name]" } | Select-Object -First 1
     if ($p) { return $p.Value } else { return $null }
@@ -357,7 +415,6 @@ function Get-PartitionTimes {
     return [pscustomobject]@{ Count = [int](Get-Col $r 'n'); Oldest = [double](Get-Col $r 'oldest'); Newest = [double](Get-Col $r 'newest') }
 }
 
-$suiteJson = Get-Content -LiteralPath $Suite -Raw -Encoding UTF8 | ConvertFrom-Json
 function Get-Fingerprint {
     $prints = @($suiteJson.fingerprint)
     $values = @(Invoke-DaxValues @($prints | ForEach-Object { , $_.expr }))
@@ -416,8 +473,8 @@ if (-not $SkipScreenshot) {
 }
 
 # ---------------------------------------------------------------------------------------------
-Step "7. DAX tie-out ($([IO.Path]::GetFileName($Suite)), $(@($suiteJson.checks).Count) checks)"
-foreach ($c in $suiteJson.checks) {
+Step "7. DAX tie-out ($([IO.Path]::GetFileName($Suite)), $(@($checks).Count) checks)"
+foreach ($c in $checks) {
     $tol = 0.0; if ($c.PSObject.Properties['tolerance']) { $tol = [double]$c.tolerance }
     $blankExpected = [bool]($c.PSObject.Properties['blankExpected'] -and $c.blankExpected)
     try {
