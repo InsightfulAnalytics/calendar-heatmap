@@ -1,0 +1,131 @@
+/// Synthetic daily sales at the day by channel by region grain, generated inside the model from the date table's dates by a fixed formula. Blank days have no rows.
+table Sales
+	lineageTag: 0db5a296-793f-485a-b90f-04823ce7b2db
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: dd-mmm-yy
+		lineageTag: eb5fee6a-ff8f-4870-88ed-cb7eeedfbe00
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Channel
+		dataType: string
+		lineageTag: a40803fa-ee5a-4fcf-bd2b-72f40b52af52
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Channel]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 8b0ab248-335f-4083-bba9-325f886ff57d
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Region]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Amount
+		dataType: int64
+		isHidden
+		formatString: #,##0
+		lineageTag: 98c54d83-0929-4f00-b242-c27b5df6bd0b
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Amount]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Sales = calculated
+		mode: import
+		source =
+				// Synthetic sales: one row per day, channel and region, from a fixed formula (never RAND,
+				// so every refresh gives the same rows). ALLNOBLANKROW reads the date table's dates
+				// without its blank row, so the relationship back to DimDate cannot turn circular.
+				VAR __Dates =
+				    ALLNOBLANKROW ( 'DimDate'[Date] )
+				// Channels and regions with their share of a day's sales
+				VAR __Channels =
+				    DATATABLE (
+				        "Channel", STRING,
+				        "Channel Index", INTEGER,
+				        "Channel Share", DOUBLE,
+				        {
+				            { "Online", 1, 0.45 },
+				            { "Retail", 2, 0.35 },
+				            { "Wholesale", 3, 0.2 }
+				        }
+				    )
+				VAR __Regions =
+				    DATATABLE (
+				        "Region", STRING,
+				        "Region Index", INTEGER,
+				        "Region Share", DOUBLE,
+				        {
+				            { "North", 1, 0.35 },
+				            { "South", 2, 0.25 },
+				            { "EMEA", 3, 0.25 },
+				            { "APAC", 4, 0.15 }
+				        }
+				    )
+				// Day-level inputs: the date serial number, ISO weekday (1 Monday to 7 Sunday) and month
+				VAR __Days =
+				    ADDCOLUMNS (
+				        __Dates,
+				        "@Serial", CONVERT ( 'DimDate'[Date], INTEGER ),
+				        "@Weekday", WEEKDAY ( 'DimDate'[Date], 2 ),
+				        "@Month", MONTH ( 'DimDate'[Date] )
+				    )
+				// Blank days: a fixed quadratic residue test drops about one day in 16, whole days only
+				VAR __SalesDays =
+				    FILTER (
+				        __Days,
+				        MOD ( [@Serial] * [@Serial] + 11 * [@Serial], 97 ) >= 4
+				    )
+				VAR __Grid =
+				    CROSSJOIN ( __SalesDays, __Channels, __Regions )
+				// Weekends at 45% of a weekday; the season rises from January to a December peak;
+				// a fixed per-row wobble of plus or minus 15% keeps the grid from looking flat
+				VAR __Rows =
+				    ADDCOLUMNS (
+				        __Grid,
+				        "@Amount",
+				            VAR __WeekdayFactor =
+				                IF ( [@Weekday] >= 6, 0.45, 1 )
+				            VAR __SeasonFactor =
+				                0.7 + 0.6 * ( [@Month] - 1 ) / 11
+				                    + IF ( [@Month] = 12, 0.25, 0 )
+				            VAR __Wobble =
+				                MOD (
+				                    [@Serial] * 7919 + [Channel Index] * 104729 + [Region Index] * 15485863,
+				                    1000
+				                ) / 1000
+				            RETURN
+				                ROUND (
+				                    4000 * [Channel Share] * [Region Share]
+				                        * __WeekdayFactor * __SeasonFactor
+				                        * ( 0.85 + 0.3 * __Wobble ),
+				                    0
+				                )
+				    )
+				VAR __Result =
+				    SELECTCOLUMNS (
+				        __Rows,
+				        "Date", 'DimDate'[Date],
+				        "Channel", [Channel],
+				        "Region", [Region],
+				        "Amount", CONVERT ( [@Amount], INTEGER )
+				    )
+				RETURN
+				    __Result
+

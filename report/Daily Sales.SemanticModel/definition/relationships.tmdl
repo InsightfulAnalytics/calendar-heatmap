@@ -1,0 +1,4 @@
+relationship c79951de-12c6-4b4b-81e9-1154bcc28c85
+	fromColumn: Sales.Date
+	toColumn: DimDate.Date
+
