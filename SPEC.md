@@ -366,7 +366,9 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
 
 - **Selection limit.** The limit is always passed, because without it Deneb uses a fixed 50 rows
   and ignores the format pane's data point limit. It accepts 1 to 2,500, and a larger value makes
-  Deneb reject the whole call, so the spec passes 2,500. That covers a full year (366 rows) with up
+  Deneb reject the whole call, so the spec passes 2,500. (A limit of 0 is not rejected: Deneb's range
+  check skips it and falls back to the format pane's limit, as its source at 1.9.1.0 and 2.0.0.0
+  shows.) That covers a full year (366 rows) with up
   to six split values. When shift is held, the rows already selected count toward the same limit. A
   selection over the limit is refused: Deneb keeps the previous selection and shows its limit
   warning. The spec checks the apply result and clears its drag preview when the limit was exceeded,
@@ -560,7 +562,8 @@ so no third harness is built.
    template is also tested on the shape the report delivers: every date present, some values blank.
    Output: the rendered scene (which cells exist, where, in what colour, which labels) and the
    recorded host calls. Each apply call is checked the way Deneb handles it: rejected unless the
-   event is a browser event and the limit is 1 to 2,500, then its expression evaluated in a separate
+   event is a browser event and the limit is 1 to 2,500 (0 falls back to the format pane's limit),
+   then its expression evaluated in a separate
    headless Vega view over the dataset seeded with top-level signal values only, so an expression
    that reads a group-level signal or a derived field fails here as it would in Power BI. The limit
    check adds the rows already selected when shift is held. The harness runs in more than one time
