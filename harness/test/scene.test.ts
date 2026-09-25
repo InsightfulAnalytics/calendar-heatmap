@@ -1,17 +1,15 @@
 // Asking the scene about days by date: colour, ring, tooltip, row identity, and the labels drawn.
 // Expected colours are the BI Nexus ramp listed in SPEC.md ("Colour"): five equal-interval steps
 // over 0 to the window's maximum (11,620 in the prototype sample, so steps of 2,324).
-import { test, before, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { openHarness, type Harness } from '../src/index.ts';
-import { CELLS } from './matrix.ts';
+import { CELLS } from '../src/index.ts';
+import { useHarness } from './helpers.ts';
 
 const RAMP = ['#d2e2f7', '#9abeee', '#5693e3', '#1b64c3', '#113d77'];
 const EMPTY = '#f1f5f9';
 
-let harness: Harness;
-before(async () => { harness = await openHarness(); });
-after(async () => { await harness.close(); });
+const harness = useHarness();
 
 for (const { vega, timeZone, label: cell } of CELLS) {
   const render = (selected?: number[]) => harness.render({ spec: 'prototype', fixture: 'prototype-sample', vega, timeZone, selected });

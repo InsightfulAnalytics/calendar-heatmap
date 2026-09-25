@@ -1,22 +1,22 @@
 // The prototype gives the same results under Vega 6.2 and 6.4 (Deneb 1.9 and 2.0) and in every
 // time zone: the same days in the same places and colours, the same labels and tooltips, and the
 // same host calls for the same gestures.
-import { test, before, after } from 'node:test';
+import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { openHarness, VEGA_VERSIONS, TIME_ZONES, type Harness, type VegaVersion } from '../src/index.ts';
+import { CELLS, TIME_ZONES, VEGA_VERSIONS, cellLabel, type Cell } from '../src/index.ts';
+import { useHarness } from './helpers.ts';
 
-let harness: Harness;
+const harness = useHarness();
 const outcomes = new Map<string, unknown>();
 const zones = new Map<string, string>();
 const vegaVersions = new Map<string, string>();
-const key = (vega: string, tz: string) => `${vega}|${tz}`;
 
 /** Everything a viewer or the host sees over one scripted session with the prototype. */
-async function outcome(vega: VegaVersion, timeZone: string) {
-  const render = () => harness.render({ spec: 'prototype', fixture: 'prototype-sample', vega, timeZone });
+async function outcome(cell: Cell) {
+  const render = () => harness.render({ spec: 'prototype', fixture: 'prototype-sample', ...cell });
   const cal = await render();
-  zones.set(key(vega, timeZone), await cal.timeZone());
-  vegaVersions.set(key(vega, timeZone), await cal.vegaVersion());
+  zones.set(cellLabel(cell), await cal.timeZone());
+  vegaVersions.set(cellLabel(cell), await cal.vegaVersion());
   const scene = await cal.scene();
   const script: [string, (c: typeof cal) => Promise<void>][] = [
     ['drag 7 Jul to 20 Aug', (c) => c.drag('2025-07-07', '2025-08-20')],
@@ -41,31 +41,30 @@ async function outcome(vega: VegaVersion, timeZone: string) {
 }
 
 before(async () => {
-  harness = await openHarness();
-  for (const vega of VEGA_VERSIONS) for (const tz of TIME_ZONES) outcomes.set(key(vega, tz), await outcome(vega, tz));
+  for (const cell of CELLS) outcomes.set(cell.label, await outcome(cell));
 });
-after(async () => { await harness.close(); });
 
 test('each run is really in its time zone', () => {
-  for (const vega of VEGA_VERSIONS) for (const tz of TIME_ZONES) assert.equal(zones.get(key(vega, tz)), tz);
+  for (const { label, timeZone } of CELLS) assert.equal(zones.get(label), timeZone, label);
 });
 
 // Without this, a cell that loaded the wrong Vega bundle would make the parity checks below pass
 // trivially. Deneb 1.9 runs Vega 6.2.0 and Deneb 2.0 runs Vega 6.4.0 (SPEC, "Testing Decisions").
 test('each run is really on the Vega version it claims', () => {
   const expected: Record<string, string> = { '6.2': '6.2.0', '6.4': '6.4.0' };
-  for (const vega of VEGA_VERSIONS) for (const tz of TIME_ZONES) assert.equal(vegaVersions.get(key(vega, tz)), expected[vega], `[Vega ${vega}, ${tz}]`);
+  for (const { label, vega } of CELLS) assert.equal(vegaVersions.get(label), expected[vega], label);
 });
 
 for (const tz of TIME_ZONES) {
   test(`[${tz}] the prototype results are the same under Vega 6.2 and Vega 6.4`, () => {
-    assert.deepEqual(outcomes.get(key('6.2', tz)), outcomes.get(key('6.4', tz)));
+    assert.deepEqual(outcomes.get(cellLabel({ vega: '6.2', timeZone: tz })), outcomes.get(cellLabel({ vega: '6.4', timeZone: tz })));
   });
 }
 
 for (const vega of VEGA_VERSIONS) {
   test(`[Vega ${vega}] the prototype results are the same in ${TIME_ZONES.join(', ')}`, () => {
     const [first, ...rest] = TIME_ZONES;
-    for (const tz of rest) assert.deepEqual(outcomes.get(key(vega, tz)), outcomes.get(key(vega, first)), `${tz} differs from ${first}`);
+    const at = (timeZone: string) => outcomes.get(cellLabel({ vega, timeZone }));
+    for (const tz of rest) assert.deepEqual(at(tz), at(first), `${tz} differs from ${first}`);
   });
 }

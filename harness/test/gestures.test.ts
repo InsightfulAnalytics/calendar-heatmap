@@ -1,12 +1,10 @@
 // Gesture replay on the prototype: the buttons, modifiers and inputs a viewer can use.
-import { test, before, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { openHarness, type Harness } from '../src/index.ts';
-import { CELLS } from './matrix.ts';
+import { CELLS } from '../src/index.ts';
+import { useHarness } from './helpers.ts';
 
-let harness: Harness;
-before(async () => { harness = await openHarness(); });
-after(async () => { await harness.close(); });
+const harness = useHarness();
 
 const PEAK = { type: 'select', rows: [281], dates: ['2025-12-17'] };
 

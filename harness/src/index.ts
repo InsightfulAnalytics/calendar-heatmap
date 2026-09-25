@@ -21,13 +21,30 @@ export const VEGA_VERSIONS: VegaVersion[] = ['6.2', '6.4'];
 /** The default suite's time zones: UTC, one well east and one well west. */
 export const TIME_ZONES = ['UTC', 'Pacific/Auckland', 'America/Los_Angeles'];
 
+/** Where a check runs: a Vega version (so a Deneb version) and the page's time zone. */
+export interface Cell {
+  vega: VegaVersion;
+  timeZone: string;
+}
+
+/** A render with no cell given runs here. */
+export const DEFAULT_CELL: Cell = { vega: '6.4', timeZone: 'UTC' };
+
+/** A cell's name, which prefixes every check run in it: "[Vega 6.2, Pacific/Auckland]". */
+export const cellLabel = ({ vega, timeZone }: Cell): string => `[Vega ${vega}, ${timeZone}]`;
+
+/** The suite's matrix: both Vega versions (Deneb 1.9 and 2.0), each in every default time zone. */
+export const CELLS: (Cell & { label: string })[] = VEGA_VERSIONS.flatMap((vega) =>
+  TIME_ZONES.map((timeZone) => ({ vega, timeZone, label: cellLabel({ vega, timeZone }) })));
+
 /**
  * How the host delivers a date column. The working assumption (SPEC, "Dates and time zones") is
  * local midnight in the viewer's time zone. A Desktop finding changes this one setting.
  */
 export type DateDelivery = 'local' | 'utc' | 'text';
 
-export interface RenderInput {
+/** What to render. The cell (vega and timeZone) defaults to DEFAULT_CELL, field by field. */
+export interface RenderInput extends Partial<Cell> {
   /** A named spec ('prototype'), a .json path relative to harness/, or a source with a config. */
   spec: string | SpecSource;
   /** A named fixture, or a fixture object. */
@@ -38,8 +55,6 @@ export interface RenderInput {
   theme?: string;
   /** Values for top-level signals (the spec's named options). */
   options?: Record<string, Json>;
-  vega?: VegaVersion;
-  timeZone?: string;
   dateDelivery?: DateDelivery;
   /** Row identities the host already holds selected when the visual renders. */
   selected?: number[];
@@ -312,8 +327,8 @@ export class Harness {
 
   /** Render a spec over a fixture. Fails when Vega reports an error while rendering. */
   async render(input: RenderInput): Promise<Calendar> {
-    const vega = input.vega ?? '6.4';
-    const timeZone = input.timeZone ?? 'UTC';
+    const vega = input.vega ?? DEFAULT_CELL.vega;
+    const timeZone = input.timeZone ?? DEFAULT_CELL.timeZone;
     const size = input.size ?? { width: 1080, height: 362 };
     const fixture = typeof input.fixture === 'string' ? loadFixture(input.fixture) : input.fixture;
     const source = resolveSpecSource(input.spec);

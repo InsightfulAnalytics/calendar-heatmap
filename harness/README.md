@@ -82,8 +82,10 @@ previous Calendar; reading the old one throws.
 
 ## Adding a check
 
-Write it as a test in `test/`, inside `for (const { vega, timeZone, label } of CELLS)` from
-`test/matrix.ts` so it runs in all six cells, and prefix its name with `label`. Assert what a viewer
+Write it as a test in `test/`, inside `for (const { vega, timeZone, label } of CELLS)` (`CELLS`
+from `src/index.ts`) so it runs in all six cells, and prefix its name with `label`. Open the
+browser with `const harness = useHarness()` from `test/helpers.ts`, which also holds `rowsDated`
+(a fixture's row identities in a date range, from its own date text) and `sorted`. Assert what a viewer
 or the host would see, through the interface above, with expected values from an independent
 source: a literal, a worked example or the SPEC. Never name a signal, mark or transform in a test;
 if the harness cannot answer a question by date, extend the scene query in `src/page/runtime.js`

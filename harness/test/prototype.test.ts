@@ -1,20 +1,15 @@
 // The prototype spec at the template seam: selection gestures, host calls and the scene, under
 // both Vega versions (Deneb 1.9 and 2.0) and in three time zones. Expected rows come from the
 // sample's own date text, never from the spec's date maths.
-import { test, before, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { openHarness, type Harness } from '../src/index.ts';
+import { CELLS } from '../src/index.ts';
 import { loadFixture } from '../src/fixtures.ts';
-import { CELLS } from './matrix.ts';
+import { rowsDated, sorted, useHarness } from './helpers.ts';
 
 const sample = loadFixture('prototype-sample');
-const rowsDated = (from: string, to: string) =>
-  sample.rows.flatMap((r, i) => (String(r.Date) >= from && String(r.Date) <= to ? [i] : []));
-const sorted = (xs: number[]) => [...xs].sort((a, b) => a - b);
 
-let harness: Harness;
-before(async () => { harness = await openHarness(); });
-after(async () => { await harness.close(); });
+const harness = useHarness();
 
 for (const { vega, timeZone, label: cell } of CELLS) {
   const render = () => harness.render({ spec: 'prototype', fixture: 'prototype-sample', vega, timeZone });
@@ -24,7 +19,7 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     await cal.drag('2025-07-07', '2025-08-20');
     const selects = (await cal.hostCalls()).filter((c) => c.type === 'select');
     assert.equal(selects.length, 1);
-    const expected = rowsDated('2025-07-07', '2025-08-20');
+    const expected = rowsDated(sample, '2025-07-07', '2025-08-20');
     assert.equal(expected.length, 36);
     assert.deepEqual(sorted(selects[0].rows), expected);
   });
@@ -56,7 +51,7 @@ for (const { vega, timeZone, label: cell } of CELLS) {
       await cal.drag(from, to);
       const selects = (await cal.hostCalls()).filter((c) => c.type === 'select');
       assert.equal(selects.length, 1);
-      assert.deepEqual(sorted(selects[0].rows), rowsDated(from, to));
+      assert.deepEqual(sorted(selects[0].rows), rowsDated(sample, from, to));
     });
   }
 

@@ -1,11 +1,11 @@
 // The fixture generator: deterministic rows for the base 2025 fixture and the several-regions
 // fixture. Properties are checked with Node's own UTC calendar, independent of any spec.
-import { test, before, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { openHarness, type Harness } from '../src/index.ts';
+import { CELLS } from '../src/index.ts';
 import { loadFixture, type Fixture } from '../src/fixtures.ts';
-import { CELLS } from './matrix.ts';
+import { useHarness } from './helpers.ts';
 
 // Recorded when each fixture was first generated. A deliberate change to a fixture updates its
 // fingerprint here in the same commit; any other change is a determinism failure.
@@ -63,9 +63,7 @@ test('the several-regions fixture holds six regions for every date of 2025, with
   assert.ok(f.rows.some((r) => r.Sales === null), 'some values are blank');
 });
 
-let harness: Harness;
-before(async () => { harness = await openHarness(); });
-after(async () => { await harness.close(); });
+const harness = useHarness();
 
 for (const { vega, timeZone, label: cell } of CELLS) for (const name of ['base-2025', 'regions-2025']) {
   test(`${cell} the ${name} fixture loads and renders in the prototype without error`, async () => {

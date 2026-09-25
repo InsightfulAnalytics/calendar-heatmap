@@ -1,15 +1,12 @@
 // Each apply call is judged the way Deneb judges it. The specs under test/specs/ are small day
 // strips: strip.json is valid, and each other spec makes one deliberate mistake.
-import { test, before, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { openHarness, type Harness, type RenderInput } from '../src/index.ts';
+import { CELLS, type RenderInput } from '../src/index.ts';
 import { loadFixture } from '../src/fixtures.ts';
-import { CELLS } from './matrix.ts';
+import { rowsDated, sorted, useHarness } from './helpers.ts';
 
 const sample = loadFixture('prototype-sample');
-const rowsDated = (from: string, to: string) =>
-  sample.rows.flatMap((r, i) => (String(r.Date) >= from && String(r.Date) <= to ? [i] : []));
-const sorted = (xs: number[]) => [...xs].sort((a, b) => a - b);
 
 // Deneb's own warning texts (src/i18n/en-US.json at 2.0.0.0 and 1.9.1.0).
 const EVENT_WARNING = 'The first parameter must be a valid `event` from the Vega view.';
@@ -24,9 +21,7 @@ const JULY_7: Record<string, { iso: string; offset: string }> = {
   'America/Los_Angeles': { iso: '2025-07-07T07:00:00.000Z', offset: 'GMT-0700' },
 };
 
-let harness: Harness;
-before(async () => { harness = await openHarness(); });
-after(async () => { await harness.close(); });
+const harness = useHarness();
 
 for (const { vega, timeZone, label: cell } of CELLS) {
   // Vega 6.2 is Deneb 1.9 and Vega 6.4 is Deneb 2.0 (SPEC, "Testing Decisions").
@@ -39,7 +34,7 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     await cal.drag('2025-07-07', '2025-08-20');
     const [call] = await cal.hostCalls();
     assert.equal(call.type, 'select');
-    assert.deepEqual(call.type === 'select' && sorted(call.rows), rowsDated('2025-07-07', '2025-08-20'));
+    assert.deepEqual(call.type === 'select' && sorted(call.rows), rowsDated(sample, '2025-07-07', '2025-08-20'));
   });
 
   test(`${cell} a _{field}_ placeholder is filled from the clicked day as Deneb ${deneb} writes a date, and selects that day's row`, async () => {
@@ -55,7 +50,7 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     const written = resolved.slice(prefix.length, -suffix.length);
     if (deneb === '2.0') assert.equal(written, expected.iso);
     else assert.ok(written.startsWith(`Mon Jul 07 2025 00:00:00 ${expected.offset} (`) && written.endsWith(')'), `Deneb 1.9 wrote ${written}`);
-    assert.deepEqual(await cal.hostCalls(), [{ type: 'select', rows: rowsDated('2025-07-07', '2025-07-07'), dates: ['2025-07-07'], multiSelect: false }]);
+    assert.deepEqual(await cal.hostCalls(), [{ type: 'select', rows: rowsDated(sample, '2025-07-07', '2025-07-07'), dates: ['2025-07-07'], multiSelect: false }]);
   });
 
   test(`${cell} an expression that reads a group-level signal selects nothing and reports an evaluation error`, async () => {
@@ -106,7 +101,7 @@ for (const { vega, timeZone, label: cell } of CELLS) {
   });
 
   test(`${cell} an apply call with limit 0 is not given a limit of its own: over the format pane's data point limit it is refused and the previous Selection stays`, async () => {
-    const q1 = rowsDated('2025-01-01', '2025-03-31');
+    const q1 = rowsDated(sample, '2025-01-01', '2025-03-31');
     assert.ok(q1.length > 50 && q1.length <= 100, `the first quarter holds ${q1.length} rows`);
     const refused = await render('apply-limit-0', { selected: [0, 1, 2] });
     await refused.drag('2025-01-01', '2025-03-31');
@@ -126,7 +121,7 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     const [apply] = await cal.applyCalls();
     assert.equal(apply.result.exceedsLimit, true);
     assert.equal(apply.result.multiSelect, false);
-    assert.deepEqual(sorted(apply.result.rowNumbers ?? []), rowsDated('2025-07-07', '2025-08-20'));
+    assert.deepEqual(sorted(apply.result.rowNumbers ?? []), rowsDated(sample, '2025-07-07', '2025-08-20'));
     assert.equal(apply.result.warning, undefined);
     assert.deepEqual(await cal.hostCalls(), []);
     assert.equal(await cal.limitWarning(), true);

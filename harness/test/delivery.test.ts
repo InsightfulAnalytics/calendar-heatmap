@@ -1,17 +1,15 @@
 // Delivering fixture rows the way Deneb does. The date delivery setting (local midnight, UTC
 // midnight or text) changes the date field's shape and nothing else, in every time zone.
-import { test, before, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { openHarness, type Harness, type DateDelivery } from '../src/index.ts';
+import { CELLS, type DateDelivery } from '../src/index.ts';
 import { loadFixture } from '../src/fixtures.ts';
-import { CELLS } from './matrix.ts';
+import { useHarness } from './helpers.ts';
 
 const base = loadFixture('base-2025');
 const MIDNIGHT = '00:00:00.000';
 
-let harness: Harness;
-before(async () => { harness = await openHarness(); });
-after(async () => { await harness.close(); });
+const harness = useHarness();
 
 for (const { vega, timeZone, label: cell } of CELLS) {
   test(`${cell} switching date delivery between local midnight, UTC midnight and text changes the rows' date shape and nothing else`, async () => {
