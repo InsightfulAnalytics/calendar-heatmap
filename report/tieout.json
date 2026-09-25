@@ -1,0 +1,141 @@
+{
+  "about": "Report seam tie-out suite for the Daily Sales PBIP, run by seam.ps1 against the open Desktop model. Each check evaluates two DAX scalar expressions, 'report' (the report's own measures or model state) and 'independent' (a query straight over the fact and date tables, or the expected constant), and fails when they differ. Expressions may be a string or an array of lines. 'tolerance' is an absolute difference allowed between numbers (default 0). 'fingerprint' is evaluated after each of two data refreshes, and the two results must match.",
+  "fingerprint": [
+    { "name": "sales rows", "expr": "COUNTROWS ( 'Sales' )" },
+    { "name": "sales amount", "expr": "SUM ( 'Sales'[Amount] )" },
+    { "name": "sales position checksum", "expr": "SUMX ( 'Sales', 'Sales'[Amount] * MOD ( CONVERT ( 'Sales'[Date], INTEGER ), 101 ) )" },
+    { "name": "date rows", "expr": "COUNTROWS ( 'DimDate' )" }
+  ],
+  "checks": [
+    {
+      "name": "date table starts 1 Jul 2023",
+      "ticket": "T01",
+      "report": "CALCULATE ( MIN ( 'DimDate'[Date] ), REMOVEFILTERS () )",
+      "independent": "DATE ( 2023, 7, 1 )"
+    },
+    {
+      "name": "date table ends 30 Jun 2026",
+      "ticket": "T01",
+      "report": "CALCULATE ( MAX ( 'DimDate'[Date] ), REMOVEFILTERS () )",
+      "independent": "DATE ( 2026, 6, 30 )"
+    },
+    {
+      "name": "date table has every day of the range, once",
+      "ticket": "T01",
+      "report": "CALCULATE ( COUNTROWS ( 'DimDate' ), REMOVEFILTERS () )",
+      "independent": "COUNTROWS ( CALENDAR ( DATE ( 2023, 7, 1 ), DATE ( 2026, 6, 30 ) ) )"
+    },
+    {
+      "name": "29 Feb 2024 is in the date table",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Days in Filter], 'DimDate'[Date] = DATE ( 2024, 2, 29 ) )",
+      "independent": "1"
+    },
+    {
+      "name": "29 Feb 2024 has sales",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Total Sales], 'DimDate'[Date] = DATE ( 2024, 2, 29 ) )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] = DATE ( 2024, 2, 29 ) ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "blank-sales days in the whole range",
+      "ticket": "T01",
+      "report": "COUNTROWS ( FILTER ( ALL ( 'DimDate'[Date] ), ISBLANK ( [Total Sales] ) ) )",
+      "independent": "COUNTROWS ( EXCEPT ( ALL ( 'DimDate'[Date] ), ALL ( 'Sales'[Date] ) ) )"
+    },
+    {
+      "name": "at least one blank-sales day between 7 Jul and 20 Aug 2025",
+      "ticket": "T01",
+      "report": [
+        "COUNTROWS (",
+        "    FILTER (",
+        "        CALCULATETABLE ( VALUES ( 'DimDate'[Date] ), DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ) ),",
+        "        ISBLANK ( [Total Sales] )",
+        "    )",
+        ") >= 1"
+      ],
+      "independent": "TRUE ()"
+    },
+    {
+      "name": "weekdays outsell weekends (mean per day)",
+      "ticket": "T01",
+      "report": [
+        "VAR __Days = ADDCOLUMNS ( ALL ( 'DimDate'[Date] ), \"@Sales\", [Total Sales] + 0, \"@Weekend\", WEEKDAY ( 'DimDate'[Date], 2 ) >= 6 )",
+        "RETURN AVERAGEX ( FILTER ( __Days, NOT [@Weekend] ), [@Sales] ) > AVERAGEX ( FILTER ( __Days, [@Weekend] ), [@Sales] )"
+      ],
+      "independent": "TRUE ()"
+    },
+    {
+      "name": "December is the highest month of the year (all data)",
+      "ticket": "T01",
+      "report": "MAXX ( TOPN ( 1, ADDCOLUMNS ( ALL ( 'DimDate'[MonthOfYear] ), \"@Sales\", [Total Sales] ), [@Sales], DESC ), 'DimDate'[MonthOfYear] )",
+      "independent": "MAXX ( TOPN ( 1, ADDCOLUMNS ( GROUPBY ( ADDCOLUMNS ( 'Sales', \"@Month\", MONTH ( 'Sales'[Date] ) ), [@Month], \"@Sales\", SUMX ( CURRENTGROUP (), 'Sales'[Amount] ) ), \"@M\", [@Month] ), [@Sales], DESC ), [@M] )"
+    },
+    {
+      "name": "December is the highest month of calendar 2025",
+      "ticket": "T01",
+      "report": "CALCULATE ( MAXX ( TOPN ( 1, ADDCOLUMNS ( VALUES ( 'DimDate'[MonthOfYear] ), \"@Sales\", [Total Sales] ), [@Sales], DESC ), 'DimDate'[MonthOfYear] ), 'DimDate'[Year] = 2025 )",
+      "independent": "12"
+    },
+    {
+      "name": "total sales, calendar 2025 (the page filter)",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Total Sales], 'DimDate'[Year] = 2025 )",
+      "independent": "SUMX ( FILTER ( 'Sales', YEAR ( 'Sales'[Date] ) = 2025 ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "days in filter, calendar 2025",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Days in Filter], 'DimDate'[Year] = 2025 )",
+      "independent": "COUNTROWS ( CALENDAR ( DATE ( 2025, 1, 1 ), DATE ( 2025, 12, 31 ) ) )"
+    },
+    {
+      "name": "total sales, 7 Jul to 20 Aug 2025 (the probe drag)",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Total Sales], DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ) )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] >= DATE ( 2025, 7, 7 ) && 'Sales'[Date] <= DATE ( 2025, 8, 20 ) ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "days in filter, 7 Jul to 20 Aug 2025",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Days in Filter], DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ) )",
+      "independent": "DATEDIFF ( DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ), DAY ) + 1"
+    },
+    {
+      "name": "helper measure is never blank for a date",
+      "ticket": "T01",
+      "report": "COUNTROWS ( FILTER ( ALL ( 'DimDate'[Date] ), ISBLANK ( [Days in Filter] ) ) ) + 0",
+      "independent": "0"
+    },
+    {
+      "name": "helper measure counts every date",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Days in Filter], REMOVEFILTERS () )",
+      "independent": "COUNTROWS ( ALL ( 'Sales'[Date] ) ) + COUNTROWS ( EXCEPT ( ALL ( 'DimDate'[Date] ), ALL ( 'Sales'[Date] ) ) )"
+    },
+    {
+      "name": "model tables (no hidden local date tables)",
+      "ticket": "T01",
+      "report": "CONCATENATEX ( INFO.TABLES (), [Name], \", \", [Name], ASC )",
+      "independent": "\"DimDate, Measure Table, Sales\""
+    },
+    {
+      "name": "one relationship, active and single direction, many to one",
+      "ticket": "T01",
+      "report": "COUNTROWS ( FILTER ( INFO.RELATIONSHIPS (), [IsActive] && [CrossFilteringBehavior] = 1 && [FromCardinality] = 2 && [ToCardinality] = 1 ) )",
+      "independent": "COUNTROWS ( INFO.RELATIONSHIPS () )"
+    },
+    {
+      "name": "title text for calendar 2025",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Dates Selected], 'DimDate'[Year] = 2025 )",
+      "independent": "\"Selected Period: 2025\""
+    },
+    {
+      "name": "title text for 7 Jul to 20 Aug 2025",
+      "ticket": "T01",
+      "report": "CALCULATE ( [Dates Selected], DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ) )",
+      "independent": "\"Selected Period: 7 Jul - 20 Aug 2025\""
+    }
+  ]
+}
