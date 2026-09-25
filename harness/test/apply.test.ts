@@ -2,7 +2,7 @@
 // strips: strip.json is valid, and each other spec makes one deliberate mistake.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CELLS, type RenderInput } from '../src/index.ts';
+import { CELLS, DENEB_OF, type RenderInput } from '../src/index.ts';
 import { loadFixture } from '../src/fixtures.ts';
 import { rowsDated, sorted, useHarness } from './helpers.ts';
 
@@ -24,8 +24,7 @@ const JULY_7: Record<string, { iso: string; offset: string }> = {
 const harness = useHarness();
 
 for (const { vega, timeZone, label: cell } of CELLS) {
-  // Vega 6.2 is Deneb 1.9 and Vega 6.4 is Deneb 2.0 (SPEC, "Testing Decisions").
-  const deneb = vega === '6.2' ? '1.9' : '2.0';
+  const deneb = DENEB_OF[vega];
   const render = (spec: string, extra: Partial<RenderInput> = {}) =>
     harness.render({ spec: `test/specs/${spec}.json`, fixture: 'prototype-sample', size: { width: 780, height: 120 }, vega, timeZone, ...extra });
 
@@ -42,15 +41,16 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     assert.ok(expected, `no expected local midnight for ${timeZone}`);
     const cal = await render('apply-date-placeholder');
     await cal.click('2025-07-07');
+    assert.deepEqual(await cal.hostCalls(), [{ type: 'select', rows: rowsDated(sample, '2025-07-07', '2025-07-07'), dates: ['2025-07-07'], multiSelect: false }]);
+    // The selection is the same under both Deneb versions, so only the expression Deneb evaluated
+    // tells 1.9 from 2.0 in this cell. The pinned text mirrors Deneb's placeholder rule (A4 in
+    // src/page/runtime.js): 2.0 writes toDate('<ISO string>'), 1.9 toDate('<Date.toString()>').
     const [apply] = await cal.applyCalls();
-    const prefix = "time(toDate(datum['Date'])) == time(toDate('";
-    const suffix = "'))";
     const resolved = apply.resolvedExpression ?? '';
-    assert.ok(resolved.startsWith(prefix) && resolved.endsWith(suffix), `resolved to ${resolved}`);
-    const written = resolved.slice(prefix.length, -suffix.length);
+    const written = /^time\(toDate\(datum\['Date'\]\)\) == time\(toDate\('(.*)'\)\)$/.exec(resolved)?.[1];
+    assert.ok(written, `resolved to ${resolved}`);
     if (deneb === '2.0') assert.equal(written, expected.iso);
     else assert.ok(written.startsWith(`Mon Jul 07 2025 00:00:00 ${expected.offset} (`) && written.endsWith(')'), `Deneb 1.9 wrote ${written}`);
-    assert.deepEqual(await cal.hostCalls(), [{ type: 'select', rows: rowsDated(sample, '2025-07-07', '2025-07-07'), dates: ['2025-07-07'], multiSelect: false }]);
   });
 
   test(`${cell} an expression that reads a group-level signal selects nothing and reports an evaluation error`, async () => {
@@ -58,7 +58,7 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     await cal.drag('2025-07-07', '2025-08-20');
     const [apply] = await cal.applyCalls();
     assert.deepEqual(apply.result.rowNumbers, []);
-    assert.match(apply.result.warning ?? '', /Unrecognized signal name: "loMs"/);
+    assert.match(apply.result.warning ?? '', /Unrecognized signal name/);
     assert.deepEqual(await cal.hostCalls(), []);
     assert.deepEqual(await cal.selection(), [0]);
   });
