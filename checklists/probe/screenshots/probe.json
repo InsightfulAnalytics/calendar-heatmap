@@ -1,0 +1,819 @@
+{
+  "started": "2026-09-25T21:38:52.324Z",
+  "finished": "2026-09-25T21:45:57.187Z",
+  "pbip": "B:\\VS Code Files\\PBI Projects\\Calendar Heatmap\\report\\Daily Sales.pbip",
+  "answers": {
+    "machine time zone at the start": "AUS Eastern Standard Time",
+    "closing the Desktop instance already holding the PBIP": "closed through WindowPattern.Close, after answering Don't save",
+    "dataset fields": [
+      "__row__",
+      "__selected__",
+      "Date",
+      "Days in Filter",
+      "Days in Filter__highlight",
+      "Days in Filter__highlightStatus",
+      "Days in Filter__highlightComparator",
+      "Days in Filter__format",
+      "Days in Filter__formatted",
+      "Sales",
+      "Sales__highlight",
+      "Sales__highlightStatus",
+      "Sales__highlightComparator",
+      "Sales__format",
+      "Sales__formatted"
+    ],
+    "own zone zone": "Australia/Sydney",
+    "own zone 1 Jul 2025 delivered as": {
+      "delivery": "local",
+      "type": "[object Date]",
+      "raw": 1751292000000,
+      "text": "Tue Jul 01 2025 00:00:00 GMT+1000 (Australian Eastern Standard Time)",
+      "iso": "2025-06-30T14:00:00.000Z",
+      "row": 181,
+      "fields": [
+        "__row__",
+        "__selected__",
+        "Date",
+        "Days in Filter",
+        "Days in Filter__highlight",
+        "Days in Filter__highlightStatus",
+        "Days in Filter__highlightComparator",
+        "Days in Filter__format",
+        "Days in Filter__formatted",
+        "Sales",
+        "Sales__highlight",
+        "Sales__highlightStatus",
+        "Sales__highlightComparator",
+        "Sales__format",
+        "Sales__formatted"
+      ]
+    },
+    "debug view columns": [
+      "__row__",
+      "__selected__",
+      "Date",
+      "Days in Filter",
+      "Days in Filter__highlight",
+      "Days in Filter__highlightStatus",
+      "Days in Filter__highlightComparator",
+      "Days in Filter__format",
+      "Days in Filter__formatted",
+      "Sales",
+      "Sales__highlight",
+      "Sales__highlightStatus",
+      "Sales__highlightComparator",
+      "Sales__format",
+      "Sales__formatted"
+    ],
+    "own zone 1 Jul 2025 in Deneb's debug view": "2025-06-30T14:00:00.000Z",
+    "Deneb's log after opening the editor": [
+      "[Warn] Migrated 2 legacy pbiContainer signal reference(s) to denebContainer."
+    ],
+    "C2 flags of 6 Jul, 7 Jul, 17 Jul, 20 Aug, 21 Aug": {
+      "2025-07-06": "off",
+      "2025-07-07": "on",
+      "2025-07-17": "on",
+      "2025-08-20": "on",
+      "2025-08-21": "off"
+    },
+    "C6 context menu items": [
+      "Copy",
+      "Show as a table",
+      "Include",
+      "Exclude",
+      "Group",
+      "Clear selections",
+      "Summarize",
+      "New visual calculation",
+      "Set up a verified answer (preview)"
+    ],
+    "C8 shift-click 14 Aug (selected) outcome": {
+      "outcome": "a. 14 Aug removed",
+      "selected": "44 days, 2025-07-07 to 2025-08-20",
+      "title": "Selected Period: See Date Slicers",
+      "totalCard": "143,961",
+      "daysCard": "44"
+    },
+    "shiftClick": "a. 14 Aug removed",
+    "C9 shift-drag 4 to 10 Aug (all selected) outcome": {
+      "outcome": "a. the seven days removed",
+      "selected": "38 days, 2025-07-07 to 2025-08-20",
+      "title": "Selected Period: See Date Slicers",
+      "totalCard": "123,091",
+      "daysCard": "38"
+    },
+    "shiftDrag": "a. the seven days removed",
+    "C9b shift-drag 18 to 26 Aug (3 selected, 6 not) outcome": {
+      "outcome": "toggle each: 18 to 20 Aug removed, 21 to 26 Aug added",
+      "selected": "48 days, 2025-07-07 to 2025-08-26",
+      "title": "Selected Period: See Date Slicers",
+      "totalCard": "156,798",
+      "daysCard": "48"
+    },
+    "shiftDragMixed": "toggle each: 18 to 20 Aug removed, 21 to 26 Aug added",
+    "D3 audit of the saved Calendar visual.json": {
+      "developerVersion": "2.0.0.0",
+      "vegaVersion": "6.4.0",
+      "legacy": "total=2 pbiContainerWidth=1 pbiContainerHeight=1 pbiContainer=0",
+      "denebContainer": "0"
+    },
+    "D3 git status of report/ after the save": "M report/tieout.json",
+    "west zone zone": "America/Los_Angeles",
+    "west zone 1 Jul 2025 delivered as": {
+      "delivery": "local",
+      "type": "[object Date]",
+      "raw": 1751353200000,
+      "text": "Tue Jul 01 2025 00:00:00 GMT-0700 (Pacific Daylight Time)",
+      "iso": "2025-07-01T07:00:00.000Z",
+      "row": 181,
+      "fields": [
+        "__row__",
+        "__selected__",
+        "Date",
+        "Days in Filter",
+        "Days in Filter__highlight",
+        "Days in Filter__highlightStatus",
+        "Days in Filter__highlightComparator",
+        "Days in Filter__format",
+        "Days in Filter__formatted",
+        "Sales",
+        "Sales__highlight",
+        "Sales__highlightStatus",
+        "Sales__highlightComparator",
+        "Sales__format",
+        "Sales__formatted"
+      ]
+    },
+    "west zone 1 Jul 2025 in Deneb's debug view": "2025-07-01T07:00:00.000Z",
+    "Desktop reopened without a debugging port": {
+      "pid": 35888,
+      "file": "B:\\VS Code Files\\PBI Projects\\Calendar Heatmap\\report\\Daily Sales.pbip"
+    }
+  },
+  "results": [
+    {
+      "name": "the page filter holds 365 days of 2025 (independent)",
+      "ok": true,
+      "how": "an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "baseline: the table lists exactly 365 days, 2025-01-01 to 2025-12-31",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "baseline: its rows with blank sales are the days with no Sales rows (2025-01-04, 2025-01-19, 2025-01-30, 2025-02-14, 2025-03-11, 2025-03-17, 2025-04-11, 2025-04-26, 2025-05-07, 2025-05-22, 2025-06-16, 2025-06-22, 2025-07-17, 2025-08-01, 2025-08-12, 2025-08-27, 2025-09-21, 2025-09-27, 2025-10-22, 2025-11-06, 2025-11-17, 2025-12-02, 2025-12-27)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "baseline: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "baseline: the Days in filter card reads 365",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "baseline: the Total sales card equals the independent sum (1,181,520)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "baseline: the title reads \"Selected Period: 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "baseline: every row of the Calendar's dataset is neutral",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "own zone: the Calendar draws every day of 2025 once",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "own zone: every day sits in its weekday's row, Monday first (1 Jan 2025 on Wednesday)",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "own zone: every day shows the dataset row of the same calendar day",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "blank-value days arrive as rows: the dataset has one row per day in the filter",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "the no-sales days are rows with blank Sales and Days in Filter 1",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "the dataset lists the sales measure's highlight companion field (Sales__highlight)",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging",
+      "detail": "__row__, __selected__, Date, Days in Filter, Days in Filter__highlight, Days in Filter__highlightStatus, Days in Filter__highlightComparator, Days in Filter__format, Days in Filter__formatted, Sales, Sales__highlight, Sales__highlightStatus, Sales__highlightComparator, Sales__format, Sales__formatted"
+    },
+    {
+      "name": "own zone: local midnight of 1 Jul 2025 in Australia/Sydney is the worked example",
+      "ok": true,
+      "how": "date arithmetic (Intl) against the probe checklist"
+    },
+    {
+      "name": "own zone: that row's sales equal the independent sum for 1 Jul 2025",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "own zone: the dataset holds a row for 1 Jul 2025",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "own zone: dates arrive as Date values at local midnight",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "Deneb's debug view counts one row per day in the filter",
+      "ok": true,
+      "how": "Deneb's debug view (editor, Source tab), read through remote debugging"
+    },
+    {
+      "name": "Deneb's debug view lists Sales__highlight",
+      "ok": true,
+      "how": "Deneb's debug view (editor, Source tab), read through remote debugging",
+      "detail": "__row__, __selected__, Date, Days in Filter, Days in Filter__highlight, Days in Filter__highlightStatus, Days in Filter__highlightComparator, Days in Filter__format, Days in Filter__formatted, Sales, Sales__highlight, Sales__highlightStatus, Sales__highlightComparator, Sales__format, Sales__formatted"
+    },
+    {
+      "name": "Deneb's debug view shows 2025-01-04 as a row with Sales null and Days in Filter 1",
+      "ok": true,
+      "how": "Deneb's debug view (editor, Source tab), read through remote debugging"
+    },
+    {
+      "name": "Deneb's debug view shows 2025-07-17 as a row with Sales null and Days in Filter 1",
+      "ok": true,
+      "how": "Deneb's debug view (editor, Source tab), read through remote debugging"
+    },
+    {
+      "name": "Deneb's debug view shows 1 Jul 2025's Date as local midnight in ISO form",
+      "ok": true,
+      "how": "Deneb's debug view (editor, Source tab), read through remote debugging"
+    },
+    {
+      "name": "back to report: the table lists exactly 365 days, 2025-01-01 to 2025-12-31",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "back to report: its rows with blank sales are the days with no Sales rows (2025-01-04, 2025-01-19, 2025-01-30, 2025-02-14, 2025-03-11, 2025-03-17, 2025-04-11, 2025-04-26, 2025-05-07, 2025-05-22, 2025-06-16, 2025-06-22, 2025-07-17, 2025-08-01, 2025-08-12, 2025-08-27, 2025-09-21, 2025-09-27, 2025-10-22, 2025-11-06, 2025-11-17, 2025-12-02, 2025-12-27)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "back to report: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "back to report: the Days in filter card reads 365",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "back to report: the Total sales card equals the independent sum (1,181,520)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "back to report: the title reads \"Selected Period: 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C1 drag 7 Jul to 20 Aug: the table lists exactly 45 days, 2025-07-07 to 2025-08-20",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C1 drag 7 Jul to 20 Aug: its rows with blank sales are the days with no Sales rows (2025-07-17, 2025-08-01, 2025-08-12)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C1 drag 7 Jul to 20 Aug: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C1 drag 7 Jul to 20 Aug: the Days in filter card reads 45",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C1 drag 7 Jul to 20 Aug: the Total sales card equals the independent sum (148,343)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C1 drag 7 Jul to 20 Aug: the title reads \"Selected Period: 7 Jul - 20 Aug 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C1 drag 7 Jul to 20 Aug: the Calendar's rows are on for exactly 45 days, 2025-07-07 to 2025-08-20",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C1 drag 7 Jul to 20 Aug: and off for every other row",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C2 with the drag held, Deneb's debug view shows exactly the 45 days on and the rest off",
+      "ok": true,
+      "how": "Deneb's debug view (editor, Source tab), read through remote debugging"
+    },
+    {
+      "name": "C2 after leaving the editor, the drag is still held: the Calendar's rows are on for exactly 45 days, 2025-07-07 to 2025-08-20",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C2 after leaving the editor, the drag is still held: and off for every other row",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C3 background click after the drag: the table lists exactly 365 days, 2025-01-01 to 2025-12-31",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C3 background click after the drag: its rows with blank sales are the days with no Sales rows (2025-01-04, 2025-01-19, 2025-01-30, 2025-02-14, 2025-03-11, 2025-03-17, 2025-04-11, 2025-04-26, 2025-05-07, 2025-05-22, 2025-06-16, 2025-06-22, 2025-07-17, 2025-08-01, 2025-08-12, 2025-08-27, 2025-09-21, 2025-09-27, 2025-10-22, 2025-11-06, 2025-11-17, 2025-12-02, 2025-12-27)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C3 background click after the drag: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C3 background click after the drag: the Days in filter card reads 365",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C3 background click after the drag: the Total sales card equals the independent sum (1,181,520)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C3 background click after the drag: the title reads \"Selected Period: 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C3 background click after the drag: every row of the Calendar's dataset is neutral",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C3 after the background click, Deneb's debug view shows every row neutral",
+      "ok": true,
+      "how": "Deneb's debug view (editor, Source tab), read through remote debugging"
+    },
+    {
+      "name": "C4 click 7 Jul: the table lists exactly 2025-07-07",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C4 click 7 Jul: its rows with blank sales are the days with no Sales rows (none)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C4 click 7 Jul: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C4 click 7 Jul: the Days in filter card reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C4 click 7 Jul: the Total sales card equals the independent sum (4,120)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C4 click 7 Jul: the title reads \"Selected Period: 7 Jul 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C4 click 7 Jul: the Calendar's rows are on for exactly 2025-07-07",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C4 click 7 Jul: and off for every other row",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C5 click 17 Jul (no sales): the table lists exactly 2025-07-17",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C5 click 17 Jul (no sales): its rows with blank sales are the days with no Sales rows (2025-07-17)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C5 click 17 Jul (no sales): every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C5 click 17 Jul (no sales): the Days in filter card reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C5 click 17 Jul (no sales): the Total sales card equals the independent sum (blank)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C5 click 17 Jul (no sales): the title reads \"Selected Period: 17 Jul 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C5 click 17 Jul (no sales): the Calendar's rows are on for exactly 2025-07-17",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C5 click 17 Jul (no sales): and off for every other row",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C6 a right click on 14 Aug opens the context menu",
+      "ok": true,
+      "how": "gesture replayed in Desktop through remote debugging",
+      "detail": "Copy | Show as a table | Include | Exclude | Group | Clear selections | Summarize | New visual calculation | Set up a verified answer (preview)"
+    },
+    {
+      "name": "C6 Esc closes the menu",
+      "ok": true,
+      "how": "gesture replayed in Desktop through remote debugging"
+    },
+    {
+      "name": "C6 after the right click, nothing changed: the table lists exactly 2025-07-17",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C6 after the right click, nothing changed: its rows with blank sales are the days with no Sales rows (2025-07-17)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C6 after the right click, nothing changed: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C6 after the right click, nothing changed: the Days in filter card reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C6 after the right click, nothing changed: the Total sales card equals the independent sum (blank)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C6 after the right click, nothing changed: the title reads \"Selected Period: 17 Jul 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C6 after the right click, nothing changed: the Calendar's rows are on for exactly 2025-07-17",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C6 after the right click, nothing changed: and off for every other row",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C7 background click: the table lists exactly 365 days, 2025-01-01 to 2025-12-31",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C7 background click: its rows with blank sales are the days with no Sales rows (2025-01-04, 2025-01-19, 2025-01-30, 2025-02-14, 2025-03-11, 2025-03-17, 2025-04-11, 2025-04-26, 2025-05-07, 2025-05-22, 2025-06-16, 2025-06-22, 2025-07-17, 2025-08-01, 2025-08-12, 2025-08-27, 2025-09-21, 2025-09-27, 2025-10-22, 2025-11-06, 2025-11-17, 2025-12-02, 2025-12-27)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C7 background click: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C7 background click: the Days in filter card reads 365",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C7 background click: the Total sales card equals the independent sum (1,181,520)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C7 background click: the title reads \"Selected Period: 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C7 background click: every row of the Calendar's dataset is neutral",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C8 shift-click 14 Aug (selected) setup: drag 7 Jul to 20 Aug: the Calendar's rows are on for exactly 45 days, 2025-07-07 to 2025-08-20",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C8 shift-click 14 Aug (selected) setup: drag 7 Jul to 20 Aug: and off for every other row",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C8 shift-click 14 Aug (selected) the page agrees with the Calendar's Selection: the table lists exactly 44 days, 2025-07-07 to 2025-08-20",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C8 shift-click 14 Aug (selected) the page agrees with the Calendar's Selection: its rows with blank sales are the days with no Sales rows (2025-07-17, 2025-08-01, 2025-08-12)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C8 shift-click 14 Aug (selected) the page agrees with the Calendar's Selection: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C8 shift-click 14 Aug (selected) the page agrees with the Calendar's Selection: the Days in filter card reads 44",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C8 shift-click 14 Aug (selected) the page agrees with the Calendar's Selection: the Total sales card equals the independent sum (143,961)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C9 shift-drag 4 to 10 Aug (all selected) setup: drag 7 Jul to 20 Aug: the Calendar's rows are on for exactly 45 days, 2025-07-07 to 2025-08-20",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C9 shift-drag 4 to 10 Aug (all selected) setup: drag 7 Jul to 20 Aug: and off for every other row",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C9 shift-drag 4 to 10 Aug (all selected) the page agrees with the Calendar's Selection: the table lists exactly 38 days, 2025-07-07 to 2025-08-20",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C9 shift-drag 4 to 10 Aug (all selected) the page agrees with the Calendar's Selection: its rows with blank sales are the days with no Sales rows (2025-07-17, 2025-08-01, 2025-08-12)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C9 shift-drag 4 to 10 Aug (all selected) the page agrees with the Calendar's Selection: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C9 shift-drag 4 to 10 Aug (all selected) the page agrees with the Calendar's Selection: the Days in filter card reads 38",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C9 shift-drag 4 to 10 Aug (all selected) the page agrees with the Calendar's Selection: the Total sales card equals the independent sum (123,091)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C9b shift-drag 18 to 26 Aug (3 selected, 6 not) setup: drag 7 Jul to 20 Aug: the Calendar's rows are on for exactly 45 days, 2025-07-07 to 2025-08-20",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C9b shift-drag 18 to 26 Aug (3 selected, 6 not) setup: drag 7 Jul to 20 Aug: and off for every other row",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "C9b shift-drag 18 to 26 Aug (3 selected, 6 not) the page agrees with the Calendar's Selection: the table lists exactly 48 days, 2025-07-07 to 2025-08-26",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C9b shift-drag 18 to 26 Aug (3 selected, 6 not) the page agrees with the Calendar's Selection: its rows with blank sales are the days with no Sales rows (2025-07-17, 2025-08-01, 2025-08-12)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C9b shift-drag 18 to 26 Aug (3 selected, 6 not) the page agrees with the Calendar's Selection: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C9b shift-drag 18 to 26 Aug (3 selected, 6 not) the page agrees with the Calendar's Selection: the Days in filter card reads 48",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C9b shift-drag 18 to 26 Aug (3 selected, 6 not) the page agrees with the Calendar's Selection: the Total sales card equals the independent sum (156,798)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C10 cleared: the table lists exactly 365 days, 2025-01-01 to 2025-12-31",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C10 cleared: its rows with blank sales are the days with no Sales rows (2025-01-04, 2025-01-19, 2025-01-30, 2025-02-14, 2025-03-11, 2025-03-17, 2025-04-11, 2025-04-26, 2025-05-07, 2025-05-22, 2025-06-16, 2025-06-22, 2025-07-17, 2025-08-01, 2025-08-12, 2025-08-27, 2025-09-21, 2025-09-27, 2025-10-22, 2025-11-06, 2025-11-17, 2025-12-02, 2025-12-27)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C10 cleared: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C10 cleared: the Days in filter card reads 365",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C10 cleared: the Total sales card equals the independent sum (1,181,520)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "C10 cleared: the title reads \"Selected Period: 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "C10 cleared: every row of the Calendar's dataset is neutral",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "D2 after the save Desktop has no unsaved changes",
+      "ok": true,
+      "how": "pbir desktop list"
+    },
+    {
+      "name": "D3 the saved Calendar is stamped Deneb 2.0.0.0 on Vega 6.4.0",
+      "ok": true,
+      "how": "the saved visual.json (deneb-pbir audit)"
+    },
+    {
+      "name": "D3 after the editor was opened and Desktop saved, the spec still uses the legacy container names",
+      "ok": true,
+      "how": "the saved visual.json (deneb-pbir audit)"
+    },
+    {
+      "name": "Windows is set west of UTC",
+      "ok": true,
+      "how": "tzutil /g"
+    },
+    {
+      "name": "the restarted Desktop's canvas runs in America/Los_Angeles",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "west zone: local midnight of 1 Jul 2025 in America/Los_Angeles is the worked example",
+      "ok": true,
+      "how": "date arithmetic (Intl) against the probe checklist"
+    },
+    {
+      "name": "west zone: that row's sales equal the independent sum for 1 Jul 2025",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "west zone: the dataset holds a row for 1 Jul 2025",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "west zone: dates arrive as Date values at local midnight",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "the raw value of 1 Jul 2025 changed between the two zones",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging",
+      "detail": "1751292000000 then 1751353200000"
+    },
+    {
+      "name": "west zone: the Calendar draws every day of 2025 once",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "west zone: every day sits in its weekday's row, Monday first (1 Jan 2025 on Wednesday)",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "west zone: every day shows the dataset row of the same calendar day",
+      "ok": true,
+      "how": "the Calendar's Vega view, read through remote debugging"
+    },
+    {
+      "name": "west zone baseline: the table lists exactly 365 days, 2025-01-01 to 2025-12-31",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "west zone baseline: its rows with blank sales are the days with no Sales rows (2025-01-04, 2025-01-19, 2025-01-30, 2025-02-14, 2025-03-11, 2025-03-17, 2025-04-11, 2025-04-26, 2025-05-07, 2025-05-22, 2025-06-16, 2025-06-22, 2025-07-17, 2025-08-01, 2025-08-12, 2025-08-27, 2025-09-21, 2025-09-27, 2025-10-22, 2025-11-06, 2025-11-17, 2025-12-02, 2025-12-27)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "west zone baseline: every row's sales equals the day's independent sum, and its Days in Filter reads 1",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "west zone baseline: the Days in filter card reads 365",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "west zone baseline: the Total sales card equals the independent sum (1,181,520)",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging; an independent DAX query over the Sales and DimDate rows"
+    },
+    {
+      "name": "west zone baseline: the title reads \"Selected Period: 2025\"",
+      "ok": true,
+      "how": "the other visuals as drawn, read through remote debugging"
+    },
+    {
+      "name": "west zone: Deneb's debug view shows 1 Jul 2025's Date as local midnight in ISO form",
+      "ok": true,
+      "how": "Deneb's debug view (editor, Source tab), read through remote debugging"
+    },
+    {
+      "name": "the Windows time zone is restored",
+      "ok": true,
+      "how": "tzutil /g"
+    },
+    {
+      "name": "the WebView2 debugging variable is set neither for the user nor for the machine",
+      "ok": true,
+      "how": "reg query"
+    },
+    {
+      "name": "nothing listens on the debugging port 9339 after the run",
+      "ok": true,
+      "how": "an HTTP request to 127.0.0.1"
+    }
+  ]
+}

@@ -1,5 +1,11 @@
 # Probe checklist (T02)
 
+> **Retired on 2026-09-26, never run by a human.** Tim dropped the click-through checklists, and #2
+> runs every step below through WebView2 remote debugging instead: `npm run probe` in
+> `report/desktop` (see `report/README.md`, "Gestures in Desktop"). Its screenshots, under the names
+> given here, and `probe.json` (every answer and check) are in `screenshots/`. The answers are
+> recorded in `SPEC.md`. The steps and expected values below are kept as the probe's source.
+
 Tim performs this in Power BI Desktop on the probe Report, `report/Daily Sales.pbip`, page
 **Daily overview**. A fresh session then reviews the screenshots and closes T02. Written by T01.
 

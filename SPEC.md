@@ -312,9 +312,12 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   each calendar binds the date table's date column as a plain column (not the auto date/time
   hierarchy) plus a helper measure that is never blank for any date, such as a count of date table
   rows. Power BI drops a row when every measure on it is blank, so the helper is what brings empty
-  days in with their own row identity. "Show items with no data" is the untested alternative.
-  Confirm in Deneb's debug view that blank dates arrive as rows before the rest of the design
-  depends on it. The README documents the helper pattern and the fallback.
+  days in with their own row identity. Confirmed in Desktop by #2: with the helper bound, the
+  Calendar's dataset holds one row per day in the filter (365 for calendar 2025, the count an
+  independent DAX query gives), and the 23 no-sales days are among them with the sales value blank
+  and the helper 1 (read from the Calendar's Vega view, and from Deneb's debug view, through remote
+  debugging). "Show items with no data" was not needed, so it stays the untested alternative. The
+  README documents the helper pattern and the fallback.
 - **Colour.** The default ramp is shades of theme colour 1, from light to dark, so it follows any
   report theme. For five steps the shades are 0.8, 0.55, 0.25, -0.1 and -0.45. For any other step
   count, the shades are spaced evenly between the two ends, so the lightest and darkest steps never
@@ -352,8 +355,16 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   row identities, not a date filter: it does not show in the filter pane and does not carry to other
   pages. The range runs in calendar order, not as a rectangle. A mouse-down on the background clears
   the selection, and a drag that ended outside the visual resets on the next mouse-down. After
-  Power BI applies the selection, the spec reads each row's selected state and dims the rest. The
-  trimmed wiring:
+  Power BI applies the selection, the spec reads each row's selected state and dims the rest.
+  Proved in Desktop by #2, with each gesture replayed through remote debugging and checked against
+  the table, both cards, the title and independent DAX: Deneb accepts the range expression, and a
+  drag from 7 July to 20 August 2025 filters the page to exactly those 45 dates, the three no-sales
+  days included (Days in filter 45, Total sales 148,343). A click selects one day, a no-sales day
+  too; a background click restores every date; a right click opens Power BI's context menu and
+  changes nothing. The selected flags come back: after the drag the 45 rows read `on` and the other
+  320 `off`, and after a background click all 365 read `neutral` (the Calendar's Vega view and
+  Deneb's debug view agree). So the spec dims from the flags, and no fallback that keeps its own
+  applied range is needed. The trimmed wiring:
 
   ```
   downIdx / headIdx : set on  @cell:mousedown[event.button === 0]
@@ -377,9 +388,16 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   so the calendar never looks selected when it is not. The README states the cap (about 6.8 years of
   one-row-per-day data in one drag).
 - **Adding to a selection.** Shift and ctrl are Deneb's default multi-select keys. Power BI's
-  multi-select toggles each identity, so a shift-click on a selected day removes it, and a
-  shift-drag over days already selected most likely removes them. Confirm this in Desktop and
-  document what actually happens. On a Mac, ctrl-click is the secondary click and opens the context
+  multi-select toggles each identity it is sent, one by one. #2 replayed it in Desktop through
+  remote debugging, each time after a drag from 7 July to 20 August 2025, and checked the table,
+  both cards and the Calendar's flags: a shift-click on a selected day (14 August) removes it,
+  leaving 44 days; a shift-drag over seven days all selected (4 to 10 August) removes them, leaving
+  38; and a shift-drag over three selected days and six unselected (18 to 26 August) removes the
+  three and adds the six, leaving 48. So the harness's multi-select merge setting is
+  `multiSelectMerge: 'toggle'` (each identity in a multi-select apply flips; unselected ones join,
+  selected ones leave), which Selection (#9) builds into the harness host. The title reads
+  "Selected Period: See Date Slicers" for any selection that is not one run of days. On a Mac,
+  ctrl-click is the secondary click and opens the context
   menu, and Deneb has no Command key option, so shift is the documented modifier. A Mac browser can
   report ctrl-click as a left-button mouse-down with ctrl held; test it in a Mac browser, and if it
   also filters, ignore mouse-downs with ctrl held.
@@ -392,7 +410,10 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   for the date column. A day is highlighted when that value is not null and dimmed when it is null.
   An empty day keeps its empty style either way. The spec does not use the highlight status or
   comparator fields: they are opt-in on new 2.0 visuals and the shipped 2.0.0.0 build reports them
-  wrongly for un-highlighted rows.
+  wrongly for un-highlighted rows. In Desktop the Calendar's dataset lists `Sales__highlight` beside
+  the status, comparator, format and formatted companions of each measure, and none for the date
+  column (#2, read from the Calendar's Vega view and from the columns of Deneb's debug view through
+  remote debugging).
 - **Tooltips, context menu and drill-through.** Each drawn day that has a dataset row copies that
   row's identity. Default tooltips, report page tooltips and the context menu, drill-through
   included, then resolve to that day on Deneb 1.9 and 2.0 alike. A day without a row leaves the
@@ -429,12 +450,17 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   selection and highlight on, a deliberate departure from the library's house default of selection
   and highlight off, and the README says why. The README's first setup step lists every setting the
   template needs. The working report applies the same settings to every calendar.
-- **Dates and time zones.** The working assumption, read from Deneb's source and not yet seen in
-  Desktop, is that Deneb delivers dates at local midnight in the viewer's time zone. Confirming it is
-  the first Desktop check. If dates arrive another way (UTC midnight, or strings), change only the
-  step that parses the date, not the lookup or the selection expression. The spec uses local date
-  functions only and builds the lookup key and the selection bounds the same way. Leap years are
-  handled by stepping calendar dates, never by adding a fixed number of milliseconds.
+- **Dates and time zones.** Deneb delivers the date column as a JavaScript Date at local midnight
+  in the viewer's time zone (#2, read in Desktop from the Calendar's Vega view and from Deneb's
+  debug view through remote debugging). 1 July 2025 arrived as 1751292000000
+  (2025-06-30T14:00:00.000Z, midnight in Sydney) in the machine's own zone, and as 1751353200000
+  (2025-07-01T07:00:00.000Z, midnight in Los Angeles) after Windows was set to Pacific Time and
+  Desktop restarted; in both, every day of 2025 drew in its weekday's row showing its own row. The
+  harness's host setting is therefore `dateDelivery: 'local'`, its default. Should a later Deneb
+  deliver dates another way (UTC midnight, or strings), change only the step that parses the date,
+  not the lookup or the selection expression. The spec uses local date functions only and builds
+  the lookup key and the selection bounds the same way. Leap years are handled by stepping calendar
+  dates, never by adding a fixed number of milliseconds.
 - **Deneb versions.** The spec reads the container size through the legacy signals (pbiContainer
   width and height), which Deneb 1.9 needs and Deneb 2.0 rewrites to its own names when it loads the
   spec. It references them only in the top-level width and height, and everything inside uses
@@ -442,9 +468,16 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   library checker rejects the 2.0 names. The 2.0 rewrite is textual, so those names must not appear
   inside label or tooltip strings. Importing the template through the Deneb 2.0 editor saves the
   spec with the 2.0 names, so a visual created that way no longer opens on 1.9; the working report
-  therefore embeds the spec with the legacy names. The spec relies on no 2.0-only feature (the
-  30,000-row window, keyboard focus, continuous view, canvas scale-to-zoom, or Vega features newer
-  than 1.9's Vega 6.2).
+  therefore embeds the spec with the legacy names. Desktop runs Deneb 2.0.0.0 on Vega 6.4.0 (the
+  build stamp in the Calendar's `visual.json` after #2's save). Deneb 2.0 rewrites the legacy names
+  in memory when it loads the spec (its log: "Migrated 2 legacy pbiContainer signal reference(s) to
+  denebContainer"), but not in the saved file: after #2 opened Deneb's editor and debug view through
+  remote debugging and saved from Desktop, the saved spec still read `pbiContainerWidth` and
+  `pbiContainerHeight` once each and `denebContainer` nowhere (the deneb-pbir audit of the saved
+  file). So the seam loop needs no step that restores the legacy names. Importing a template
+  through the editor is a different act, and it does save the 2.0 names (above). The spec relies
+  on no 2.0-only feature (the 30,000-row window, keyboard focus, continuous view, canvas
+  scale-to-zoom, or Vega features newer than 1.9's Vega 6.2).
 - **Fonts.** Deneb cannot load web fonts. The template's config names a font stack: Segoe UI, then
   Helvetica Neue, Arial and sans-serif, because Segoe UI is missing on macOS, iOS and Android. The
   BI Nexus report puts Arial first to match its theme. Vega text has no letter-spacing, so tracked
@@ -495,9 +528,11 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   the left and the region pill on the right. A calendar selection does not carry across pages, and
   the report accepts that.
 - **Title.** A measure-driven text box built from the "Dates Selected" measure that the date-table
-  skill adds, plus the fiscal year, so it never goes stale. Whether a text box follows a calendar
-  selection is checked in Desktop first. If it does not, the title becomes a card visual bound to the
-  same measure, and the calendars are set to filter it.
+  skill adds, plus the fiscal year, so it never goes stale. A text box follows a Calendar
+  Selection: in #2's replayed gestures it read "Selected Period: 7 Jul - 20 Aug 2025" after the
+  drag and "Selected Period: 17 Jul 2025" after a click, with the Calendar set to filter it (read
+  from the canvas through remote debugging). So the title stays a text box, and the card fallback
+  is not needed.
 - **Layout after the mock, in BI Nexus.** A page background image draws the page frame and the rail
   border only. Card borders come from each visual's container settings (rounded corners, a hairline
   border). Native text boxes carry every word, static section labels included, so no text is baked
@@ -582,13 +617,15 @@ so no third harness is built.
    the report's own measures (total, mean per day, peak day, active days) and the Top days rows
    under a test's filters, and compare them with independent queries over the fact tables. There are
    no human click-through checklists (Tim's decision, 2026-09-26). Clicks and drags inside a Deneb
-   visual are proven at the template seam, whose apply evaluator copies Deneb's source. In Desktop,
-   the agent first tries to drive real gestures through the report canvas's WebView2 remote
-   debugging (Desktop started with a local debugging port for the test run only). Where that works,
-   the gestures are replayed in Desktop and their effect on every other visual is checked by
-   screenshot and DAX. Where it does not, the Desktop evidence is what renders without a gesture:
-   screenshots, DAX tie-outs, temporary debug text drawn by the spec, and filters set in the filter
-   pane on disk, each removed afterwards.
+   visual are proven at the template seam, whose apply evaluator copies Deneb's source, and
+   replayed in Desktop too: the report canvas's WebView2 accepts remote debugging when Desktop is
+   started with a localhost debugging port in its own environment for the run only (#2 proved it
+   on Desktop 26.08 with Deneb 2.0.0.0). Every later ticket replays its Desktop gestures that way,
+   through the driver in `report/desktop` (the recipe is in `report/README.md`), and checks their
+   effect on every other visual by reading the canvas, by screenshot and by DAX. The same
+   connection reads a Calendar's dataset from its Vega view and opens Deneb's editor and debug
+   view, so temporary debug text marks and filters set on disk are not needed. They remain the
+   fallback should a Desktop or WebView2 update close that route.
 
 ### Prior art
 
@@ -635,13 +672,29 @@ so no third harness is built.
 ## Further Notes
 
 - The prototype reproduces the calendar card at the top of Lumeric's Calendar Heatmap page and has
-  been re-rendered in BI Nexus. Its click, drag, right-click and clear behaviour has only been
-  replayed in a headless browser. The first Desktop checks, before anything else is built on them:
-  how the date column arrives (type and time zone), that blank dates arrive as rows with the helper
-  measure, that Deneb accepts the range expression, and how shift-drag over a selection behaves.
-  Since 2026-09-26 an agent answers them without a human (see the report seam), and records each
-  answer and how it was found in this spec. An answer that cannot be observed without a gesture
-  falls back to Deneb's source at 1.9.1.0 and 2.0.0.0, which the harness copies.
+  been re-rendered in BI Nexus. The gating Desktop questions were answered on 2026-09-26 by #2,
+  without a human, by replaying gestures in Desktop through remote debugging (`npm run probe` in
+  `report/desktop`; its screenshots and every reading are in `checklists/probe/screenshots/`). None
+  is left unchecked and none forced a fallback, so Deneb's source at 1.9.1.0 and 2.0.0.0 was not
+  needed for any answer. Each answer sits in the section it decides:
+  - How the date column arrives: a Date at local midnight in the viewer's time zone, in the
+    machine's zone and west of UTC ("Dates and time zones"; the Calendar's Vega view and Deneb's
+    debug view).
+  - Blank dates with the helper: they arrive as rows, one per day in the filter ("Every day is
+    drawn"; the Vega view, the debug view and DAX).
+  - The range expression: Deneb accepts it, and a drag filters the page to exactly its days
+    ("Selection"; gestures replayed in Desktop, checked by the canvas and DAX).
+  - Shift-click and shift-drag over a Selection: each identity toggles, `multiSelectMerge:
+    'toggle'` ("Adding to a selection"; gestures replayed in Desktop).
+  - The title: the text box follows a Selection, so it stays a text box ("Title"; gestures
+    replayed in Desktop).
+  - The selected flags: they come back `on` and `off` after a Selection and `neutral` after a clear
+    ("Selection"; the Vega view and the debug view).
+  - The Deneb build: 2.0.0.0 on Vega 6.4.0 ("Deneb versions"; the build stamp after a save).
+  - The highlight companion: `Sales__highlight` is delivered ("Inbound highlighting"; the Vega view
+    and the debug view's columns).
+  - The legacy container names: a save after the editor was opened keeps them ("Deneb versions";
+    the saved file).
 - The mock contradicts itself in places: 364 cells against "365 days", a "quantile" label on
   equal-interval steps, evenly spaced month labels, rising month bars against a "best month" of
   October, and a peak cell drawn wider than its column. Where it does, this spec follows what reads
