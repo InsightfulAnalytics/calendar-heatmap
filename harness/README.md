@@ -101,4 +101,6 @@ Add a generator function to `src/fixtures.ts` and register it in `FIXTURES`. Use
 anything random and `datesOfYear(y)` for dates, and keep dates as `YYYY-MM-DD` text: delivery turns
 them into what the spec receives, inside the page, in the page's time zone. Then add its name and
 sha256 fingerprint to `FINGERPRINTS` in `test/fixtures.test.ts`, with a test of the properties it
-promises. Row order is row identity: row `i` is delivered as `__row__ = i`.
+promises. The fingerprint is a deliberate change detector: it is what proves the fixture is the
+same on every run and machine, so update it only in a commit that means to change the fixture.
+Row order is row identity: row `i` is delivered as `__row__ = i`.

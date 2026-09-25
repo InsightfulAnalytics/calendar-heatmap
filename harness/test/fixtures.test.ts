@@ -7,8 +7,11 @@ import { CELLS } from '../src/index.ts';
 import { loadFixture, type Fixture } from '../src/fixtures.ts';
 import { useHarness } from './helpers.ts';
 
-// Recorded when each fixture was first generated. A deliberate change to a fixture updates its
-// fingerprint here in the same commit; any other change is a determinism failure.
+// A deliberate change detector, recorded from the generator's own output when each fixture was
+// first generated. It is what proves a fixture is identical on every run, on every machine, since
+// generating twice in one run cannot catch a dependence on the date, the clock or the platform.
+// Update a fingerprint only in the commit that means to change that fixture; any other mismatch
+// is a determinism failure.
 const FINGERPRINTS: Record<string, string> = {
   'base-2025': '9b0b423c7e5d24df8032bb31a25ba4d5e4db1f77d1668a831b70e222f87c7e50',
   'regions-2025': '37ea4099c9645c95614908afee1ac94f4c9d8b5723f105845a6b65ad605c87d2',
@@ -20,11 +23,12 @@ const allDates2025 = () => Array.from({ length: 365 }, (_, i) => new Date(Date.U
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 
 for (const name of ['base-2025', 'regions-2025']) {
-  test(`the ${name} fixture is identical on every run`, () => {
-    const a = loadFixture(name);
-    const b = loadFixture(name);
-    assert.deepEqual(a, b);
-    assert.equal(fingerprint(a), FINGERPRINTS[name]);
+  test(`the ${name} fixture is identical when generated twice in one run`, () => {
+    assert.deepEqual(loadFixture(name), loadFixture(name));
+  });
+
+  test(`the ${name} fixture is identical on every run: it matches its recorded fingerprint`, () => {
+    assert.equal(fingerprint(loadFixture(name)), FINGERPRINTS[name]);
   });
 }
 
