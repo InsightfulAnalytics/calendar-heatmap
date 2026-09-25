@@ -13,8 +13,6 @@ export interface Fixture {
   name: string;
   /** The field that holds each row's date ('YYYY-MM-DD' text in the fixture). */
   dateField: string;
-  /** Measure fields: the only fields that can carry a highlight companion value. */
-  measures: string[];
   rows: FixtureRow[];
 }
 
@@ -26,7 +24,7 @@ function prototypeSample(): Fixture {
     if (r.__row__ !== i) throw new Error(`prototype sample row ${i} carries __row__ ${r.__row__}`);
     return { Date: r.Date.slice(0, 10), Sales: r.Sales };
   });
-  return { name: 'prototype-sample', dateField: 'Date', measures: ['Sales'], rows };
+  return { name: 'prototype-sample', dateField: 'Date', rows };
 }
 
 // ------------------------------------------------------------------ the generator
@@ -96,7 +94,7 @@ function base2025(): Fixture {
     const value = date === PEAK ? 12500 : blank.has(date) ? null : Math.min(sales[i], cap);
     rows.push({ Date: date, Sales: value });
   });
-  return { name: 'base-2025', dateField: 'Date', measures: ['Sales'], rows };
+  return { name: 'base-2025', dateField: 'Date', rows };
 }
 
 export const REGIONS = ['North', 'South', 'East', 'West', 'Central', 'Metro'];
@@ -115,7 +113,7 @@ function regions2025(): Fixture {
     const blank = new Set(pick(dates, 3, rand));
     dates.forEach((date, i) => rows.push({ Date: date, Region: region, Sales: blank.has(date) ? null : sales[i] }));
   });
-  return { name: 'regions-2025', dateField: 'Date', measures: ['Sales'], rows };
+  return { name: 'regions-2025', dateField: 'Date', rows };
 }
 
 /** Every named fixture. Later tickets add theirs here. */
@@ -124,8 +122,6 @@ export const FIXTURES: Record<string, () => Fixture> = {
   'base-2025': base2025,
   'regions-2025': regions2025,
 };
-
-export type FixtureName = keyof typeof FIXTURES;
 
 export function loadFixture(name: string): Fixture {
   const make = FIXTURES[name];

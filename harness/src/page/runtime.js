@@ -48,7 +48,7 @@
 (() => {
   'use strict';
   const vega = window.vega;
-  const H = (window.__harness = {});
+  const api = (window.__harness = {}); // what the Node side calls
 
   // ------------------------------------------------------------------ Deneb expression functions
   const WARN = {
@@ -56,13 +56,12 @@
     eventType: 'The first parameter must be a valid `event` from the Vega view.',
     missingFilter: 'The second parameter must be a valid filter expression.',
     options: '`options` must be a valid object, and contain valid property values. Refer to the documentation for more information.',
-    notApplied: '[pbiCrossFilterApply] We were not able to cross-filter data based on your supplied parameters.',
   };
   const CROSS_FILTER_LIMITS = { minDataPointsValue: 1, maxDataPointsAdvancedValue: 2500 };
   const DEFAULT_LIMIT = 50;
   const DEFAULT_COLOR = '#000000';
 
-  let m = null; // the current mount
+  let mounted = null; // the current mount: its config, view, rows, selection and records
 
   // F1: Power BI's shade maths, as Deneb's shadeColor.
   const shadeColor = (color, percent) => {
@@ -75,12 +74,12 @@
     return `#${(0x1000000 + (Math.round((t - R) * p) + R) * 0x10000 + (Math.round((t - G) * p) + G) * 0x100 + (Math.round((t - B) * p) + B)).toString(16).slice(1)}`;
   };
   const namedColors = () => {
-    const p = m.cfg.palette;
+    const p = mounted.cfg.palette;
     return { max: p.maximum, min: p.minimum, middle: p.center, negative: p.negative, bad: p.negative, positive: p.positive, good: p.positive, neutral: p.neutral };
   };
   const pbiColor = (value, shadePercent = 0) => {
     const byName = Object.prototype.hasOwnProperty.call(namedColors(), `${value}`) ? namedColors()[`${value}`] : undefined;
-    return shadeColor(byName || (m.cfg.palette.colors[parseInt(`${value}`) || 0] ?? DEFAULT_COLOR), shadePercent);
+    return shadeColor(byName || (mounted.cfg.palette.colors[parseInt(`${value}`) || 0] ?? DEFAULT_COLOR), shadePercent);
   };
   // Formatting stand-ins (Power BI's formatter is not available offline). Same as the prototype.
   const pbiFormat = (v) => (v == null ? '' : new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(v));
@@ -94,7 +93,7 @@
 
   const clone = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
   const harnessError = (message) => {
-    m.harnessErrors.push(message);
+    mounted.harnessErrors.push(message);
     return new Error(message);
   };
 
@@ -117,8 +116,8 @@
     filterExpr?.replace(/_{(.*?)}_/g, (_m, m1) => {
       const value = datum?.[m1];
       if (typeof value === 'number' || typeof value === 'boolean') return `${value}`;
-      if (value instanceof Date) return m.cfg.deneb === '2.0' ? `toDate('${value.toISOString()}')` : `toDate('${value}')`;
-      if (m.cfg.deneb === '2.0') return `'${`${value}`.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+      if (value instanceof Date) return mounted.cfg.deneb === '2.0' ? `toDate('${value.toISOString()}')` : `toDate('${value}')`;
+      if (mounted.cfg.deneb === '2.0') return `'${`${value}`.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
       return `'${datum?.[m1]}'`;
     });
   const isSimpleMode = (options) => !options || options.mode === 'simple';
@@ -152,18 +151,18 @@
         data: [{ name: datasetName, values: dataset.values, transform: filterExpr ? [{ type: 'filter', expr: filterExpr }] : [] }],
       };
       const filteredData = new vega.View(vega.parse(headlessSpec)).logLevel(vega.Warn).initialize(undefined).renderer('none').hover().run().data(datasetName);
-      const rowNumbers = rowNumbersFromData(filteredData, m.cfg.deneb === '2.0' ? dataset.values.length : undefined);
+      const rowNumbers = rowNumbersFromData(filteredData, mounted.cfg.deneb === '2.0' ? dataset.values.length : undefined);
       return { rowNumbers };
     } catch (e) {
       return { rowNumbers: [], warning: WARN.general(e.message) };
     }
   };
   // C3, C4
-  const limitSize = (options) => ((options && options.limit) || null) ?? m.cfg.dataPointLimit;
-  const potentialSize = (rowNumbers, event, options) => (rowNumbers?.length || 0) + (isMultiSelect(event, options) ? m.selection.size || 0 : 0);
+  const limitSize = (options) => ((options && options.limit) || null) ?? mounted.cfg.dataPointLimit;
+  const potentialSize = (rowNumbers, event, options) => (rowNumbers?.length || 0) + (isMultiSelect(event, options) ? mounted.selection.size || 0 : 0);
   const isLimitExceeded = (rowNumbers, event, options) => potentialSize(rowNumbers, event, options) > limitSize(options) || false;
   // C1
-  const resolveResult = (event, item, dataset, options) => {
+  const resolveResult = (event, dataset, options) => {
     try {
       const multiSelect = isMultiSelect(event, options);
       if (isSimpleMode(options)) throw harnessError('not modelled yet: an apply call without a filter expression (simple resolution from the clicked item, T09)');
@@ -181,30 +180,27 @@
   const crossFilter = (directive) => {
     const { rowNumbers = [], multiSelect = false, exceedsLimit = false } = directive || {};
     if (exceedsLimit) {
-      m.limitWarning = true;
-      m.log.push({ level: 'toast', message: `Cross-filter limit exceeded: limit is ${limitSize(m.lastOptions)} data points.` });
+      mounted.limitWarning = true;
       return;
     }
     if (rowNumbers.length === 0) {
-      m.hostCalls.push({ type: 'clear' });
-      m.limitWarning = false;
+      mounted.hostCalls.push({ type: 'clear' });
+      mounted.limitWarning = false;
       setSelection([]);
       return;
     }
-    m.hostCalls.push({ type: 'select', rows: rowNumbers.slice(), multiSelect });
-    m.limitWarning = false;
-    if (multiSelect) {
-      m.notes.push('a multi-select was recorded, but the host merge is not modelled until T09: the selection is unchanged');
-      return;
-    }
+    mounted.hostCalls.push({ type: 'select', rows: rowNumbers.slice(), multiSelect });
+    mounted.limitWarning = false;
+    // The host's multi-select merge is not modelled until T09: the call is recorded, the selection stays.
+    if (multiSelect) return;
     setSelection(rowNumbers);
   };
 
   // A1 to A7
   const crossFilterApply = (event, filterExpr, fOptions) => {
     const record = { expression: filterExpr, options: clone(fOptions), browserEvent: event instanceof Event, eventType: event?.type ?? null };
-    m.applyCalls.push(record);
-    const dataset = { values: m.rows };
+    mounted.applyCalls.push(record);
+    const dataset = { values: mounted.rows };
     let result;
     try {
       if (!isEventPresent(event)) throw new Error(WARN.eventType);
@@ -215,12 +211,10 @@
       if (expr) vega.parseExpression(expr);
       if (!isCrossFilterOptionValid(fOptions)) throw new Error(WARN.options);
       const options = resolveOptions(expr, fOptions);
-      m.lastOptions = options;
-      result = resolveResult(event, item, dataset, options);
+      result = resolveResult(event, dataset, options);
       if (result.warning) throw new Error(result.warning);
       crossFilter(result);
     } catch (e) {
-      m.log.push({ level: 'warn', message: WARN.notApplied }, { level: 'warn', message: WARN.general(e.message) });
       result = { warning: e.message, rowNumbers: [] };
     }
     record.result = clone(result);
@@ -244,8 +238,8 @@
   // delivery shape), each measure's highlight companion when highlight values are given, then the
   // row identity and the selected flag.
   const deliver = () => {
-    const { rows, dateField, dateDelivery, highlight } = m.cfg;
-    const sel = m.selection;
+    const { rows, dateField, dateDelivery, highlight } = mounted.cfg;
+    const sel = mounted.selection;
     return rows.map((r, i) => {
       const out = {};
       for (const [k, v] of Object.entries(r)) out[k] = k === dateField ? deliverDate(v, dateDelivery) : v;
@@ -256,75 +250,71 @@
     });
   };
 
+  // Vega's errors while rendering or handling events, for Calendar.errors() and a failed render.
   const makeLogger = () =>
-    vega.logger(vega.Warn, undefined, (method, level, input) => {
-      const message = [...input].map((x) => (x && x.message) || String(x)).join(' ');
-      m.log.push({ level: method, message });
-      if (method === 'error') m.errors.push(message);
+    vega.logger(vega.Warn, undefined, (method, _level, input) => {
+      if (method === 'error') mounted.errors.push([...input].map((x) => (x && x.message) || String(x)).join(' '));
     });
 
   const embed = async () => {
-    if (m.view) {
-      await m.view.runAsync();
-      m.view.finalize();
+    if (mounted.view) {
+      await mounted.view.runAsync();
+      mounted.view.finalize();
     }
-    m.container.innerHTML = '';
-    m.rows = deliver();
-    const spec = JSON.parse(JSON.stringify(m.cfg.spec));
+    mounted.container.innerHTML = '';
+    mounted.rows = deliver();
+    const spec = JSON.parse(JSON.stringify(mounted.cfg.spec));
     const dataset = (spec.data || []).find((d) => d.name === 'dataset');
     if (!dataset) throw harnessError("the spec has no data named 'dataset'");
-    dataset.values = m.rows;
+    dataset.values = mounted.rows;
     try {
-      m.view = new vega.View(vega.parse(spec), { renderer: 'svg', container: m.container, hover: true, logger: makeLogger() });
-      await m.view.runAsync();
+      mounted.view = new vega.View(vega.parse(spec), { renderer: 'svg', container: mounted.container, hover: true, logger: makeLogger() });
+      await mounted.view.runAsync();
     } catch (e) {
-      m.errors.push(e.message);
+      mounted.errors.push(e.message);
     }
-    m.embeds += 1;
   };
 
   const setSelection = (rows) => {
-    m.selection = new Set(rows);
-    const prev = m.pending || Promise.resolve();
-    m.pending = prev.then(() => new Promise((r) => setTimeout(r, 0))).then(embed);
+    mounted.selection = new Set(rows);
+    const prev = mounted.pending || Promise.resolve();
+    mounted.pending = prev.then(() => new Promise((r) => setTimeout(r, 0))).then(embed);
   };
 
-  H.mount = async (cfg) => {
-    if (m?.view) m.view.finalize();
+  api.mount = async (cfg) => {
+    if (mounted?.view) mounted.view.finalize();
     const container = document.getElementById('vis');
     container.style.width = `${cfg.width}px`;
     container.style.height = `${cfg.height}px`;
-    m = {
+    mounted = {
       cfg, container, view: null, rows: [], selection: new Set(cfg.selected || []),
-      hostCalls: [], applyCalls: [], log: [], errors: [], harnessErrors: [], notes: [],
-      pending: null, embeds: 0, limitWarning: false, lastOptions: undefined,
+      hostCalls: [], applyCalls: [], errors: [], harnessErrors: [],
+      pending: null, limitWarning: false,
     };
     await embed();
-    return H.status();
+    return api.status();
   };
 
-  H.settle = async () => {
+  api.settle = async () => {
     await new Promise((r) => setTimeout(r, 0));
-    if (m.view) await m.view.runAsync();
-    while (m.pending) {
-      const p = m.pending;
+    if (mounted.view) await mounted.view.runAsync();
+    while (mounted.pending) {
+      const p = mounted.pending;
       await p;
-      if (m.pending === p) m.pending = null;
-      if (m.view) await m.view.runAsync();
+      if (mounted.pending === p) mounted.pending = null;
+      if (mounted.view) await mounted.view.runAsync();
     }
-    return H.status();
+    return api.status();
   };
 
-  H.status = () => ({ errors: m.errors.slice(), harnessErrors: m.harnessErrors.slice(), embeds: m.embeds });
-  H.hostCalls = () => clone(m.hostCalls);
-  H.applyCalls = () => clone(m.applyCalls);
-  H.log = () => clone(m.log);
-  H.notes = () => m.notes.slice();
-  H.selection = () => [...m.selection].sort((a, b) => a - b);
-  H.limitWarning = () => m.limitWarning;
-  H.timeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+  api.status = () => ({ errors: mounted.errors.slice(), harnessErrors: mounted.harnessErrors.slice() });
+  api.hostCalls = () => clone(mounted.hostCalls);
+  api.applyCalls = () => clone(mounted.applyCalls);
+  api.selection = () => [...mounted.selection].sort((a, b) => a - b);
+  api.limitWarning = () => mounted.limitWarning;
+  api.timeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
   // The version the loaded Vega bundle reports about itself, so a check can prove which one a page runs.
-  H.vegaVersion = () => vega.version;
+  api.vegaVersion = () => vega.version;
 
   // ------------------------------------------------------------------ the scene, by date
   const pad = (n, w = 2) => String(n).padStart(w, '0');
@@ -360,16 +350,16 @@
     return { x, y, width, height };
   };
 
-  H.scene = () => {
-    const A = m.cfg.adapter;
-    const box = m.container.getBoundingClientRect();
-    const [ox, oy] = m.view.origin();
+  api.scene = () => {
+    const adapter = mounted.cfg.adapter;
+    const box = mounted.container.getBoundingClientRect();
+    const [ox, oy] = mounted.view.origin();
     const days = new Map();
     const rings = [];
     const labels = [];
-    walk(m.view.scenegraph().root, box.left + ox, box.top + oy, (mark, item, dx, dy) => {
-      if (mark.name === A.dayMark) {
-        const d = item.datum?.[A.dayDateField];
+    walk(mounted.view.scenegraph().root, box.left + ox, box.top + oy, (mark, item, dx, dy) => {
+      if (mark.name === adapter.dayMark) {
+        const d = item.datum?.[adapter.dayDateField];
         if (!(d instanceof Date)) return;
         const g = geometry(item, dx, dy);
         const hasRowField = Object.prototype.hasOwnProperty.call(item.datum, '__row__');
@@ -384,8 +374,8 @@
           row: hasRowField ? item.datum.__row__ : undefined,
           hasRowField,
         });
-      } else if (mark.name === A.ringMark) {
-        const d = item.datum?.[A.dayDateField];
+      } else if (mark.name === adapter.ringMark) {
+        const d = item.datum?.[adapter.dayDateField];
         const drawn = (item.opacity ?? 1) > 0 && item.stroke != null && (item.strokeWidth ?? 1) > 0 && (item.strokeOpacity ?? 1) > 0;
         if (d instanceof Date && drawn) rings.push({ date: localDate(d), stroke: normColor(item.stroke), strokeWidth: item.strokeWidth ?? 1 });
       } else if (mark.marktype === 'text') {
@@ -402,16 +392,16 @@
   };
 
   // Page coordinates of the centre of a day, for gesture replay.
-  H.pointOf = (date) => {
-    const day = H.scene().days.find((d) => d.date === date);
+  api.pointOf = (date) => {
+    const day = api.scene().days.find((d) => d.date === date);
     if (!day) return null;
     return { x: day.x + day.width / 2, y: day.y + day.height / 2 };
   };
 
   // A point inside the view but on no day: a corner of the view, 3px in.
-  H.backgroundPoint = () => {
-    const box = m.container.getBoundingClientRect();
-    const days = H.scene().days;
+  api.backgroundPoint = () => {
+    const box = mounted.container.getBoundingClientRect();
+    const days = api.scene().days;
     const hit = (x, y) => days.some((d) => x >= d.x - 2 && x <= d.x + d.width + 2 && y >= d.y - 2 && y <= d.y + d.height + 2);
     const candidates = [[box.left + 3, box.top + 3], [box.right - 3, box.top + 3], [box.left + 3, box.bottom - 3], [box.right - 3, box.bottom - 3]];
     const found = candidates.find(([x, y]) => !hit(x, y));
@@ -419,19 +409,19 @@
   };
 
   // A point outside the view, to release a drag on.
-  H.outsidePoint = () => {
-    const box = m.container.getBoundingClientRect();
+  api.outsidePoint = () => {
+    const box = mounted.container.getBoundingClientRect();
     return { x: box.right + 40, y: box.top + box.height / 2 };
   };
 
   // The rows as the spec receives them, with each date described so Node can compare shapes.
-  H.deliveredRows = () =>
-    m.rows.map((r) => {
+  api.deliveredRows = () =>
+    mounted.rows.map((r) => {
       const out = {};
       for (const [k, v] of Object.entries(r)) {
         out[k] = v instanceof Date
           ? { type: 'Date', localDate: localDate(v), localTime: localTime(v), utcDate: utcDate(v), utcTime: utcTime(v) }
-          : typeof v === 'string' && k === m.cfg.dateField ? { type: 'string', value: v } : v;
+          : typeof v === 'string' && k === mounted.cfg.dateField ? { type: 'string', value: v } : v;
       }
       return out;
     });
