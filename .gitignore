@@ -15,3 +15,7 @@ reference/lumeric-site/
 
 # Python
 __pycache__/
+
+# Node (template test harness)
+node_modules/
+harness/out/
