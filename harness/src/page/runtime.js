@@ -323,6 +323,8 @@
   H.selection = () => [...m.selection].sort((a, b) => a - b);
   H.limitWarning = () => m.limitWarning;
   H.timeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+  // The version the loaded Vega bundle reports about itself, so a check can prove which one a page runs.
+  H.vegaVersion = () => vega.version;
 
   // ------------------------------------------------------------------ the scene, by date
   const pad = (n, w = 2) => String(n).padStart(w, '0');

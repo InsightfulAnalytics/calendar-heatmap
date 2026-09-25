@@ -8,6 +8,7 @@ import { openHarness, VEGA_VERSIONS, TIME_ZONES, type Harness, type VegaVersion 
 let harness: Harness;
 const outcomes = new Map<string, unknown>();
 const zones = new Map<string, string>();
+const vegaVersions = new Map<string, string>();
 const key = (vega: string, tz: string) => `${vega}|${tz}`;
 
 /** Everything a viewer or the host sees over one scripted session with the prototype. */
@@ -15,6 +16,7 @@ async function outcome(vega: VegaVersion, timeZone: string) {
   const render = () => harness.render({ spec: 'prototype', fixture: 'prototype-sample', vega, timeZone });
   const cal = await render();
   zones.set(key(vega, timeZone), await cal.timeZone());
+  vegaVersions.set(key(vega, timeZone), await cal.vegaVersion());
   const scene = await cal.scene();
   const script: [string, (c: typeof cal) => Promise<void>][] = [
     ['drag 7 Jul to 20 Aug', (c) => c.drag('2025-07-07', '2025-08-20')],
@@ -46,6 +48,13 @@ after(async () => { await harness.close(); });
 
 test('each run is really in its time zone', () => {
   for (const vega of VEGA_VERSIONS) for (const tz of TIME_ZONES) assert.equal(zones.get(key(vega, tz)), tz);
+});
+
+// Without this, a cell that loaded the wrong Vega bundle would make the parity checks below pass
+// trivially. Deneb 1.9 runs Vega 6.2.0 and Deneb 2.0 runs Vega 6.4.0 (SPEC, "Testing Decisions").
+test('each run is really on the Vega version it claims', () => {
+  const expected: Record<string, string> = { '6.2': '6.2.0', '6.4': '6.4.0' };
+  for (const vega of VEGA_VERSIONS) for (const tz of TIME_ZONES) assert.equal(vegaVersions.get(key(vega, tz)), expected[vega], `[Vega ${vega}, ${tz}]`);
 });
 
 for (const tz of TIME_ZONES) {

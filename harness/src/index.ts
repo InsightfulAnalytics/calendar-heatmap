@@ -198,6 +198,11 @@ export class Calendar {
     return this.#call<string>('timeZone');
   }
 
+  /** The version the page's Vega bundle reports ('6.2.0' or '6.4.0'). */
+  async vegaVersion(): Promise<string> {
+    return this.#call<string>('vegaVersion');
+  }
+
   async screenshot(file: string): Promise<void> {
     await this.#page.locator('#vis').screenshot({ path: file });
   }

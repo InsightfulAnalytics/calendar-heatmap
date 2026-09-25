@@ -70,6 +70,7 @@ await cal.hostCalls();          // [{ type: 'select', rows, dates, multiSelect }
 await cal.applyCalls();         // each call's expression, options and Deneb-style result
 await cal.day('2025-12-19');    // fill, opacity, ring, position, size, tooltip, row identity
 await cal.labels();             // every drawn label
+await cal.vegaVersion();        // '6.2.0' or '6.4.0', as the page's Vega bundle reports itself
 await harness.close();
 ```
 
