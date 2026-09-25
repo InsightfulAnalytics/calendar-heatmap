@@ -84,10 +84,14 @@ export interface DayScene {
   ringWidth?: number;
   /** The tooltip content the day hands to the host. */
   tooltip: unknown;
-  /** The dataset row identity the day carries, when it carries one. */
+  /**
+   * The dataset row identity (__row__) the day's datum carries: a row number; null when the datum
+   * has the identity field set to null; undefined when the datum has no identity field at all.
+   * The difference matters: Deneb 1.9 treats any identity that is present as real, null included.
+   */
   row: number | null | undefined;
-  /** Whether the day's datum has a __row__ field at all (Deneb 1.9 treats a present one as real). */
-  hasRowField: boolean;
+  /** Whether the day's datum has an identity field at all. False only when the identity is absent. */
+  hasIdentity: boolean;
 }
 
 export interface Label {

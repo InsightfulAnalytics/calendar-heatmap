@@ -362,7 +362,7 @@
         const d = item.datum?.[adapter.dayDateField];
         if (!(d instanceof Date)) return;
         const g = geometry(item, dx, dy);
-        const hasRowField = Object.prototype.hasOwnProperty.call(item.datum, '__row__');
+        const hasIdentity = Object.prototype.hasOwnProperty.call(item.datum, '__row__');
         days.set(localDate(d), {
           date: localDate(d),
           ...g,
@@ -371,8 +371,8 @@
           fillOpacity: item.fillOpacity ?? 1,
           ring: false,
           tooltip: clone(item.tooltip) ?? null,
-          row: hasRowField ? item.datum.__row__ : undefined,
-          hasRowField,
+          row: hasIdentity ? item.datum.__row__ : undefined,
+          hasIdentity,
         });
       } else if (mark.name === adapter.ringMark) {
         const d = item.datum?.[adapter.dayDateField];

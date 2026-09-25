@@ -37,8 +37,29 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     const peak = await cal.day('2025-12-17');
     assert.deepEqual(peak?.tooltip, { Date: 'Wed 17 Dec 2025', Sales: '11,620' });
     assert.equal(peak?.row, 281);
+    assert.equal(peak?.hasIdentity, true);
     const noRow = await cal.day('2025-01-12');
     assert.deepEqual(noRow?.tooltip, { Date: 'Sun 12 Jan 2025', Sales: '(blank)' });
+  });
+
+  test(`${cell} a check can tell a day that carries no identity at all from one whose identity is null`, async () => {
+    // The test strip draws days from a date sequence, not from rows: no day's datum has an identity.
+    const strip = await harness.render({ spec: 'test/specs/strip.json', fixture: 'prototype-sample', size: { width: 780, height: 120 }, vega, timeZone });
+    const day = await strip.day('2025-01-12');
+    assert.equal(day?.hasIdentity, false);
+    assert.equal(day?.row, undefined);
+  });
+
+  // CHARACTERISATION of the prototype, not a requirement: it records what the prototype does today
+  // so the Template restructure (T06) can prove it changed nothing. T12 changes it on purpose (T06's
+  // Empty day, "no row identity", may get there first): SPEC ("Tooltips, context menu and
+  // drill-through") says a day without a row leaves the identity off rather than setting it to
+  // null, because Deneb 1.9 treats any identity that is present as real. When that lands, this
+  // check is replaced by one that expects hasIdentity false.
+  test(`${cell} characterisation of the prototype (T12 changes it): a day with no row carries an identity set to null, not an absent one`, async () => {
+    const cal = await render();
+    const noRow = await cal.day('2025-01-12');
+    assert.equal(noRow?.hasIdentity, true);
     assert.equal(noRow?.row, null);
   });
 

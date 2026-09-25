@@ -71,7 +71,9 @@ await cal.drag('2025-07-07', '2025-08-20');   // also click, rightClick, middleC
                                                // backgroundClick, dragReleasedOutside; shift and ctrl
 await cal.hostCalls();          // [{ type: 'select', rows, dates, multiSelect }] or [{ type: 'clear' }]
 await cal.applyCalls();         // each call's expression, options and Deneb-style result
-await cal.day('2025-12-19');    // fill, opacity, ring, position, size, tooltip, row identity
+await cal.day('2025-12-19');    // fill, opacity, ring, position, size, tooltip, row identity:
+                                // row is null when the identity is present but null, undefined
+                                // and hasIdentity false when the day carries none at all
 await cal.labels();             // every drawn label
 await cal.vegaVersion();        // '6.2.0' or '6.4.0', as the page's Vega bundle reports itself
 await harness.close();
@@ -90,6 +92,11 @@ or the host would see, through the interface above, with expected values from an
 source: a literal, a worked example or the SPEC. Never name a signal, mark or transform in a test;
 if the harness cannot answer a question by date, extend the scene query in `src/page/runtime.js`
 and keep mark names in `src/adapter.ts`.
+
+A check that records what the prototype does where the SPEC asks for something else is a
+characterisation, not a requirement: its name says so and names the ticket that changes it (for
+example the null identity of a day with no row, which T12 changes). "The prototype checks pass
+unchanged" (T06) holds for it only until that ticket.
 
 Deliberately wrong specs live in `test/specs/`. `strip.json` is the valid baseline they vary.
 `apply-date-placeholder.json` is a valid variant whose click applies a `_{date}_` placeholder, to
