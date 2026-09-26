@@ -82,6 +82,10 @@ export interface DayScene {
   fill: string | null;
   opacity: number;
   fillOpacity: number;
+  /** The day's outline: its colour (null when none), width and opacity. */
+  stroke: string | null;
+  strokeWidth: number;
+  strokeOpacity: number;
   /** True when the Peak day ring is drawn on this day. */
   ring: boolean;
   ringStroke?: string;

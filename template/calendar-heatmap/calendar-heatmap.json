@@ -54,9 +54,11 @@
     {"name": "subtitleText", "value": "by Order Date"},
     {"name": "windowMode", "value": "calendar"},
     {"name": "fiscalStartMonth", "value": 7},
+    {"name": "everyDateHasRow", "value": false},
     {"name": "rampShades", "value": [0.8, 0.55, 0.25, -0.1, -0.45]},
     {"name": "palette", "update": "[pbiColor(0, rampShades[0]), pbiColor(0, rampShades[1]), pbiColor(0, rampShades[2]), pbiColor(0, rampShades[3]), pbiColor(0, rampShades[4])]"},
     {"name": "emptyColor", "value": "#f1f5f9"},
+    {"name": "filteredOutColor", "value": "#cbd5e1"},
     {"name": "inkColor", "value": "#0b1e3f"},
     {"name": "mutedColor", "value": "#475569"},
     {"name": "faintColor", "value": "#94a3b8"},
@@ -78,8 +80,8 @@
     {"name": "startWd", "update": "(day(winStart) + 6) % 7"},
     {"name": "nDays", "update": "length(data('calendar'))"},
     {"name": "nWeeks", "update": "floor((nDays - 1 + startWd) / 7) + 1"},
-    {"name": "maxSales", "update": "length(data('stats')) && data('stats')[0].maxSales > 0 ? data('stats')[0].maxSales : 1"},
-    {"name": "totalSales", "update": "length(data('stats')) ? data('stats')[0].total : 0"},
+    {"name": "maxValue", "update": "length(data('stats')) && data('stats')[0].maxValue > 0 ? data('stats')[0].maxValue : 1"},
+    {"name": "totalValue", "update": "length(data('stats')) ? data('stats')[0].total : 0"},
     {"name": "anySelected", "update": "length(data('selectedRows')) > 0"},
 
     {"name": "headerY", "update": "padT + 17"},
@@ -173,7 +175,7 @@
       "name": "stats",
       "source": "windowRows",
       "transform": [
-        {"type": "aggregate", "ops": ["max", "sum", "valid"], "fields": ["__1__", "__1__", "__1__"], "as": ["maxSales", "total", "activeDays"]}
+        {"type": "aggregate", "ops": ["max", "sum", "valid"], "fields": ["__1__", "__1__", "__1__"], "as": ["maxValue", "total", "activeDays"]}
       ]
     },
     {
@@ -191,15 +193,29 @@
         {"type": "formula", "as": "wd", "expr": "(day(datum.date) + 6) % 7"},
         {"type": "formula", "as": "week", "expr": "floor((datum.idx + startWd) / 7)"},
         {"type": "lookup", "from": "windowRows", "key": "_key", "fields": ["key"], "as": ["row"]},
-        {"type": "formula", "as": "Sales", "expr": "datum.row && isValid(datum.row['__1__']) ? datum.row['__1__'] : null"},
-        {"type": "formula", "as": "__row__", "expr": "datum.row ? datum.row.__row__ : null"},
-        {"type": "formula", "as": "sel", "expr": "datum.row ? datum.row.__selected__ : null"}
+        {"type": "formula", "as": "value", "expr": "datum.row && isValid(datum.row['__1__']) ? datum.row['__1__'] : null"},
+        {"type": "formula", "as": "kind", "expr": "datum.row ? (datum.value == null ? 'empty' : 'valued') : everyDateHasRow ? 'filteredOut' : 'empty'"}
       ]
     },
     {
-      "name": "peak",
+      "name": "daysWithRow",
       "source": "calendar",
-      "transform": [{"type": "filter", "expr": "datum.Sales != null && datum.Sales >= maxSales"}]
+      "transform": [
+        {"type": "filter", "expr": "datum.row"},
+        {"type": "formula", "as": "__row__", "expr": "datum.row.__row__"},
+        {"type": "formula", "as": "sel", "expr": "datum.row.__selected__"}
+      ]
+    },
+    {
+      "name": "daysWithoutRow",
+      "source": "calendar",
+      "transform": [{"type": "filter", "expr": "!datum.row"}]
+    },
+    {"name": "dayCells", "source": ["daysWithRow", "daysWithoutRow"]},
+    {
+      "name": "peak",
+      "source": "dayCells",
+      "transform": [{"type": "filter", "expr": "datum.value != null && datum.value >= maxValue"}]
     },
     {
       "name": "monthLabels",
@@ -219,7 +235,7 @@
     {
       "name": "color",
       "type": "quantize",
-      "domain": {"signal": "[0, maxSales]"},
+      "domain": {"signal": "[0, maxValue]"},
       "range": {"signal": "palette"}
     }
   ],
@@ -244,7 +260,7 @@
     {
       "type": "rect",
       "name": "cell",
-      "from": {"data": "calendar"},
+      "from": {"data": "dayCells"},
       "encode": {
         "enter": {"cursor": {"value": "pointer"}},
         "update": {
@@ -254,18 +270,28 @@
           "height": {"signal": "cellH"},
           "cornerRadius": {"signal": "cellW / 2"},
           "fill": [
-            {"test": "datum.Sales == null", "signal": "emptyColor"},
-            {"scale": "color", "field": "Sales"}
+            {"test": "datum.kind == 'filteredOut'", "value": "transparent"},
+            {"test": "datum.value == null", "signal": "emptyColor"},
+            {"scale": "color", "field": "value"}
           ],
           "opacity": [
             {"test": "dragging && selLo != null", "signal": "datum.idx >= selLo && datum.idx <= selHi ? 1 : 0.28"},
             {"test": "anySelected", "signal": "datum.sel == 'on' ? 1 : 0.28"},
             {"value": 1}
           ],
-          "stroke": {"signal": "inkColor"},
-          "strokeWidth": {"value": 1.25},
-          "strokeOpacity": {"value": 0},
-          "tooltip": {"signal": "{'__0__': timeFormat(datum.date, '%a %d %b %Y'), '__1__': datum.Sales == null ? '(blank)' : pbiFormat(datum.Sales, '#,0')}"}
+          "stroke": [
+            {"test": "datum.kind == 'filteredOut'", "signal": "filteredOutColor"},
+            {"signal": "inkColor"}
+          ],
+          "strokeWidth": [
+            {"test": "datum.kind == 'filteredOut'", "value": 1},
+            {"value": 1.25}
+          ],
+          "strokeOpacity": [
+            {"test": "datum.kind == 'filteredOut'", "value": 1},
+            {"value": 0}
+          ],
+          "tooltip": {"signal": "{'__0__': timeFormat(datum.date, '%a %d %b %Y'), '__1__': datum.value == null ? '(blank)' : pbiFormat(datum.value, '#,0')}"}
         },
         "hover": {"strokeOpacity": {"value": 0.85}}
       }
@@ -282,7 +308,7 @@
           "width": {"signal": "min(cellW * 1.45, cellH)"},
           "height": {"signal": "cellH"},
           "cornerRadius": {"signal": "min(cellW * 1.45, cellH) / 2"},
-          "fill": {"scale": "color", "field": "Sales"},
+          "fill": {"scale": "color", "field": "value"},
           "stroke": {"signal": "inkColor"},
           "strokeWidth": {"value": 2.5},
           "opacity": [
@@ -367,7 +393,7 @@
         "update": {
           "x": {"signal": "width - padR"},
           "y": {"signal": "headerY"},
-          "text": {"signal": "pbiFormatAutoUnit(totalSales, '#,0.00')"},
+          "text": {"signal": "pbiFormatAutoUnit(totalValue, '#,0.00')"},
           "fontSize": {"value": 15},
           "fontWeight": {"value": 600},
           "fill": {"signal": "inkColor"},
