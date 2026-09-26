@@ -318,6 +318,15 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   and the helper 1 (read from the Calendar's Vega view, and from Deneb's debug view, through remote
   debugging). "Show items with no data" was not needed, so it stays the untested alternative. The
   README documents the helper pattern and the fallback.
+- **The Filtered-out day look (#6).** A Filtered-out day draws hollow: the cell's own size and
+  shape with no fill and a 1-pixel outline in a mid grey (`#cbd5e1`, a named setting), never in the
+  empty colour or a Ramp step. Why: a solid cell always means a known value, an Empty day included,
+  so a hollow one says "in the Window, but the current filter took it out" and cannot be read as a
+  zero or as no data. An outline draws the same under the SVG and canvas renderers and at the dense
+  preset, where a hatch pattern would not (Deneb's pattern fill is SVG only, and a hatch blurs in a
+  10-pixel cell). It needs no theme colour beyond the fixed greys, so it never competes with the
+  Ramp. Slots outside the Window stay blank, so at the defaults nothing else is hollow; #7's
+  outline option for those slots must stay distinguishable from it.
 - **Colour.** The default ramp is shades of theme colour 1, from light to dark, so it follows any
   report theme. For five steps the shades are 0.8, 0.55, 0.25, -0.1 and -0.45. For any other step
   count, the shades are spaced evenly between the two ends, so the lightest and darkest steps never
