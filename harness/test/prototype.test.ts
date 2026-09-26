@@ -2,9 +2,10 @@
 // both Vega versions (Deneb 1.9 and 2.0) and in three time zones. Expected rows come from the
 // sample's own date text, never from the spec's date maths.
 //
-// The four gesture checks also run on the Report's embedded Calendar ('report-calendar'), fed the
-// same sample under the Report's field names: it is the prototype with its apply limit raised, so
-// the prototype's checks must pass on it too. Its check names start "the Report's Calendar:".
+// The four gesture checks also run on the Template at its defaults ('template'), whose Selection is
+// carried over from the prototype unchanged (T06), and on the Report's embedded Calendar
+// ('report-calendar'), fed the same sample under the Report's field names. Their check names start
+// "the Template:" and "the Report's Calendar:".
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CELLS } from '../src/index.ts';
@@ -14,6 +15,7 @@ import { rowsDated, sorted, useHarness } from './helpers.ts';
 const sample = loadFixture('prototype-sample');
 const SUBJECTS = [
   { name: '', spec: 'prototype', fixture: 'prototype-sample' },
+  { name: 'the Template: ', spec: 'template', fixture: 'prototype-sample' },
   { name: "the Report's Calendar: ", spec: 'report-calendar', fixture: 'report-fields-sample' },
 ];
 

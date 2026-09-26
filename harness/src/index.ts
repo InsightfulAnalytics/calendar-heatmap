@@ -132,6 +132,12 @@ export interface ApplyCall {
   result: ApplyResult;
 }
 
+/** A point on the page, in the coordinates the scene reports. */
+export interface Point {
+  x: number;
+  y: number;
+}
+
 export interface Modifiers {
   shift?: boolean;
   ctrl?: boolean;
@@ -230,6 +236,11 @@ export class Calendar {
     return this.#call<string>('vegaVersion');
   }
 
+  /** The colour a viewer sees at a page point ('#rrggbb'), with the view's background where nothing is drawn. */
+  async pixelAt(point: Point): Promise<string> {
+    return this.#call<string>('pixelAt', point.x, point.y);
+  }
+
   async screenshot(file: string): Promise<void> {
     await this.#page.locator('#vis').screenshot({ path: file });
   }
@@ -297,10 +308,21 @@ export class Calendar {
     await this.click(date, { button: 'middle' });
   }
 
+  /** A left click at a page point, wherever it falls. */
+  async clickAt(point: Point, mods?: Modifiers): Promise<void> {
+    await this.#withModifiers(mods, () => this.#page.mouse.click(point.x, point.y));
+  }
+
+  /** A point inside the view on no day: a corner of the view, 3 pixels in. */
+  async backgroundPoint(): Promise<Point> {
+    const p = await this.#call<Point | null>('backgroundPoint');
+    if (!p) throw new Error('no background point: days cover every corner of the view');
+    return p;
+  }
+
   /** A left click inside the view on no day. */
   async backgroundClick(): Promise<void> {
-    const p = await this.#call<{ x: number; y: number } | null>('backgroundPoint');
-    if (!p) throw new Error('no background point: days cover every corner of the view');
+    const p = await this.backgroundPoint();
     await this.#withModifiers(undefined, () => this.#page.mouse.click(p.x, p.y));
   }
 

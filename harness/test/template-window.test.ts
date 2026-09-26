@@ -60,6 +60,8 @@ async function assertWindow(cal: Calendar, from: string, to: string) {
 
 /** The rows a viewer reads when Monday is the top row: labels on Monday, Wednesday, Friday and Sunday. */
 const MONDAY_FIRST = ['M', null, 'W', null, 'F', null, 'S'];
+/** The empty colour (SPEC, "Colour"). */
+const EMPTY = '#f1f5f9';
 const ROW = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4, Saturday: 5, Sunday: 6 };
 
 for (const { vega, timeZone, label: cell } of CELLS) {
@@ -90,6 +92,37 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     const g = await grid(cal);
     assert.equal(g.xs.length, 53);
     assert.equal(g.at('2025-07-01').row, ROW.Tuesday);
+  });
+
+  test(`${cell} slots outside the Window draw nothing, and a click on one sends nothing`, async () => {
+    const cal = await harness.render({ spec: 'template', fixture: 'every-date-2025', vega, timeZone });
+    const days = await cal.days();
+    const centre = (date: string) => {
+      const d = days.find((day) => day.date === date);
+      assert.ok(d, `no day is drawn for ${date}`);
+      return { x: d.x + d.width / 2, y: d.y + d.height / 2 };
+    };
+    // 2025 starts on a Wednesday and ends on a Wednesday. The first column's Monday and Tuesday
+    // slots (30 and 31 Dec 2024) and the last column's Thursday to Sunday slots (1 to 4 Jan 2026)
+    // are outside the Window. Each slot is found by its column's day and a day in its weekday row.
+    const slots: [string, { x: number; y: number }][] = [
+      ['2024-12-30', { x: centre('2025-01-01').x, y: centre('2025-01-06').y }],
+      ['2024-12-31', { x: centre('2025-01-01').x, y: centre('2025-01-07').y }],
+      ['2026-01-01', { x: centre('2025-12-31').x, y: centre('2025-12-25').y }],
+      ['2026-01-04', { x: centre('2025-12-31').x, y: centre('2025-12-28').y }],
+    ];
+    const background = await cal.pixelAt(await cal.backgroundPoint());
+    assert.equal(background, '#ffffff', 'the view background, as the harness draws the visual container');
+    assert.equal(await cal.pixelAt(centre('2025-01-01')), EMPTY, 'a drawn Empty day is seen in the empty colour');
+    for (const [date, point] of slots) {
+      assert.equal(days.find((d) => d.date === date), undefined, `${date} is not drawn as a day`);
+      assert.equal(await cal.pixelAt(point), background, `nothing is drawn in the slot for ${date}`);
+    }
+    for (const [date, point] of slots) {
+      await cal.clickAt(point);
+      assert.deepEqual(await cal.hostCalls(), [], `a click on the slot for ${date} sends nothing to the host`);
+      assert.deepEqual(await cal.applyCalls(), [], `a click on the slot for ${date} makes no apply call`);
+    }
   });
 
   // The base 2025 fixture's latest date is 31 Dec 2025, so the Window is the fiscal year holding it.

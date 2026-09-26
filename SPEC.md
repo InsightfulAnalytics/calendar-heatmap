@@ -368,7 +368,10 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   Only days that exist as rows can be selected. The result is an ordinary cross-filter selection of
   row identities, not a date filter: it does not show in the filter pane and does not carry to other
   pages. The range runs in calendar order, not as a rectangle. A mouse-down on the background clears
-  the selection, and a drag that ended outside the visual resets on the next mouse-down. After
+  the selection, and a drag that ended outside the visual resets on the next mouse-down. The
+  background is the view outside the grid: a click inside the grid on no day, a gap or a slot
+  outside the Window, sends nothing at all (#6), so a slot can never be selected and a click that
+  just misses a day never clears the page. After
   Power BI applies the selection, the spec reads each row's selected state and dims the rest.
   Proved in Desktop by #2, with each gesture replayed through remote debugging and checked against
   the table, both cards, the title and independent DAX: Deneb accepts the range expression, and a

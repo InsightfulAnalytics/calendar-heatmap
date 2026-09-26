@@ -70,7 +70,6 @@
     {"name": "fpad", "value": 4},
     {"name": "gapRatio", "value": 0.21},
     {"name": "maxAspect", "value": 1.72},
-    {"name": "showOutsideDays", "value": true},
 
     {"name": "startMonth", "update": "windowMode == 'fiscal' ? clamp(round(fiscalStartMonth), 1, 12) - 1 : 0"},
     {"name": "winYear", "update": "length(data('windowStats')) && data('windowStats')[0].wy != null ? data('windowStats')[0].wy : (month(now()) >= startMonth ? year(now()) : year(now()) - 1)"},
@@ -123,6 +122,13 @@
         {"events": "window:mouseup", "update": "false"}
       ]
     },
+    {
+      "name": "pressInGrid",
+      "value": false,
+      "on": [
+        {"events": "view:mousedown[event.button === 0]", "update": "x() >= gridX && x() <= gridX + gridW && y() >= gridY && y() <= gridY + 7 * cellH + 6 * gap"}
+      ]
+    },
     {"name": "selLo", "update": "downIdx == null ? null : min(downIdx, headIdx)"},
     {"name": "selHi", "update": "downIdx == null ? null : max(downIdx, headIdx)"},
     {
@@ -135,7 +141,7 @@
       "on": [
         {
           "events": "view:mouseup[event.button === 0]",
-          "update": "downIdx == null ? pbiCrossFilterClear() : pbiCrossFilterApply(event, rangeFilter, {limit: 400})"
+          "update": "downIdx != null ? pbiCrossFilterApply(event, rangeFilter, {limit: 400}) : pressInGrid ? pbiCrossFilterSelection : pbiCrossFilterClear()"
         }
       ]
     }
@@ -191,15 +197,6 @@
       ]
     },
     {
-      "name": "outsideDays",
-      "transform": [
-        {"type": "sequence", "start": 0, "stop": {"signal": "showOutsideDays ? nWeeks * 7 : 0"}, "as": "slot"},
-        {"type": "filter", "expr": "datum.slot < startWd || datum.slot >= startWd + nDays"},
-        {"type": "formula", "as": "week", "expr": "floor(datum.slot / 7)"},
-        {"type": "formula", "as": "wd", "expr": "datum.slot % 7"}
-      ]
-    },
-    {
       "name": "peak",
       "source": "calendar",
       "transform": [{"type": "filter", "expr": "datum.Sales != null && datum.Sales >= maxSales"}]
@@ -241,23 +238,6 @@
           "fill": {"value": "transparent"},
           "stroke": {"signal": "frameColor"},
           "strokeWidth": {"value": 1}
-        }
-      }
-    },
-    {
-      "type": "rect",
-      "name": "outsideCell",
-      "from": {"data": "outsideDays"},
-      "interactive": false,
-      "encode": {
-        "update": {
-          "x": {"signal": "gridX + datum.week * (cellW + gap)"},
-          "y": {"signal": "gridY + datum.wd * (cellH + gap)"},
-          "width": {"signal": "cellW"},
-          "height": {"signal": "cellH"},
-          "cornerRadius": {"signal": "cellW / 2"},
-          "fill": {"signal": "emptyColor"},
-          "opacity": {"signal": "(dragging && selLo != null) || anySelected ? 0.28 : 0.55"}
         }
       }
     },

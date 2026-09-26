@@ -409,6 +409,16 @@
     return found ? { x: found[0], y: found[1] } : null;
   };
 
+  // The colour drawn at a page point, as '#rrggbb' (or rgba() when translucent): the view rendered
+  // to a canvas and read back, so it is what a viewer sees there, whichever marks drew it.
+  api.pixelAt = async (x, y) => {
+    const box = mounted.container.getBoundingClientRect();
+    const canvas = await mounted.view.toCanvas(1);
+    const [r, g, b, a] = canvas.getContext('2d').getImageData(Math.floor(x - box.left), Math.floor(y - box.top), 1, 1).data;
+    if (a === 255) return `#${[r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+    return `rgba(${r}, ${g}, ${b}, ${Math.round((a / 255) * 1000) / 1000})`;
+  };
+
   // A point outside the view, to release a drag on.
   api.outsidePoint = () => {
     const box = mounted.container.getBoundingClientRect();
