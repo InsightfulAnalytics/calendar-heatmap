@@ -365,6 +365,50 @@ table 'Measure Table'
 		displayFolder: Sales
 		lineageTag: 486cbe23-470d-4dd9-a9e3-7a95adcad9f7
 
+	/// The Peak day value: the best day's total sales in the current date filter, the sales of the Peak Day. Blank when no day in the filter has sales.
+	measure 'Peak Day Sales' =
+
+			// Each calendar day in the current date filter, with its sales
+			VAR __Days =
+			    ADDCOLUMNS (
+			        VALUES ( 'DimDate'[Date] ),
+			        "@Sales", [Total Sales]
+			    )
+			// The highest daily total; a day without sales is blank and never counts
+			VAR __Result =
+			    MAXX ( __Days, [@Sales] )
+			RETURN
+			    __Result
+		formatString: #,##0
+		displayFolder: Sales
+		lineageTag: 532f384e-719e-49f7-a3a5-fbe2a0bddbc3
+
+	/// Total Sales for a KPI card that draws one row per week (grouped by DimDate WeekEnding): the week on the row is lifted and every other filter kept (the date filter, a Calendar Selection, channel and region), so each weekly row carries the card's headline. Reads 0 when the filter holds days but none has sales, so the card keeps its rows; blank only when the filter holds no days.
+	measure 'Card Total Sales' =
+
+			// The card's whole filter: lift the week the row is grouped by, keep every other filter
+			VAR __Total =
+			    CALCULATE (
+			        [Total Sales],
+			        REMOVEFILTERS ( 'DimDate'[WeekEnding] )
+			    )
+			// The calendar days in that filter, to tell no sales (0) from no days (blank)
+			VAR __Days =
+			    CALCULATE (
+			        COUNTROWS ( 'DimDate' ),
+			        REMOVEFILTERS ( 'DimDate'[WeekEnding] )
+			    )
+			VAR __Result =
+			    IF (
+			        __Days > 0,
+			        COALESCE ( __Total, 0 )
+			    )
+			RETURN
+			    __Result
+		formatString: #,##0
+		displayFolder: KPI cards
+		lineageTag: bce148e2-ab8b-4969-b00b-246796ac44d2
+
 	/// A day's total sales when it is one of the five best days in the visual's filter (slicers, page filters and any Calendar Selection), blank otherwise, so a visual that binds the date and this measure shows exactly the Top days. Ties go to the earlier date; days without sales never appear.
 	measure 'Top Day Sales' =
 			
