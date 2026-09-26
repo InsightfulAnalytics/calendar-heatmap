@@ -45,13 +45,13 @@
     "font": "Segoe UI",
     "text": {"font": "Segoe UI"}
   },
-  "description": "Calendar heatmap prototype: one year of days as 53 x 7 capsule cells (Monday first), a 5-class equal-interval ramp over [0, max] in shades of theme colour 1 (pbiColor(0)), empty days drawn, peak day ringed, left click or drag to cross-filter a date range (advanced selection mode).",
+  "description": "Calendar Heatmap: a Window of days (a calendar or fiscal year) as week columns by weekday rows, Monday first, coloured in five equal-interval steps of theme colour 1 over 0 to the Window's maximum. Empty days are drawn in the empty colour, the Peak day is ringed, and a left click or drag cross-filters a date range (advanced selection mode). The settings are the signals from titleText to maxAspect.",
   "width": {"signal": "pbiContainerWidth"},
   "height": {"signal": "pbiContainerHeight"},
   "padding": 0,
   "signals": [
-    {"name": "titleText", "value": "Sales"},
-    {"name": "subtitleText", "value": "by Order Date"},
+    {"name": "titleText", "value": "__1__"},
+    {"name": "subtitleText", "value": "by __0__"},
     {"name": "windowMode", "value": "calendar"},
     {"name": "fiscalStartMonth", "value": 7},
     {"name": "everyDateHasRow", "value": false},
@@ -143,7 +143,7 @@
       "on": [
         {
           "events": "view:mouseup[event.button === 0]",
-          "update": "downIdx != null ? pbiCrossFilterApply(event, rangeFilter, {limit: 400}) : pressInGrid ? pbiCrossFilterSelection : pbiCrossFilterClear()"
+          "update": "downIdx != null ? pbiCrossFilterApply(event, rangeFilter, {limit: 2500}) : pressInGrid ? pbiCrossFilterSelection : pbiCrossFilterClear()"
         }
       ]
     }

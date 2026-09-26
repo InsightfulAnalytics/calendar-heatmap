@@ -259,7 +259,10 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
 - The template is developed here first, then contributed to Tim's public Deneb template library
   (the MIT-licensed InsightfulAnalytics/Deneb repository on GitHub) in a new "calendar" category.
   That library's main branch takes changes only through pull requests, and the contribution PR is
-  opened only after Tim confirms the courtesy note has gone to Lumeric Visuals.
+  opened only after Tim confirms the courtesy note has gone to Lumeric Visuals. Here the Template
+  lives in `template/calendar-heatmap/` in the library's shape from #6 on: `calendar-heatmap.json`
+  (a version 1 template), `sample-data.csv`, `render.json` and `README.md`, so the folder drops into
+  `templates/calendar/` unchanged.
 - The library contribution also: adds the calendar category to the showcase's category order; adds
   a showcase part with the default calendar plus variants (square cells, dense, a small visual);
   updates the library README's gallery and its template count from twelve to thirteen; updates the
@@ -518,6 +521,10 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
 - **Library sample data.** The template ships a small sample file for the library: one year of
   daily rows and one series, with a header exactly matching the field names and well under the
   library's 50 KB warning. The edge-case data lives in the test fixtures, not in the library sample.
+  The draft (#6) is the harness's `base-2025` fixture as `Date,Sales` (353 rows, 7 KB), so it
+  carries blank values and days with no row; #28 finalises it. The header title and subtitle
+  default to the placeholders' names (`__1__`, `by __0__`), so they read the author's own field
+  names after import, never the prototype's copied "by Order Date".
 
 ### The working report
 
@@ -632,7 +639,10 @@ One seam cannot cover this work. Power BI Desktop cannot drive clicks and drags 
 visual, and a headless browser cannot see the model, the page interactions or the layout. So there
 are two seams, each at the highest point its deliverable allows. The library's offline checker and
 the deneb-pbir parse check are gates the template must also pass (see Prior art), not further seams,
-so no third harness is built.
+so no third harness is built. From #6 both run inside the harness's `npm test` on every Template
+ticket: the checker in all three harness time zones, with its SVG render read back so a day drawn
+on the wrong weekday fails even when the checker reports ok, and the parse check under the 1.9 and
+2.0 rules (`harness/src/gates.ts`).
 
 1. **The template seam: the spec as a black box in a headless browser.** Input: dataset rows shaped
    the way Deneb delivers them (local-midnight dates, row identities, selected flags and highlight
