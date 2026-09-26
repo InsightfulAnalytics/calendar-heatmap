@@ -78,6 +78,23 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     const texts = (await cal.labels()).map((l) => l.text);
     for (const t of ['Sales', 'by Date', 'Less', 'More']) assert.ok(texts.includes(t), `'${t}' is drawn`);
     assert.deepEqual((await cal.swatches()).map((s) => s.fill), RAMP);
+    // Nothing else is drawn: no readout, KPI strip, month totals or value labels. The one other
+    // text is the header total, drawn level with the title.
+    const title = (await cal.labels()).find((l) => l.text === 'Sales');
+    const known = new Set(['Sales', 'by Date', 'Less', 'More', 'M', 'W', 'F', 'S', ...MONTHS]);
+    const others = (await cal.labels()).filter((l) => !known.has(l.text));
+    assert.equal(others.length, 1, `other labels: ${others.map((l) => l.text).join(', ')}`);
+    assert.equal(others[0].y, title?.y, 'the header total');
+    assert.deepEqual(['M', 'W', 'F', 'S'].filter((t) => !texts.includes(t)), [], 'the weekday labels are drawn');
+    assert.ok(texts.filter((t) => MONTHS.includes(t)).length >= 6, 'the month labels are drawn');
+    // Only Ramp steps and the empty colour: no target colours.
+    assert.deepEqual(days.filter((d) => !RAMP.includes(d.fill ?? '') && d.fill !== EMPTY).map((d) => d.date), []);
+    assert.ok(days.some((d) => d.fill === EMPTY), 'Empty days are drawn');
+    // Regular density: the gap between week columns is 0.21 of a day's width.
+    const jan1 = await cal.day('2025-01-01');
+    const jan8 = await cal.day('2025-01-08');
+    assert.ok(jan1 && jan8);
+    assert.ok(Math.abs(jan8.x - jan1.x - jan1.width * 1.21) < 0.01, 'the gap is 0.21 of a day');
   });
 
   test(`${cell} square cells draw every day with a 2-pixel corner radius, and the Peak day ring the same, in the same places`, async () => {

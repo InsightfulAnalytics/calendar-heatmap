@@ -1,6 +1,6 @@
 # Spec: Calendar Heatmap template and working report
 
-Status: ready for agent. Tim confirmed both test seams on 2026-09-25 (see Testing Decisions). On
+Status: built on a lean scope (2026-09-26 close-out; see the README Status for what was deferred). Before that: ready for agent. Tim confirmed both test seams on 2026-09-25 (see Testing Decisions). On
 2026-09-26 he dropped the click-through checklists: agents build everything and verify it
 themselves, and only the outward steps (the courtesy note, publishing, the library PR) stay his.
 Written 2026-09-25 from the feasibility study and prototype session, then reviewed by three critics
@@ -424,6 +424,10 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
 - **Small multiples.** A click or drag inside one panel selects that date range for that panel's
   split value only: the expression tests both the date range and the split field. Dimming follows
   each row's own selected state, so the other panels dim.
+- **Peak day card steps (#17, 2026-09-26).** The Peak day card's bar splits the days in the
+  current filter across five equal steps from 0 to that filter's own best day, not the Calendar's
+  Window maximum. The card follows a Calendar Selection, so rescaling makes its bar describe the
+  selected days; under the fiscal-year filter alone the two scales are the same.
 - **Inbound highlighting.** The template turns cross-highlight on in its metadata, so it is on when
   the visual is created; a visual first opened in Deneb 2.0 with it off has highlight frozen off.
   Highlight values exist only for measures, as the value measure's highlight companion field, never

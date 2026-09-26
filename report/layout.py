@@ -37,11 +37,11 @@ LAYOUT = {
         'calAPAC': (216, 740, 1048, 212, 'card'),
     },
     'targets': {
-        'targetCalendar': (216, 80, 1048, 380, 'card'),
-        'daysOnTarget': (216, 476, 250, 120, 'card'),
-        'daysShort': (482, 476, 250, 120, 'card'),
-        'meanDay': (748, 476, 250, 120, 'card'),
-        'meanTarget': (1014, 476, 250, 120, 'card'),
+        'targetCalendar': (216, 80, 1048, 560, 'card'),
+        'daysOnTarget': (216, 656, 250, 120, 'card'),
+        'daysShort': (482, 656, 250, 120, 'card'),
+        'meanDay': (748, 656, 250, 120, 'card'),
+        'meanTarget': (1014, 656, 250, 120, 'card'),
     },
 }
 

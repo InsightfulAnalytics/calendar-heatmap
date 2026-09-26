@@ -125,3 +125,64 @@ for (const deneb of ['1.9', '2.0'] as const) {
     assert.equal(run.result?.denebContainerReferences, 0, 'no Deneb 2.0 container name, which 1.9 cannot parse');
   });
 }
+
+/** The settings block: the top-level signals from titleText to badColor, in order. */
+function settings(): JsonObject[] {
+  const signals = (JSON.parse(readFileSync(TEMPLATE_FILE, 'utf8')) as JsonObject).signals as JsonObject[];
+  const names = signals.map((s) => String(s.name));
+  return signals.slice(names.indexOf('titleText'), names.indexOf('badColor') + 1);
+}
+
+test("the README's Settings table lists every setting once, in the spec's order, with the spec's own default", () => {
+  const readme = readFileSync(path.join(TEMPLATE_DIR, 'README.md'), 'utf8');
+  const section = readme.slice(readme.indexOf('## Settings'), readme.indexOf('## Setup'));
+  const ticks = (cell: string) => [...cell.matchAll(/`([^`]*)`/g)].map((m) => m[1]);
+  const rows = section.split(/\r?\n/).filter((l) => /^\| `/.test(l)).map((l) => l.split('|').slice(1, -1).map((c) => c.trim()));
+  const documented = new Map<string, string>();
+  for (const [names, defaults] of rows) {
+    const n = ticks(names);
+    const d = ticks(defaults);
+    n.forEach((name, i) => documented.set(name, n.length > 1 ? d[i] : defaults));
+  }
+  const spec = settings();
+  assert.deepEqual([...documented.keys()], spec.map((s) => String(s.name)));
+  const norm = (v: string) => v.replace(/\s+/g, '');
+  const wrong = spec.filter((s) => {
+    const cell = documented.get(String(s.name)) ?? '';
+    if (typeof s.update === 'string') return !cell.includes('pbiColor(');
+    if (typeof s.value === 'string' && /__\d+__/.test(s.value)) return /`/.test(cell) && !cell.includes('by ');
+    const shown = ticks(cell)[0] ?? cell;
+    const literal = typeof s.value === 'string' ? [s.value, JSON.stringify(s.value)] : [JSON.stringify(s.value)];
+    return !literal.map(norm).includes(norm(shown));
+  }).map((s) => `${s.name}: ${documented.get(String(s.name))}`);
+  assert.deepEqual(wrong, []);
+});
+
+test("the Template's metadata: the author and credit sentence exactly, the date a dateTime column, the value a numeric measure, an embedded PNG thumbnail, all under the 400 KB cap", () => {
+  const template = JSON.parse(readFileSync(TEMPLATE_FILE, 'utf8')) as JsonObject;
+  const meta = template.usermeta as JsonObject;
+  const info = meta.information as JsonObject;
+  assert.equal(info.author, 'Timothy Osborn, after Lumeric Visuals');
+  assert.match(String(info.description), /\. Design after Lumeric Visuals \(lumericvisuals\.com\)\.$/);
+  assert.equal(info.name, 'Calendar Heatmap');
+  const dataset = (meta.dataset as JsonObject[]).map((f) => [f.key, f.type, f.kind]);
+  assert.deepEqual(dataset, [['__0__', 'dateTime', 'column'], ['__1__', 'numeric', 'measure']]);
+  const png = String(info.previewImageBase64PNG);
+  assert.ok(png.startsWith('data:image/png;base64,'));
+  assert.equal(Buffer.from(png.slice(22), 'base64').subarray(1, 4).toString('latin1'), 'PNG');
+  assert.ok(statSync(TEMPLATE_FILE).size < 400 * 1024, `${statSync(TEMPLATE_FILE).size} bytes`);
+  const interactivity = meta.interactivity as JsonObject;
+  assert.deepEqual([interactivity.tooltip, interactivity.contextMenu, interactivity.selection, interactivity.highlight], [true, true, true, true]);
+});
+
+test("the sample file is invented: every day of 2025, none of the prototype's values, and not the prototype's 1.33M total", () => {
+  const lines = readFileSync(path.join(TEMPLATE_DIR, 'sample-data.csv'), 'utf8').trim().split(/\r?\n/).slice(1);
+  const rows = lines.map((l) => l.split(','));
+  assert.equal(rows.length, 365);
+  const prototype = loadFixture('prototype-sample').rows;
+  const byDate = new Map(prototype.map((r) => [String(r.Date), r.Sales]));
+  const shared = rows.filter(([d, v]) => v !== '' && byDate.get(d) === Number(v)).map(([d]) => d);
+  assert.deepEqual(shared, []);
+  const total = rows.reduce((t, [, v]) => t + (v === '' ? 0 : Number(v)), 0);
+  assert.ok(Math.abs(total - 1.33e6) > 5e4, `total ${total}`);
+});
