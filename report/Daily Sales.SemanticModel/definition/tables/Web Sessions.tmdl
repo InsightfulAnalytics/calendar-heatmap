@@ -1,0 +1,78 @@
+/// Synthetic daily web sessions at the date grain (no channel or region), generated inside the model from the date table's dates by a fixed formula: weekend heavy, the opposite silhouette to sales, with its own blank days.
+table 'Web Sessions'
+	lineageTag: 5d4eb997-83fe-40ef-853a-3a849ef3ba29
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: dd-mmm-yy
+		lineageTag: c0ca2f2c-fc9f-421a-bf96-5be3fc281a6b
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Sessions
+		dataType: int64
+		isHidden
+		formatString: #,##0
+		lineageTag: 978824d4-df5d-49bf-af7a-b2a3032e5b4a
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Sessions]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Web Sessions' = calculated
+		mode: import
+		source =
+				// Synthetic sessions: one row per day, from a fixed formula (never RAND, so every refresh
+				// gives the same rows). ALLNOBLANKROW reads the date table's dates without its blank row,
+				// so the relationship back to DimDate cannot turn circular.
+				VAR __Dates =
+				    ALLNOBLANKROW ( 'DimDate'[Date] )
+				// Day-level inputs: the date serial number, ISO weekday (1 Monday to 7 Sunday) and month
+				VAR __Days =
+				    ADDCOLUMNS (
+				        __Dates,
+				        "@Serial", CONVERT ( 'DimDate'[Date], INTEGER ),
+				        "@Weekday", WEEKDAY ( 'DimDate'[Date], 2 ),
+				        "@Month", MONTH ( 'DimDate'[Date] )
+				    )
+				// Blank days: a fixed quadratic residue test drops about one day in 12, whole days only
+				VAR __SessionDays =
+				    FILTER (
+				        __Days,
+				        MOD ( [@Serial] * [@Serial] + 3 * [@Serial], 83 ) >= 7
+				    )
+				// Weekends at 2.2 times a weekday; a gentle rise into the southern summer; a fixed
+				// wobble of plus or minus 25%
+				VAR __Rows =
+				    ADDCOLUMNS (
+				        __SessionDays,
+				        "@Sessions",
+				            VAR __WeekdayFactor =
+				                IF ( [@Weekday] >= 6, 2.2, 1 )
+				            VAR __SeasonFactor =
+				                IF ( [@Month] IN { 11, 12, 1, 2 }, 1.25, 1 )
+				            VAR __Wobble =
+				                MOD ( [@Serial] * 3571, 1000 ) / 1000
+				            RETURN
+				                ROUND ( 800 * __WeekdayFactor * __SeasonFactor * ( 0.75 + 0.5 * __Wobble ), 0 )
+				    )
+				VAR __Result =
+				    SELECTCOLUMNS (
+				        __Rows,
+				        "Date", 'DimDate'[Date],
+				        "Sessions", CONVERT ( [@Sessions], INTEGER )
+				    )
+				RETURN
+				    __Result
+
+	annotation PBI_ResultType = Table
+

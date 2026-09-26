@@ -27,6 +27,8 @@ ref table 'Measure Table'
 ref table Channel
 ref table Region
 ref table Targets
+ref table 'Support Tickets'
+ref table 'Web Sessions'
 
 ref cultureInfo en-US
 

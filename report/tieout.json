@@ -1,14 +1,46 @@
 {
   "about": "Report seam tie-out suite for the Daily Sales PBIP, run by seam.ps1 against the open Desktop model. Each check evaluates two DAX scalar expressions, 'report' (the report's own measures or model state) and 'independent' (a query straight over the fact and date tables, or the expected constant), and fails when they differ. A blank on either side fails the check, unless the check sets 'blankExpected': true, which passes only when both sides are blank. So an existence check compares a non-blank condition (NOT ISBLANK ( ... ) against TRUE ()) or a count ending in + 0, never two values that could both be blank. Expressions may be a string or an array of lines. 'tolerance' is an absolute difference allowed between numbers (default 0). 'fingerprint' is evaluated after each of two data refreshes, and the two results must match.",
   "fingerprint": [
-    { "name": "sales rows", "expr": "COUNTROWS ( 'Sales' )" },
-    { "name": "sales amount", "expr": "SUM ( 'Sales'[Amount] )" },
-    { "name": "sales position checksum", "expr": "SUMX ( 'Sales', 'Sales'[Amount] * MOD ( CONVERT ( 'Sales'[Date], INTEGER ), 101 ) )" },
-    { "name": "date rows", "expr": "COUNTROWS ( 'DimDate' )" },
-    { "name": "channel and region rows", "expr": "COUNTROWS ( 'Channel' ) * 100 + COUNTROWS ( 'Region' )" },
-    { "name": "target rows", "expr": "COUNTROWS ( 'Targets' )" },
-    { "name": "target amount", "expr": "SUM ( 'Targets'[Target] )" },
-    { "name": "target position checksum", "expr": "SUMX ( 'Targets', 'Targets'[Target] * MOD ( CONVERT ( 'Targets'[Date], INTEGER ), 101 ) )" }
+    {
+      "name": "sales rows",
+      "expr": "COUNTROWS ( 'Sales' )"
+    },
+    {
+      "name": "sales amount",
+      "expr": "SUM ( 'Sales'[Amount] )"
+    },
+    {
+      "name": "sales position checksum",
+      "expr": "SUMX ( 'Sales', 'Sales'[Amount] * MOD ( CONVERT ( 'Sales'[Date], INTEGER ), 101 ) )"
+    },
+    {
+      "name": "date rows",
+      "expr": "COUNTROWS ( 'DimDate' )"
+    },
+    {
+      "name": "channel and region rows",
+      "expr": "COUNTROWS ( 'Channel' ) * 100 + COUNTROWS ( 'Region' )"
+    },
+    {
+      "name": "target rows",
+      "expr": "COUNTROWS ( 'Targets' )"
+    },
+    {
+      "name": "target amount",
+      "expr": "SUM ( 'Targets'[Target] )"
+    },
+    {
+      "name": "target position checksum",
+      "expr": "SUMX ( 'Targets', 'Targets'[Target] * MOD ( CONVERT ( 'Targets'[Date], INTEGER ), 101 ) )"
+    },
+    {
+      "name": "support ticket rows",
+      "expr": "COUNTROWS ( 'Support Tickets' ) & \" / \" & SUM ( 'Support Tickets'[Tickets] )"
+    },
+    {
+      "name": "web session rows",
+      "expr": "COUNTROWS ( 'Web Sessions' ) & \" / \" & SUM ( 'Web Sessions'[Sessions] )"
+    }
   ],
   "filters": [
     {
@@ -185,15 +217,15 @@
     },
     {
       "name": "model tables (no hidden local date tables)",
-      "ticket": "T01, T05, T14",
+      "ticket": "T01, T05, T14, T16, T24",
       "report": "CONCATENATEX ( INFO.TABLES (), [Name], \", \", [Name], ASC )",
-      "independent": "\"Channel, DimDate, Measure Table, Region, Sales, Targets\""
+      "independent": "\"Channel, DimDate, Measure Table, Region, Sales, Support Tickets, Targets, Web Sessions\""
     },
     {
-      "name": "six relationships (Sales and Targets each to date, channel and region), each active and single direction, many to one",
-      "ticket": "T01, T05, T14",
+      "name": "eight relationships (Sales and Targets each to date, channel and region; Support Tickets and Web Sessions to date), each active and single direction, many to one",
+      "ticket": "T01, T05, T14, T16, T24",
       "report": "COUNTROWS ( FILTER ( INFO.RELATIONSHIPS (), [IsActive] && [CrossFilteringBehavior] = 1 && [FromCardinality] = 2 && [ToCardinality] = 1 ) ) & \" of \" & COUNTROWS ( INFO.RELATIONSHIPS () )",
-      "independent": "\"6 of 6\""
+      "independent": "\"8 of 8\""
     },
     {
       "name": "the Channel dimension lists its members in display order, with no blank row",
@@ -328,20 +360,28 @@
       "each": "filters",
       "report": "CALCULATE ( [Mean per Day], {{report}} )",
       "independent": "DIVIDE ( SUMX ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Amount] ), {{days}} )",
-      "tolerance": 1e-9
+      "tolerance": 1e-09
     },
     {
       "name": "Mean per day, {{name}}, divides the total by {{days}} calendar days",
       "ticket": "T05",
-      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "each": [
+        "FY26",
+        "FY24",
+        "7 Jul to 20 Aug 2025"
+      ],
       "report": "CALCULATE ( DIVIDE ( [Total Sales], [Mean per Day] ), {{report}} )",
       "independent": "{{days}}",
-      "tolerance": 1e-9
+      "tolerance": 1e-09
     },
     {
       "name": "{{name}} holds days with no sales, so that divisor counts blank days",
       "ticket": "T05",
-      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "each": [
+        "FY26",
+        "FY24",
+        "7 Jul to 20 Aug 2025"
+      ],
       "report": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), ISBLANK ( [Total Sales] ) ) ), {{report}} ) >= 1",
       "independent": "TRUE ()"
     },
@@ -475,15 +515,19 @@
       "each": "filters",
       "report": "CALCULATE ( [Mean Daily Target], {{report}} )",
       "independent": "DIVIDE ( SUMX ( FILTER ( 'Targets', {{targetRows}} ), 'Targets'[Target] ), COUNTROWS ( FILTER ( ALL ( 'DimDate'[Date] ), 'DimDate'[Date] >= {{from}} && 'DimDate'[Date] <= {{to}} ) ) )",
-      "tolerance": 1e-9
+      "tolerance": 1e-09
     },
     {
       "name": "Mean daily target, {{name}}, divides the total target by {{days}} calendar days",
       "ticket": "T14",
-      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "each": [
+        "FY26",
+        "FY24",
+        "7 Jul to 20 Aug 2025"
+      ],
       "report": "CALCULATE ( DIVIDE ( [Total Target], [Mean Daily Target] ), {{report}} )",
       "independent": "{{days}}",
-      "tolerance": 1e-9
+      "tolerance": 1e-09
     },
     {
       "name": "Total target, {{name}}: the sum of the target rows",
@@ -495,14 +539,22 @@
     {
       "name": "{{name}} holds days with no target rows (blank target days)",
       "ticket": "T14",
-      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "each": [
+        "FY26",
+        "FY24",
+        "7 Jul to 20 Aug 2025"
+      ],
       "report": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), ISBLANK ( [Total Target] ) ) ), {{report}} ) >= 1",
       "independent": "TRUE ()"
     },
     {
       "name": "{{name}}: the days with no target are exactly the calendar days no target row names",
       "ticket": "T14",
-      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "each": [
+        "FY26",
+        "FY24",
+        "7 Jul to 20 Aug 2025"
+      ],
       "report": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), ISBLANK ( [Total Target] ) ) ), {{report}} ) + 0",
       "independent": "COUNTROWS ( EXCEPT ( CALENDAR ( {{from}}, {{to}} ), SELECTCOLUMNS ( FILTER ( 'Targets', 'Targets'[Date] >= {{from}} && 'Targets'[Date] <= {{to}} ), \"Date\", 'Targets'[Date] ) ) ) + 0"
     },
@@ -564,33 +616,86 @@
       "blankExpected": true
     },
     {
-      "name": "Total card, {{name}}: every weekly row of its query carries the headline, the total of the sales rows",
-      "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
-      "report": [
-        "CALCULATE (",
-        "    VAR __Rows = SUMMARIZECOLUMNS ( 'DimDate'[WeekEnding], \"@Weekly\", [Total Sales], \"@Card\", [Card Total Sales] )",
-        "    RETURN MINX ( __Rows, [@Card] ) & \" to \" & MAXX ( __Rows, [@Card] ),",
-        "    {{report}}",
-        ")"
+      "name": "Total tickets, {{name}}",
+      "ticket": "T16",
+      "each": [
+        "FY26",
+        "FY24",
+        "7 Jul to 20 Aug 2025"
       ],
-      "independent": "VAR __Total = SUMX ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Amount] ) RETURN __Total & \" to \" & __Total"
+      "report": "CALCULATE ( [Total Tickets], {{report}} )",
+      "independent": "SUMX ( FILTER ( 'Support Tickets', 'Support Tickets'[Date] >= {{from}} && 'Support Tickets'[Date] <= {{to}} ), 'Support Tickets'[Tickets] )"
     },
     {
-      "name": "Total card, {{name}}: its headline equals the Total Sales measure",
-      "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
-      "report": "CALCULATE ( MAXX ( SUMMARIZECOLUMNS ( 'DimDate'[WeekEnding], \"@Weekly\", [Total Sales], \"@Card\", [Card Total Sales] ), [@Card] ), {{report}} )",
-      "independent": "CALCULATE ( [Total Sales], {{report}} )"
+      "name": "support tickets surge mid-year: December's mean per day is over 1.5 times July's (FY26)",
+      "ticket": "T16",
+      "report": "DIVIDE ( CALCULATE ( [Total Tickets], DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 12, 1 ), DATE ( 2025, 12, 31 ) ) ), CALCULATE ( [Total Tickets], DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 1 ), DATE ( 2025, 7, 31 ) ) ) ) > 1.5",
+      "independent": "TRUE ()"
     },
     {
-      "name": "Total card, {{name}}: the sparkline's weekly totals, week by week, are the sales rows summed by their Monday to Sunday week",
+      "name": "support tickets have blank days in FY26",
+      "ticket": "T16",
+      "report": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), ISBLANK ( [Total Tickets] ) ) ) + 0, 'DimDate'[FYear] = \"FY26\" ) > 0",
+      "independent": "TRUE ()"
+    },
+    {
+      "name": "Total sessions, {{name}}",
+      "ticket": "T24",
+      "each": [
+        "FY26",
+        "FY24",
+        "7 Jul to 20 Aug 2025"
+      ],
+      "report": "CALCULATE ( [Total Sessions], {{report}} )",
+      "independent": "SUMX ( FILTER ( 'Web Sessions', 'Web Sessions'[Date] >= {{from}} && 'Web Sessions'[Date] <= {{to}} ), 'Web Sessions'[Sessions] )"
+    },
+    {
+      "name": "web sessions: weekend days outweigh weekdays (mean over days with sessions, FY26)",
+      "ticket": "T24",
+      "report": "CALCULATE ( AVERAGEX ( FILTER ( VALUES ( 'DimDate'[Date] ), WEEKDAY ( 'DimDate'[Date], 2 ) >= 6 ), [Total Sessions] ) > AVERAGEX ( FILTER ( VALUES ( 'DimDate'[Date] ), WEEKDAY ( 'DimDate'[Date], 2 ) < 6 ), [Total Sessions] ), 'DimDate'[FYear] = \"FY26\" )",
+      "independent": "TRUE ()"
+    },
+    {
+      "name": "web sessions have blank days in FY26",
+      "ticket": "T24",
+      "report": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), ISBLANK ( [Total Sessions] ) ) ) + 0, 'DimDate'[FYear] = \"FY26\" ) > 0",
+      "independent": "TRUE ()"
+    },
+    {
+      "name": "KPI strip, {{name}}: its daily query holds one row per calendar day",
       "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
+      "each": "filters",
+      "report": "CALCULATE ( COUNTROWS ( SUMMARIZECOLUMNS ( 'DimDate'[Date], \"@Sales\", [Total Sales], \"@Days\", [Days in Filter], \"@Target\", [Total Target] ) ), {{report}} )",
+      "independent": "{{days}}"
+    },
+    {
+      "name": "KPI strip, {{name}}: the sum of its daily rows is Total Sales",
+      "ticket": "T14",
+      "each": "filters",
+      "report": "CALCULATE ( SUMX ( SUMMARIZECOLUMNS ( 'DimDate'[Date], \"@Sales\", [Total Sales], \"@Days\", [Days in Filter], \"@Target\", [Total Target] ), [@Sales] ), {{report}} )",
+      "independent": "SUMX ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "KPI strip, {{name}}: its daily targets over its rows are the Mean Daily Target",
+      "ticket": "T14",
+      "each": "filters",
+      "report": "CALCULATE ( VAR __R = SUMMARIZECOLUMNS ( 'DimDate'[Date], \"@Sales\", [Total Sales], \"@Days\", [Days in Filter], \"@Target\", [Total Target] ) RETURN DIVIDE ( SUMX ( __R, [@Target] ), COUNTROWS ( __R ) ), {{report}} )",
+      "independent": "CALCULATE ( [Mean Daily Target], {{report}} )",
+      "tolerance": 1e-09
+    },
+    {
+      "name": "KPI strip, {{name}}: its weekly sparkline totals are the sales rows summed by their Monday to Sunday week",
+      "ticket": "T14",
+      "each": [
+        "FY26",
+        "7 Jul to 20 Aug 2025",
+        "FY26, region EMEA"
+      ],
       "report": [
         "CALCULATE (",
-        "    VAR __Rows = SUMMARIZECOLUMNS ( 'DimDate'[WeekEnding], \"@Weekly\", [Total Sales], \"@Card\", [Card Total Sales] )",
-        "    RETURN CONCATENATEX ( __Rows, FORMAT ( 'DimDate'[WeekEnding], \"yyyy-mm-dd\" ) & \" \" & ( [@Weekly] + 0 ), \", \", 'DimDate'[WeekEnding], ASC ),",
+        "    VAR __R = ADDCOLUMNS ( SUMMARIZECOLUMNS ( 'DimDate'[Date], \"@Sales\", [Total Sales], \"@Days\", [Days in Filter], \"@Target\", [Total Target] ), \"@Week\", 'DimDate'[Date] + 7 - WEEKDAY ( 'DimDate'[Date], 2 ) )",
+        "    VAR __W = GROUPBY ( __R, [@Week], \"@S\", SUMX ( CURRENTGROUP (), [@Sales] ) )",
+        "    RETURN CONCATENATEX ( FILTER ( __W, [@S] > 0 ), FORMAT ( [@Week], \"yyyy-mm-dd\" ) & \" \" & [@S], \", \", [@Week], ASC ),",
         "    {{report}}",
         ")"
       ],
@@ -601,81 +706,47 @@
       ]
     },
     {
-      "name": "Total card, {{name}}: one weekly row for each Monday to Sunday week the filter's days touch",
-      "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
-      "report": "CALCULATE ( COUNTROWS ( SUMMARIZECOLUMNS ( 'DimDate'[WeekEnding], \"@Weekly\", [Total Sales], \"@Card\", [Card Total Sales] ) ), {{report}} ) + 0",
-      "independent": "COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( CALENDAR ( {{from}}, {{to}} ), \"@Week\", [Date] + 7 - WEEKDAY ( [Date], 2 ) ) ) )"
+      "name": "Sales by month, FY26: fiscal period 1 is July and 12 is June",
+      "ticket": "T13",
+      "report": "CALCULATE ( MIN ( 'DimDate'[MonthOfYear] ), 'DimDate'[FYear] = \"FY26\", 'DimDate'[Period] = 1 ) * 100 + CALCULATE ( MIN ( 'DimDate'[MonthOfYear] ), 'DimDate'[FYear] = \"FY26\", 'DimDate'[Period] = 12 )",
+      "independent": "706"
     },
     {
-      "name": "Total card, {{name}}: the sparkline's weekly totals add up to the headline",
-      "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
-      "report": [
-        "CALCULATE (",
-        "    VAR __Rows = SUMMARIZECOLUMNS ( 'DimDate'[WeekEnding], \"@Weekly\", [Total Sales], \"@Card\", [Card Total Sales] )",
-        "    RETURN SUMX ( __Rows, [@Weekly] ) = MAXX ( __Rows, [@Card] ),",
-        "    {{report}}",
-        ")"
-      ],
-      "independent": "TRUE ()"
+      "name": "Sales by month, FY26: the twelve period totals, in fiscal order, are the sales rows summed by month",
+      "ticket": "T13",
+      "report": "CALCULATE ( CONCATENATEX ( SUMMARIZECOLUMNS ( 'DimDate'[Period], \"@S\", [Total Sales] ), [Period] & \" \" & [@S], \", \", [Period], ASC ), 'DimDate'[FYear] = \"FY26\" )",
+      "independent": [
+        "VAR __Rows = ADDCOLUMNS ( FILTER ( 'Sales', 'Sales'[Date] >= DATE ( 2025, 7, 1 ) && 'Sales'[Date] <= DATE ( 2026, 6, 30 ) ), \"@P\", MOD ( MONTH ( 'Sales'[Date] ) - 7 + 12, 12 ) + 1 )",
+        "VAR __By = GROUPBY ( __Rows, [@P], \"@S\", SUMX ( CURRENTGROUP (), 'Sales'[Amount] ) )",
+        "RETURN CONCATENATEX ( __By, [@P] & \" \" & [@S], \", \", [@P], ASC )"
+      ]
     },
     {
-      "name": "Total card with 7 Jul to 20 Aug 2025 inside its query, as a visual sends a Calendar Selection: 7 weekly rows, each carrying the range total",
-      "ticket": "T14",
-      "report": [
-        "VAR __Rows = SUMMARIZECOLUMNS ( 'DimDate'[WeekEnding], TREATAS ( CALENDAR ( DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ), 'DimDate'[Date] ), TREATAS ( { \"FY26\" }, 'DimDate'[FYear] ), \"@Weekly\", [Total Sales], \"@Card\", [Card Total Sales] )",
-        "RETURN COUNTROWS ( __Rows ) & \" weeks, \" & MINX ( __Rows, [@Card] ) & \" to \" & MAXX ( __Rows, [@Card] )"
-      ],
-      "independent": "VAR __Total = SUMX ( FILTER ( 'Sales', 'Sales'[Date] >= DATE ( 2025, 7, 7 ) && 'Sales'[Date] <= DATE ( 2025, 8, 20 ) ), 'Sales'[Amount] ) RETURN \"7 weeks, \" & __Total & \" to \" & __Total"
+      "name": "Region Scale Max, FY26, on an APAC-filtered visual: the best single day of any region in FY26",
+      "ticket": "T23",
+      "report": "CALCULATE ( MAXX ( SUMMARIZECOLUMNS ( 'DimDate'[Date], TREATAS ( { \"APAC\" }, 'Region'[Region] ), \"@M\", [Region Scale Max] ), [@M] ), 'DimDate'[FYear] = \"FY26\" )",
+      "independent": "MAXX ( GROUPBY ( FILTER ( 'Sales', 'Sales'[Date] >= DATE ( 2025, 7, 1 ) && 'Sales'[Date] <= DATE ( 2026, 6, 30 ) ), 'Sales'[Date], 'Sales'[Region], \"@S\", SUMX ( CURRENTGROUP (), 'Sales'[Amount] ) ), [@S] )"
     },
     {
-      "name": "Total card on a filter whose one day has no sales (17 Jul 2025): one weekly row, reading 0, so the card keeps its row",
-      "ticket": "T14",
-      "report": [
-        "CALCULATE (",
-        "    VAR __Rows = SUMMARIZECOLUMNS ( 'DimDate'[WeekEnding], \"@Weekly\", [Total Sales], \"@Card\", [Card Total Sales] )",
-        "    RETURN COUNTROWS ( __Rows ) & \" row, headline \" & MAXX ( __Rows, [@Card] ),",
-        "    'DimDate'[Date] = DATE ( 2025, 7, 17 )",
-        ")"
-      ],
-      "independent": "\"1 row, headline 0\""
-    },
-    {
-      "name": "Mean per day card, {{name}}: its query is one row",
-      "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
-      "report": "CALCULATE ( COUNTROWS ( SUMMARIZECOLUMNS ( \"@Mean\", [Mean per Day], \"@Target\", [Mean Daily Target], \"@Peak\", [Peak Day Sales] ) ), {{report}} ) + 0",
+      "name": "Region Scale Max is one value on every region's Calendar (FY26)",
+      "ticket": "T23",
+      "report": "CALCULATE ( COUNTROWS ( DISTINCT ( SELECTCOLUMNS ( SUMMARIZECOLUMNS ( 'Region'[Region], 'DimDate'[Date], \"@M\", [Region Scale Max] ), \"@M\", [@M] ) ) ), 'DimDate'[FYear] = \"FY26\" )",
       "independent": "1"
     },
     {
-      "name": "Mean per day card, {{name}}: its headline is the total of the sales rows over {{days}} calendar days",
-      "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
-      "report": "CALCULATE ( MAXX ( SUMMARIZECOLUMNS ( \"@Mean\", [Mean per Day], \"@Target\", [Mean Daily Target], \"@Peak\", [Peak Day Sales] ), [@Mean] ), {{report}} )",
-      "independent": "DIVIDE ( SUMX ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Amount] ), {{days}} )",
-      "tolerance": 1e-9
-    },
-    {
-      "name": "Mean per day card, {{name}}: its headline equals the Mean per Day measure",
-      "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
-      "report": "CALCULATE ( MAXX ( SUMMARIZECOLUMNS ( \"@Mean\", [Mean per Day], \"@Target\", [Mean Daily Target], \"@Peak\", [Peak Day Sales] ), [@Mean] ), {{report}} )",
-      "independent": "CALCULATE ( [Mean per Day], {{report}} )"
-    },
-    {
-      "name": "Mean per day card, {{name}}: the bullet's target equals the Mean Daily Target measure",
-      "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
-      "report": "CALCULATE ( MAXX ( SUMMARIZECOLUMNS ( \"@Mean\", [Mean per Day], \"@Target\", [Mean Daily Target], \"@Peak\", [Peak Day Sales] ), [@Target] ), {{report}} )",
-      "independent": "CALCULATE ( [Mean Daily Target], {{report}} )"
-    },
-    {
-      "name": "Mean per day card, {{name}}: the bullet's track ends at the Peak day value, the best day's total of the sales rows",
-      "ticket": "T14",
-      "each": ["FY26", "7 Jul to 20 Aug 2025", "FY26, region EMEA"],
-      "report": "CALCULATE ( MAXX ( SUMMARIZECOLUMNS ( \"@Mean\", [Mean per Day], \"@Target\", [Mean Daily Target], \"@Peak\", [Peak Day Sales] ), [@Peak] ), {{report}} )",
-      "independent": "MAXX ( GROUPBY ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Date], \"@Sales\", SUMX ( CURRENTGROUP (), 'Sales'[Amount] ) ), [@Sales] )"
+      "name": "Target Hit, {{name}}: the days on target are the days whose sales rows meet their target rows",
+      "ticket": "T21",
+      "each": [
+        "FY26",
+        "7 Jul to 20 Aug 2025"
+      ],
+      "report": "CALCULATE ( SUMX ( VALUES ( 'DimDate'[Date] ), [Target Hit] ) + 0, {{report}} )",
+      "independent": [
+        "VAR __S = GROUPBY ( FILTER ( 'Sales', {{salesRows}} ), 'Sales'[Date], \"@S\", SUMX ( CURRENTGROUP (), 'Sales'[Amount] ) )",
+        "VAR __T = GROUPBY ( FILTER ( 'Targets', {{targetRows}} ), 'Targets'[Date], \"@T\", SUMX ( CURRENTGROUP (), 'Targets'[Target] ) )",
+        "VAR __J = NATURALINNERJOIN ( SELECTCOLUMNS ( __S, \"Day\", 'Sales'[Date] + 0, \"@S\", [@S] ), SELECTCOLUMNS ( __T, \"Day\", 'Targets'[Date] + 0, \"@T\", [@T] ) )",
+        "RETURN COUNTROWS ( FILTER ( __J, [@S] >= [@T] ) ) + 0"
+      ]
     }
   ]
 }

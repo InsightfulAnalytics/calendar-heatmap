@@ -1,0 +1,78 @@
+/// Synthetic daily support tickets at the date grain (no channel or region), generated inside the model from the date table's dates by a fixed formula: weekday heavy, with a mid-year surge from November to January and its own blank days.
+table 'Support Tickets'
+	lineageTag: 63a1f2cd-919b-410e-9ab1-3c9c5f57cdf4
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: dd-mmm-yy
+		lineageTag: 804576e6-72ae-4cc6-a484-4a272f1cdf7f
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Tickets
+		dataType: int64
+		isHidden
+		formatString: #,##0
+		lineageTag: b1c6be42-d7ef-4ddb-b270-ec97146b49bb
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Tickets]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Support Tickets' = calculated
+		mode: import
+		source =
+				// Synthetic tickets: one row per day, from a fixed formula (never RAND, so every refresh
+				// gives the same rows). ALLNOBLANKROW reads the date table's dates without its blank row,
+				// so the relationship back to DimDate cannot turn circular.
+				VAR __Dates =
+				    ALLNOBLANKROW ( 'DimDate'[Date] )
+				// Day-level inputs: the date serial number, ISO weekday (1 Monday to 7 Sunday) and month
+				VAR __Days =
+				    ADDCOLUMNS (
+				        __Dates,
+				        "@Serial", CONVERT ( 'DimDate'[Date], INTEGER ),
+				        "@Weekday", WEEKDAY ( 'DimDate'[Date], 2 ),
+				        "@Month", MONTH ( 'DimDate'[Date] )
+				    )
+				// Blank days: a fixed quadratic residue test drops about one day in 30, whole days only
+				VAR __TicketDays =
+				    FILTER (
+				        __Days,
+				        MOD ( [@Serial] * [@Serial] + 5 * [@Serial], 89 ) >= 3
+				    )
+				// Weekends at 30% of a weekday; a surge from November to January peaking in December;
+				// a fixed wobble of plus or minus 20%
+				VAR __Rows =
+				    ADDCOLUMNS (
+				        __TicketDays,
+				        "@Tickets",
+				            VAR __WeekdayFactor =
+				                IF ( [@Weekday] >= 6, 0.3, 1 )
+				            VAR __SurgeFactor =
+				                SWITCH ( [@Month], 11, 1.5, 12, 2.1, 1, 1.6, 1 )
+				            VAR __Wobble =
+				                MOD ( [@Serial] * 6007, 1000 ) / 1000
+				            RETURN
+				                ROUND ( 60 * __WeekdayFactor * __SurgeFactor * ( 0.8 + 0.4 * __Wobble ), 0 )
+				    )
+				VAR __Result =
+				    SELECTCOLUMNS (
+				        __Rows,
+				        "Date", 'DimDate'[Date],
+				        "Tickets", CONVERT ( [@Tickets], INTEGER )
+				    )
+				RETURN
+				    __Result
+
+	annotation PBI_ResultType = Table
+

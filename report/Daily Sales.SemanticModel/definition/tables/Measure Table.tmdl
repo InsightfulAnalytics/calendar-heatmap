@@ -424,31 +424,72 @@ table 'Measure Table'
 		displayFolder: Sales
 		lineageTag: 532f384e-719e-49f7-a3a5-fbe2a0bddbc3
 
-	/// Total Sales for a KPI card that draws one row per week (grouped by DimDate WeekEnding): the week on the row is lifted and every other filter kept (the date filter, a Calendar Selection, channel and region), so each weekly row carries the card's headline. Reads 0 when the filter holds days but none has sales, so the card keeps its rows; blank only when the filter holds no days.
-	measure 'Card Total Sales' =
-			
-			// The card's whole filter: lift the week the row is grouped by, keep every other filter
-			VAR __Total =
-			    CALCULATE (
-			        [Total Sales],
-			        REMOVEFILTERS ( 'DimDate'[WeekEnding] )
-			    )
-			// The calendar days in that filter, to tell no sales (0) from no days (blank)
+	/// Sum of the daily support tickets in the current filter context. Support tickets carry no channel or region, so only date filters narrow them. Blank when no ticket row survives the filter.
+	measure 'Total Tickets' =
+
+			// Add up the tickets over the ticket rows the filter context leaves
+			SUM ( 'Support Tickets'[Tickets] )
+		formatString: #,##0
+		displayFolder: Support
+		lineageTag: 870b86b0-301c-4e40-b1ce-92772528a4a8
+
+	/// Sum of the daily web sessions in the current filter context. Web sessions carry no channel or region, so only date filters narrow them. Blank when no session row survives the filter.
+	measure 'Total Sessions' =
+
+			// Add up the sessions over the session rows the filter context leaves
+			SUM ( 'Web Sessions'[Sessions] )
+		formatString: #,##0
+		displayFolder: Web
+		lineageTag: a13e671f-728f-47b7-bf04-bda089d391e5
+
+	/// The shared colour scale top for the By region Calendars: the best single day of any one region across every date the visual shows, whatever region the visual itself is filtered to. Each region's Calendar binds it as its scale field, so the four Calendars colour a value the same way.
+	measure 'Region Scale Max' =
+
+			// Every date the visual shows: ALLSELECTED on the date table, as a filter, drops the
+			// row's own date and keeps the slicers and page filters
 			VAR __Days =
-			    CALCULATE (
-			        COUNTROWS ( 'DimDate' ),
-			        REMOVEFILTERS ( 'DimDate'[WeekEnding] )
+			    CALCULATETABLE (
+			        VALUES ( 'DimDate'[Date] ),
+			        ALLSELECTED ( 'DimDate' )
+			    )
+			// Every region, whatever the visual's own region filter says
+			VAR __Regions =
+			    CALCULATETABLE (
+			        VALUES ( 'Region'[Region] ),
+			        REMOVEFILTERS ( 'Region' )
+			    )
+			// Each date and region with its sales; context transition sets both, replacing the
+			// visual's region filter with the row's region
+			VAR __Cells =
+			    ADDCOLUMNS (
+			        CROSSJOIN ( __Days, __Regions ),
+			        "@Sales", CALCULATE ( [Total Sales] )
 			    )
 			VAR __Result =
-			    IF (
-			        __Days > 0,
-			        COALESCE ( __Total, 0 )
-			    )
+			    MAXX ( __Cells, [@Sales] )
 			RETURN
 			    __Result
 		formatString: #,##0
-		displayFolder: KPI cards
-		lineageTag: bce148e2-ab8b-4969-b00b-246796ac44d2
+		displayFolder: Sales
+		lineageTag: d2b6da2d-a03c-4e31-b2e3-07a56e016fd8
+
+	/// The day on the current row judged against its target: 1 when its sales meet or beat the target, 0 when they fall short, blank when the day has no sales or no target. Drives the Targets page's hit and miss counts.
+	measure 'Target Hit' =
+
+			VAR __Sales =
+			    [Total Sales]
+			VAR __Target =
+			    [Total Target]
+			VAR __Result =
+			    IF (
+			        NOT ISBLANK ( __Sales ) && NOT ISBLANK ( __Target ),
+			        IF ( __Sales >= __Target, 1, 0 )
+			    )
+			RETURN
+			    __Result
+		formatString: 0
+		displayFolder: Targets
+		lineageTag: d307e2fe-7c87-4c96-933f-517d4d558f30
 
 	column Column1
 		dataType: string
