@@ -25,3 +25,10 @@ export const rowsDated = (fixture: Fixture, from: string, to: string): number[] 
 
 /** Row identities in ascending order, for comparing a host call's rows with rowsDated. */
 export const sorted = (rows: number[]): number[] => [...rows].sort((a, b) => a - b);
+
+/** Every date from one day to another, both included, as 'YYYY-MM-DD', stepped by whole UTC days. */
+export function datesFromTo(from: string, to: string): string[] {
+  const out: string[] = [];
+  for (let t = Date.parse(`${from}T00:00:00Z`); t <= Date.parse(`${to}T00:00:00Z`); t += 864e5) out.push(new Date(t).toISOString().slice(0, 10));
+  return out;
+}

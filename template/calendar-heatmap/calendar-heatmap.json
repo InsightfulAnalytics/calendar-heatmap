@@ -52,6 +52,8 @@
   "signals": [
     {"name": "titleText", "value": "Sales"},
     {"name": "subtitleText", "value": "by Order Date"},
+    {"name": "windowMode", "value": "calendar"},
+    {"name": "fiscalStartMonth", "value": 7},
     {"name": "rampShades", "value": [0.8, 0.55, 0.25, -0.1, -0.45]},
     {"name": "palette", "update": "[pbiColor(0, rampShades[0]), pbiColor(0, rampShades[1]), pbiColor(0, rampShades[2]), pbiColor(0, rampShades[3]), pbiColor(0, rampShades[4])]"},
     {"name": "emptyColor", "value": "#f1f5f9"},
@@ -70,11 +72,13 @@
     {"name": "maxAspect", "value": 1.72},
     {"name": "showOutsideDays", "value": true},
 
-    {"name": "yr", "update": "length(data('yearStats')) && data('yearStats')[0].yr != null ? data('yearStats')[0].yr : year(now())"},
-    {"name": "jan1", "update": "datetime(yr, 0, 1)"},
-    {"name": "nDays", "update": "round((time(datetime(yr + 1, 0, 1)) - time(jan1)) / 864e5)"},
-    {"name": "jan1Wd", "update": "(day(jan1) + 6) % 7"},
-    {"name": "nWeeks", "update": "floor((nDays - 1 + jan1Wd) / 7) + 1"},
+    {"name": "startMonth", "update": "windowMode == 'fiscal' ? clamp(round(fiscalStartMonth), 1, 12) - 1 : 0"},
+    {"name": "winYear", "update": "length(data('windowStats')) && data('windowStats')[0].wy != null ? data('windowStats')[0].wy : (month(now()) >= startMonth ? year(now()) : year(now()) - 1)"},
+    {"name": "winStart", "update": "datetime(winYear, startMonth, 1)"},
+    {"name": "winEnd", "update": "datetime(winYear + 1, startMonth, 1)"},
+    {"name": "startWd", "update": "(day(winStart) + 6) % 7"},
+    {"name": "nDays", "update": "length(data('calendar'))"},
+    {"name": "nWeeks", "update": "floor((nDays - 1 + startWd) / 7) + 1"},
     {"name": "maxSales", "update": "length(data('stats')) && data('stats')[0].maxSales > 0 ? data('stats')[0].maxSales : 1"},
     {"name": "totalSales", "update": "length(data('stats')) ? data('stats')[0].total : 0"},
     {"name": "anySelected", "update": "length(data('selectedRows')) > 0"},
@@ -123,7 +127,7 @@
     {"name": "selHi", "update": "downIdx == null ? null : max(downIdx, headIdx)"},
     {
       "name": "rangeFilter",
-      "update": "selLo == null ? '' : 'inrange(time(toDate(datum[\"__0__\"])), [' + time(datetime(yr, 0, 1 + selLo)) + ', ' + (time(datetime(yr, 0, 2 + selHi)) - 1) + '])'"
+      "update": "selLo == null ? '' : 'inrange(time(toDate(datum[\"__0__\"])), [' + time(datetime(winYear, startMonth, 1 + selLo)) + ', ' + (time(datetime(winYear, startMonth, 2 + selHi)) - 1) + '])'"
     },
     {
       "name": "pbiCrossFilterSelection",
@@ -145,40 +149,41 @@
         {"type": "formula", "as": "_d", "expr": "toDate(datum['__0__'])"},
         {"type": "filter", "expr": "isValid(datum._d)"},
         {"type": "formula", "as": "_key", "expr": "timeFormat(datum._d, '%Y-%m-%d')"},
-        {"type": "formula", "as": "_yr", "expr": "year(datum._d)"}
+        {"type": "formula", "as": "_wy", "expr": "month(datum._d) >= startMonth ? year(datum._d) : year(datum._d) - 1"}
       ]
     },
     {
-      "name": "yearStats",
+      "name": "windowStats",
       "source": "rows",
-      "transform": [{"type": "aggregate", "ops": ["max"], "fields": ["_yr"], "as": ["yr"]}]
+      "transform": [{"type": "aggregate", "ops": ["max"], "fields": ["_wy"], "as": ["wy"]}]
     },
     {
-      "name": "yearRows",
+      "name": "windowRows",
       "source": "rows",
-      "transform": [{"type": "filter", "expr": "datum._yr == yr"}]
+      "transform": [{"type": "filter", "expr": "datum._wy == winYear"}]
     },
     {
       "name": "stats",
-      "source": "yearRows",
+      "source": "windowRows",
       "transform": [
         {"type": "aggregate", "ops": ["max", "sum", "valid"], "fields": ["__1__", "__1__", "__1__"], "as": ["maxSales", "total", "activeDays"]}
       ]
     },
     {
       "name": "selectedRows",
-      "source": "yearRows",
+      "source": "windowRows",
       "transform": [{"type": "filter", "expr": "datum.__selected__ == 'on'"}]
     },
     {
       "name": "calendar",
       "transform": [
-        {"type": "sequence", "start": 0, "stop": {"signal": "nDays"}, "as": "idx"},
-        {"type": "formula", "as": "date", "expr": "datetime(yr, 0, 1 + datum.idx)"},
+        {"type": "sequence", "start": 0, "stop": 367, "as": "idx"},
+        {"type": "formula", "as": "date", "expr": "datetime(winYear, startMonth, 1 + datum.idx)"},
+        {"type": "filter", "expr": "time(datum.date) < time(winEnd)"},
         {"type": "formula", "as": "key", "expr": "timeFormat(datum.date, '%Y-%m-%d')"},
         {"type": "formula", "as": "wd", "expr": "(day(datum.date) + 6) % 7"},
-        {"type": "formula", "as": "week", "expr": "floor((dayofyear(datum.date) - 1 + jan1Wd) / 7)"},
-        {"type": "lookup", "from": "yearRows", "key": "_key", "fields": ["key"], "as": ["row"]},
+        {"type": "formula", "as": "week", "expr": "floor((datum.idx + startWd) / 7)"},
+        {"type": "lookup", "from": "windowRows", "key": "_key", "fields": ["key"], "as": ["row"]},
         {"type": "formula", "as": "Sales", "expr": "datum.row && isValid(datum.row['__1__']) ? datum.row['__1__'] : null"},
         {"type": "formula", "as": "__row__", "expr": "datum.row ? datum.row.__row__ : null"},
         {"type": "formula", "as": "sel", "expr": "datum.row ? datum.row.__selected__ : null"}
@@ -188,7 +193,7 @@
       "name": "outsideDays",
       "transform": [
         {"type": "sequence", "start": 0, "stop": {"signal": "showOutsideDays ? nWeeks * 7 : 0"}, "as": "slot"},
-        {"type": "filter", "expr": "datum.slot < jan1Wd || datum.slot >= jan1Wd + nDays"},
+        {"type": "filter", "expr": "datum.slot < startWd || datum.slot >= startWd + nDays"},
         {"type": "formula", "as": "week", "expr": "floor(datum.slot / 7)"},
         {"type": "formula", "as": "wd", "expr": "datum.slot % 7"}
       ]
@@ -201,7 +206,7 @@
     {
       "name": "monthLabels",
       "source": "calendar",
-      "transform": [{"type": "filter", "expr": "date(datum.date) == 1 && month(datum.date) % 2 == 0"}]
+      "transform": [{"type": "filter", "expr": "date(datum.date) == 1 && (month(datum.date) - startMonth + 12) % 2 == 0"}]
     },
     {
       "name": "weekdayLabels",
