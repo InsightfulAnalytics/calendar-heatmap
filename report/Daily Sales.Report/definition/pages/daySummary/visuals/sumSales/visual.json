@@ -1,0 +1,68 @@
+{
+  "name": "sumSales",
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "queryRef": "Measure Table.Day Sales Label",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure Table"
+                    }
+                  },
+                  "Property": "Day Sales Label"
+                }
+              },
+              "nativeQueryRef": "Day Sales Label"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "categoryLabels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "position": {
+    "x": 12,
+    "y": 60,
+    "width": 296,
+    "height": 80,
+    "z": 0,
+    "tabOrder": 0
+  },
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json"
+}

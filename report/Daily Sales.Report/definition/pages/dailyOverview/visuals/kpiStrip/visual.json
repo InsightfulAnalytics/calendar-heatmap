@@ -1,0 +1,220 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "kpiStrip",
+  "position": {
+    "x": 216,
+    "y": 80,
+    "z": 1000,
+    "height": 128,
+    "width": 1048,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDate"
+                    }
+                  },
+                  "Property": "Date"
+                }
+              },
+              "queryRef": "DimDate.Date",
+              "nativeQueryRef": "Date",
+              "displayName": "Date"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure Table"
+                    }
+                  },
+                  "Property": "Days in Filter"
+                }
+              },
+              "queryRef": "Measure Table.Days in Filter",
+              "nativeQueryRef": "Days in Filter",
+              "displayName": "Days in Filter"
+            },
+            {
+              "queryRef": "Measure Table.Total Sales",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure Table"
+                    }
+                  },
+                  "Property": "Total Sales"
+                }
+              },
+              "nativeQueryRef": "Total Sales"
+            },
+            {
+              "queryRef": "Measure Table.Total Target",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure Table"
+                    }
+                  },
+                  "Property": "Total Target"
+                }
+              },
+              "nativeQueryRef": "Total Target"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vega'"
+                }
+              }
+            },
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\n  \"description\": \"KPI strip for Daily overview: Total, Mean per day, Peak day and Active days as four cards with mini charts, drawn from one daily query (Date, Total Sales, Days in Filter, Total Target). Every headline is worked out from the rows the visual receives, so it follows the date filter, the rail slicers and any Calendar Selection.\",\n  \"width\": {\n    \"signal\": \"pbiContainerWidth\"\n  },\n  \"height\": {\n    \"signal\": \"pbiContainerHeight\"\n  },\n  \"padding\": 0,\n  \"autosize\": {\n    \"type\": \"none\"\n  },\n  \"signals\": [\n    {\n      \"name\": \"inkColor\",\n      \"value\": \"#0b1e3f\"\n    },\n    {\n      \"name\": \"mutedColor\",\n      \"value\": \"#64748b\"\n    },\n    {\n      \"name\": \"trackColor\",\n      \"value\": \"#e2e8f0\"\n    },\n    {\n      \"name\": \"cardStroke\",\n      \"value\": \"#e2e8f0\"\n    },\n    {\n      \"name\": \"cardGap\",\n      \"value\": 16\n    },\n    {\n      \"name\": \"rampShades\",\n      \"value\": [\n        0.8,\n        0.55,\n        0.25,\n        -0.1,\n        -0.45\n      ]\n    },\n    {\n      \"name\": \"palette\",\n      \"update\": \"[pbiColor(0, rampShades[0]), pbiColor(0, rampShades[1]), pbiColor(0, rampShades[2]), pbiColor(0, rampShades[3]), pbiColor(0, rampShades[4])]\"\n    },\n    {\n      \"name\": \"cardW\",\n      \"update\": \"(width - 3 * cardGap) / 4\"\n    },\n    {\n      \"name\": \"cardH\",\n      \"update\": \"height - 1\"\n    },\n    {\n      \"name\": \"chartX\",\n      \"value\": 20\n    },\n    {\n      \"name\": \"chartW\",\n      \"update\": \"cardW - 40\"\n    },\n    {\n      \"name\": \"chartY\",\n      \"update\": \"min(80, cardH - 34)\"\n    },\n    {\n      \"name\": \"chartH\",\n      \"update\": \"max(12, cardH - chartY - 14)\"\n    },\n    {\n      \"name\": \"k\",\n      \"update\": \"data(''kpi'')[0] || {}\"\n    }\n  ],\n  \"data\": [\n    {\n      \"name\": \"dataset\"\n    },\n    {\n      \"name\": \"days\",\n      \"source\": \"dataset\",\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"_t\",\n          \"expr\": \"time(toDate(datum[''Date'']))\"\n        },\n        {\n          \"type\": \"filter\",\n          \"expr\": \"isValid(datum._t)\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"_d\",\n          \"expr\": \"datum._t % 864e5 == 0 ? datetime(utcyear(datum._t), utcmonth(datum._t), utcdate(datum._t)) : datetime(year(datum._t), month(datum._t), date(datum._t))\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"sales\",\n          \"expr\": \"isValid(datum[''Total Sales'']) ? datum[''Total Sales''] : null\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"target\",\n          \"expr\": \"isValid(datum[''Total Target'']) ? datum[''Total Target''] : 0\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"week\",\n          \"expr\": \"time(datetime(year(datum._d), month(datum._d), date(datum._d) + 7 - ((day(datum._d) + 6) % 7 + 1)))\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"month\",\n          \"expr\": \"time(datetime(year(datum._d), month(datum._d), 1))\"\n        }\n      ]\n    },\n    {\n      \"name\": \"kpi\",\n      \"source\": \"days\",\n      \"transform\": [\n        {\n          \"type\": \"aggregate\",\n          \"ops\": [\n            \"sum\",\n            \"count\",\n            \"valid\",\n            \"max\",\n            \"sum\"\n          ],\n          \"fields\": [\n            \"sales\",\n            \"_d\",\n            \"sales\",\n            \"sales\",\n            \"target\"\n          ],\n          \"as\": [\n            \"total\",\n            \"days\",\n            \"active\",\n            \"peak\",\n            \"targetTotal\"\n          ]\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"total\",\n          \"expr\": \"datum.total || 0\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"mean\",\n          \"expr\": \"datum.days ? datum.total / datum.days : null\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"meanTarget\",\n          \"expr\": \"datum.days ? datum.targetTotal / datum.days : null\"\n        }\n      ]\n    },\n    {\n      \"name\": \"peakDay\",\n      \"source\": \"days\",\n      \"transform\": [\n        {\n          \"type\": \"filter\",\n          \"expr\": \"datum.sales != null && datum.sales >= k.peak\"\n        },\n        {\n          \"type\": \"aggregate\",\n          \"ops\": [\n            \"min\"\n          ],\n          \"fields\": [\n            \"_t\"\n          ],\n          \"as\": [\n            \"t\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"weeks\",\n      \"source\": \"days\",\n      \"transform\": [\n        {\n          \"type\": \"aggregate\",\n          \"groupby\": [\n            \"week\"\n          ],\n          \"ops\": [\n            \"sum\"\n          ],\n          \"fields\": [\n            \"sales\"\n          ],\n          \"as\": [\n            \"sales\"\n          ]\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"sales\",\n          \"expr\": \"datum.sales || 0\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": \"week\"\n          }\n        }\n      ]\n    },\n    {\n      \"name\": \"months\",\n      \"source\": \"days\",\n      \"transform\": [\n        {\n          \"type\": \"aggregate\",\n          \"groupby\": [\n            \"month\"\n          ],\n          \"ops\": [\n            \"valid\",\n            \"count\"\n          ],\n          \"fields\": [\n            \"sales\",\n            \"_d\"\n          ],\n          \"as\": [\n            \"active\",\n            \"days\"\n          ]\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": \"month\"\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"i\"\n          ]\n        }\n      ]\n    },\n    {\n      \"name\": \"steps\",\n      \"source\": \"days\",\n      \"transform\": [\n        {\n          \"type\": \"filter\",\n          \"expr\": \"datum.sales != null\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"step\",\n          \"expr\": \"k.peak > 0 ? clamp(floor(max(datum.sales, 0) / k.peak * 5), 0, 4) : 0\"\n        },\n        {\n          \"type\": \"aggregate\",\n          \"groupby\": [\n            \"step\"\n          ],\n          \"ops\": [\n            \"count\"\n          ],\n          \"as\": [\n            \"n\"\n          ]\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": \"step\",\n            \"order\": \"descending\"\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"sum\"\n          ],\n          \"fields\": [\n            \"n\"\n          ],\n          \"as\": [\n            \"cum\"\n          ],\n          \"frame\": [\n            null,\n            0\n          ]\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"x0\",\n          \"expr\": \"(datum.cum - datum.n) / max(1, k.active)\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"x1\",\n          \"expr\": \"datum.cum / max(1, k.active)\"\n        }\n      ]\n    },\n    {\n      \"name\": \"cards\",\n      \"values\": [\n        {\n          \"i\": 0,\n          \"label\": \"TOTAL\"\n        },\n        {\n          \"i\": 1,\n          \"label\": \"MEAN / DAY\"\n        },\n        {\n          \"i\": 2,\n          \"label\": \"PEAK DAY\"\n        },\n        {\n          \"i\": 3,\n          \"label\": \"ACTIVE DAYS\"\n        }\n      ],\n      \"transform\": [\n        {\n          \"type\": \"formula\",\n          \"as\": \"headline\",\n          \"expr\": \"datum.i == 0 ? pbiFormatAutoUnit(k.total || 0, ''#,0.00'') : datum.i == 1 ? (k.mean == null ? '''' : pbiFormatAutoUnit(k.mean, ''#,0.0'')) : datum.i == 2 ? (length(data(''peakDay'')) && data(''peakDay'')[0].t != null ? timeFormat(data(''peakDay'')[0].t, ''%-d %b'') : ''None'') : (k.days ? format(k.active, '','') + '' / '' + format(k.days, '','') : '''')\"\n        }\n      ]\n    }\n  ],\n  \"scales\": [\n    {\n      \"name\": \"weekX\",\n      \"type\": \"point\",\n      \"domain\": {\n        \"data\": \"weeks\",\n        \"field\": \"week\",\n        \"sort\": true\n      },\n      \"range\": [\n        0,\n        {\n          \"signal\": \"chartW\"\n        }\n      ]\n    },\n    {\n      \"name\": \"weekY\",\n      \"type\": \"linear\",\n      \"domain\": {\n        \"data\": \"weeks\",\n        \"field\": \"sales\"\n      },\n      \"zero\": true,\n      \"nice\": false,\n      \"range\": [\n        {\n          \"signal\": \"chartH\"\n        },\n        0\n      ]\n    },\n    {\n      \"name\": \"bullet\",\n      \"type\": \"linear\",\n      \"domain\": {\n        \"signal\": \"[0, max(k.peak || 1, k.meanTarget || 0, k.mean || 0)]\"\n      },\n      \"range\": [\n        0,\n        {\n          \"signal\": \"chartW\"\n        }\n      ],\n      \"zero\": true\n    },\n    {\n      \"name\": \"monthX\",\n      \"type\": \"band\",\n      \"domain\": {\n        \"data\": \"months\",\n        \"field\": \"month\",\n        \"sort\": true\n      },\n      \"range\": [\n        0,\n        {\n          \"signal\": \"chartW\"\n        }\n      ],\n      \"paddingInner\": 0.3\n    },\n    {\n      \"name\": \"monthY\",\n      \"type\": \"linear\",\n      \"domain\": {\n        \"data\": \"months\",\n        \"field\": \"days\"\n      },\n      \"zero\": true,\n      \"range\": [\n        {\n          \"signal\": \"chartH\"\n        },\n        0\n      ]\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"group\",\n      \"name\": \"card\",\n      \"from\": {\n        \"data\": \"cards\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"round(datum.i * (cardW + cardGap)) + 0.5\"\n          },\n          \"y\": {\n            \"value\": 0.5\n          },\n          \"width\": {\n            \"signal\": \"round(cardW)\"\n          },\n          \"height\": {\n            \"signal\": \"cardH\"\n          },\n          \"cornerRadius\": {\n            \"value\": 12\n          },\n          \"fill\": {\n            \"value\": \"#ffffff\"\n          },\n          \"stroke\": {\n            \"signal\": \"cardStroke\"\n          },\n          \"strokeWidth\": {\n            \"value\": 1\n          }\n        }\n      },\n      \"marks\": [\n        {\n          \"type\": \"text\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"value\": 20\n              },\n              \"y\": {\n                \"value\": 26\n              },\n              \"text\": {\n                \"signal\": \"parent.label\"\n              },\n              \"fontSize\": {\n                \"value\": 11\n              },\n              \"fontWeight\": {\n                \"value\": 600\n              },\n              \"fill\": {\n                \"signal\": \"mutedColor\"\n              },\n              \"limit\": {\n                \"signal\": \"cardW - 40\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"value\": 20\n              },\n              \"y\": {\n                \"value\": 60\n              },\n              \"text\": {\n                \"signal\": \"parent.headline\"\n              },\n              \"fontSize\": {\n                \"value\": 24\n              },\n              \"fontWeight\": {\n                \"value\": 600\n              },\n              \"fill\": {\n                \"signal\": \"inkColor\"\n              },\n              \"limit\": {\n                \"signal\": \"cardW - 40\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"area\",\n          \"from\": {\n            \"data\": \"weeks\"\n          },\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"signal\": \"chartX + scale(''weekX'', datum.week)\"\n              },\n              \"y\": {\n                \"signal\": \"chartY + scale(''weekY'', datum.sales)\"\n              },\n              \"y2\": {\n                \"signal\": \"chartY + chartH\"\n              },\n              \"fill\": {\n                \"signal\": \"pbiColor(0, 0.8)\"\n              },\n              \"interpolate\": {\n                \"value\": \"monotone\"\n              },\n              \"opacity\": {\n                \"signal\": \"parent.i == 0 ? 1 : 0\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"line\",\n          \"from\": {\n            \"data\": \"weeks\"\n          },\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"signal\": \"chartX + scale(''weekX'', datum.week)\"\n              },\n              \"y\": {\n                \"signal\": \"chartY + scale(''weekY'', datum.sales)\"\n              },\n              \"stroke\": {\n                \"signal\": \"pbiColor(0)\"\n              },\n              \"strokeWidth\": {\n                \"value\": 1.5\n              },\n              \"interpolate\": {\n                \"value\": \"monotone\"\n              },\n              \"opacity\": {\n                \"signal\": \"parent.i == 0 ? 1 : 0\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"rect\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"signal\": \"chartX\"\n              },\n              \"yc\": {\n                \"signal\": \"chartY + chartH / 2\"\n              },\n              \"width\": {\n                \"signal\": \"chartW\"\n              },\n              \"height\": {\n                \"value\": 8\n              },\n              \"cornerRadius\": {\n                \"value\": 4\n              },\n              \"fill\": {\n                \"signal\": \"trackColor\"\n              },\n              \"opacity\": {\n                \"signal\": \"parent.i == 1 && k.days ? 1 : 0\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"rect\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"signal\": \"chartX\"\n              },\n              \"yc\": {\n                \"signal\": \"chartY + chartH / 2\"\n              },\n              \"width\": {\n                \"signal\": \"scale(''bullet'', k.mean || 0)\"\n              },\n              \"height\": {\n                \"value\": 8\n              },\n              \"cornerRadius\": {\n                \"value\": 4\n              },\n              \"fill\": {\n                \"signal\": \"pbiColor(0)\"\n              },\n              \"opacity\": {\n                \"signal\": \"parent.i == 1 && k.days ? 1 : 0\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"rect\",\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"xc\": {\n                \"signal\": \"chartX + scale(''bullet'', k.meanTarget || 0)\"\n              },\n              \"yc\": {\n                \"signal\": \"chartY + chartH / 2\"\n              },\n              \"width\": {\n                \"value\": 3\n              },\n              \"height\": {\n                \"value\": 20\n              },\n              \"cornerRadius\": {\n                \"value\": 1.5\n              },\n              \"fill\": {\n                \"signal\": \"inkColor\"\n              },\n              \"opacity\": {\n                \"signal\": \"parent.i == 1 && k.days ? 1 : 0\"\n              },\n              \"tooltip\": {\n                \"signal\": \"{''Mean daily target'': pbiFormat(k.meanTarget, ''#,0'')}\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"rect\",\n          \"from\": {\n            \"data\": \"steps\"\n          },\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"signal\": \"chartX + datum.x0 * chartW + (datum.x0 > 0 ? 2 : 0)\"\n              },\n              \"x2\": {\n                \"signal\": \"chartX + datum.x1 * chartW\"\n              },\n              \"yc\": {\n                \"signal\": \"chartY + chartH / 2\"\n              },\n              \"height\": {\n                \"value\": 14\n              },\n              \"cornerRadius\": {\n                \"value\": 2\n              },\n              \"fill\": {\n                \"signal\": \"palette[datum.step]\"\n              },\n              \"opacity\": {\n                \"signal\": \"parent.i == 2 ? 1 : 0\"\n              }\n            }\n          }\n        },\n        {\n          \"type\": \"rect\",\n          \"from\": {\n            \"data\": \"months\"\n          },\n          \"interactive\": false,\n          \"encode\": {\n            \"update\": {\n              \"x\": {\n                \"signal\": \"chartX + scale(''monthX'', datum.month)\"\n              },\n              \"width\": {\n                \"signal\": \"bandwidth(''monthX'')\"\n              },\n              \"y\": {\n                \"signal\": \"chartY + scale(''monthY'', datum.active)\"\n              },\n              \"y2\": {\n                \"signal\": \"chartY + chartH\"\n              },\n              \"cornerRadius\": {\n                \"value\": 1.5\n              },\n              \"fill\": {\n                \"signal\": \"pbiColor(0, datum.active == datum.days ? -0.1 : 0.25)\"\n              },\n              \"opacity\": {\n                \"signal\": \"parent.i == 3 ? 1 : 0\"\n              }\n            }\n          }\n        }\n      ]\n    }\n  ]\n}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"background\":\"transparent\",\"view\":{\"stroke\":\"transparent\"},\"font\":\"Segoe UI\",\"text\":{\"font\":\"Segoe UI\"}}'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableContextMenu": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableHighlight": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "selectionMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'advanced'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'KPI cards: total, mean per day, peak day and active days'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

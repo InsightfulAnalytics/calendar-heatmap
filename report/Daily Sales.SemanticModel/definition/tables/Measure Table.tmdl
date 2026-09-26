@@ -473,6 +473,97 @@ table 'Measure Table'
 		displayFolder: Sales
 		lineageTag: d2b6da2d-a03c-4e31-b2e3-07a56e016fd8
 
+	/// The report title: the report's name, the fiscal year in force and the date range the filters leave, such as Daily Sales · FY26 · Jul 2025 - Jun 2026. The range is Dates Selected without its prefix, so a Calendar Selection shows in the title too.
+	measure 'Report Title' =
+
+			// The fiscal year in force, or a count of years when the filter spans several
+			VAR __Years =
+			    COUNTROWS ( VALUES ( 'DimDate'[FYear] ) )
+			VAR __Year =
+			    IF ( __Years = 1, SELECTEDVALUE ( 'DimDate'[FYear] ), __Years & " fiscal years" )
+			// The date range, as Dates Selected words it
+			VAR __Range =
+			    SUBSTITUTE ( [Dates Selected], "Selected Period: ", "" )
+			VAR __Result =
+			    "Daily Sales · " & __Year & " · " & __Range
+			RETURN
+			    __Result
+		displayFolder: Dates
+		lineageTag: 4f1c6a57-3b0e-4b8e-9d57-8f2f6c1e0a31
+
+	/// The day Day summary and Day detail describe, as words such as Mon 7 Jul 2025, or the first and last date when the filter holds more than one day.
+	measure 'Day Label' =
+
+			VAR __First =
+			    MIN ( 'DimDate'[Date] )
+			VAR __Last =
+			    MAX ( 'DimDate'[Date] )
+			VAR __Result =
+			    IF (
+			        __First = __Last,
+			        FORMAT ( __First, "ddd d mmm yyyy" ),
+			        FORMAT ( __First, "d mmm yyyy" ) & " to " & FORMAT ( __Last, "d mmm yyyy" )
+			    )
+			RETURN
+			    __Result
+		displayFolder: Day summary
+		lineageTag: 5a9c2e7f-8d1b-4f6a-93e0-b4c7d2a1f865
+
+	/// Day summary's headline:the day's sales, or words saying the day had none, so the tooltip never shows a blank card or a 0 for a day without sales.
+	measure 'Day Sales Label' =
+
+			VAR __Sales =
+			    [Total Sales]
+			VAR __Result =
+			    IF ( ISBLANK ( __Sales ), "No sales on this day", FORMAT ( __Sales, "#,##0" ) )
+			RETURN
+			    __Result
+		displayFolder: Day summary
+		lineageTag: 9e2d4b7a-1c3f-4e8a-b6d5-7a0f2c9e4b13
+
+	/// Day summary's target line: the day's sales against its target in words, or that the day has no target.
+	measure 'Day Target Label' =
+
+			VAR __Sales =
+			    COALESCE ( [Total Sales], 0 )
+			VAR __Target =
+			    [Total Target]
+			VAR __Result =
+			    IF (
+			        ISBLANK ( __Target ),
+			        "No target on this day",
+			        IF ( __Sales >= __Target, "On target: ", "Short of target: " )
+			            & FORMAT ( __Target, "#,##0" )
+			    )
+			RETURN
+			    __Result
+		displayFolder: Day summary
+		lineageTag: 3c8f1e6d-7b2a-4d9e-a5c4-0e6b8d2f1a97
+
+	/// Days in the current filter whose sales meet or beat their target. Days with no sales or no target are not counted.
+	measure 'Days on Target' =
+
+			VAR __Result =
+			    SUMX ( VALUES ( 'DimDate'[Date] ), [Target Hit] ) + 0
+			RETURN
+			    __Result
+		formatString: #,##0
+		displayFolder: Targets
+		lineageTag: 0d7a1c8e-6c55-4c4c-a5d8-1f0c7b2e9a64
+
+	/// Days in the current filter whose sales fall short of their target. Days with no sales or no target are not counted.
+	measure 'Days Short of Target' =
+
+			VAR __Judged =
+			    FILTER ( VALUES ( 'DimDate'[Date] ), NOT ISBLANK ( [Target Hit] ) )
+			VAR __Result =
+			    COUNTROWS ( __Judged ) + 0 - [Days on Target]
+			RETURN
+			    __Result
+		formatString: #,##0
+		displayFolder: Targets
+		lineageTag: 6b3e9f21-4a7d-4f0e-8c1b-2d5e7a9c3f18
+
 	/// The day on the current row judged against its target: 1 when its sales meet or beat the target, 0 when they fall short, blank when the day has no sales or no target. Drives the Targets page's hit and miss counts.
 	measure 'Target Hit' =
 

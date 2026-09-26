@@ -1,0 +1,104 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Top days: the five best days the model's Top Day Sales measure returns under the page's filters and any Calendar Selection, best first, each with its date, a pill track, a bar scaled to the best day and a compact value.",
+  "width": {"signal": "pbiContainerWidth"},
+  "height": {"signal": "pbiContainerHeight"},
+  "padding": 0,
+  "autosize": {"type": "none"},
+  "signals": [
+    {"name": "titleText", "value": "Top days"},
+    {"name": "inkColor", "value": "#0b1e3f"},
+    {"name": "mutedColor", "value": "#64748b"},
+    {"name": "trackColor", "value": "#e2e8f0"},
+    {"name": "padX", "value": 20},
+    {"name": "top", "value": 48},
+    {"name": "labelW", "value": 64},
+    {"name": "valueW", "value": 52},
+    {"name": "rowH", "update": "max(16, (height - top - 10) / 5)"},
+    {"name": "barX", "update": "padX + labelW"},
+    {"name": "barW", "update": "max(20, width - padX - valueW - barX)"},
+    {"name": "best", "update": "length(data('top')) ? data('top')[0].value : 1"}
+  ],
+  "data": [
+    {"name": "dataset"},
+    {
+      "name": "top",
+      "source": "dataset",
+      "transform": [
+        {"type": "filter", "expr": "isValid(datum['Top Day Sales'])"},
+        {"type": "formula", "as": "value", "expr": "datum['Top Day Sales']"},
+        {"type": "formula", "as": "_t", "expr": "time(toDate(datum['Date']))"},
+        {"type": "formula", "as": "_d", "expr": "datum._t % 864e5 == 0 ? datetime(utcyear(datum._t), utcmonth(datum._t), utcdate(datum._t)) : datetime(year(datum._t), month(datum._t), date(datum._t))"},
+        {"type": "collect", "sort": {"field": ["value", "_t"], "order": ["descending", "ascending"]}},
+        {"type": "window", "ops": ["row_number"], "as": ["rank"]},
+        {"type": "filter", "expr": "datum.rank <= 5"}
+      ]
+    }
+  ],
+  "marks": [
+    {
+      "type": "text",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padX"}, "y": {"value": 30},
+          "text": {"signal": "titleText"},
+          "fontSize": {"value": 15}, "fontWeight": {"value": 600}, "fill": {"signal": "inkColor"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "top"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padX"},
+          "y": {"signal": "top + (datum.rank - 0.5) * rowH"},
+          "baseline": {"value": "middle"},
+          "text": {"signal": "timeFormat(datum._d, '%-d %b')"},
+          "fontSize": {"value": 13}, "fill": {"signal": "inkColor"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "from": {"data": "top"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "barX"}, "width": {"signal": "barW"},
+          "yc": {"signal": "top + (datum.rank - 0.5) * rowH"}, "height": {"value": 8},
+          "cornerRadius": {"value": 4}, "fill": {"signal": "trackColor"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "name": "bar",
+      "from": {"data": "top"},
+      "encode": {
+        "update": {
+          "x": {"signal": "barX"}, "width": {"signal": "max(4, barW * datum.value / best)"},
+          "yc": {"signal": "top + (datum.rank - 0.5) * rowH"}, "height": {"value": 8},
+          "cornerRadius": {"value": 4}, "fill": {"signal": "pbiColor(0, -0.1)"},
+          "tooltip": {"signal": "{'Date': timeFormat(datum._d, '%a %d %b %Y'), 'Sales': pbiFormat(datum.value, '#,0'), '__row__': datum.__row__}"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "top"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "width - padX"},
+          "y": {"signal": "top + (datum.rank - 0.5) * rowH"},
+          "align": {"value": "right"}, "baseline": {"value": "middle"},
+          "text": {"signal": "upper(pbiFormatAutoUnit(datum.value, '#,0.0'))"},
+          "fontSize": {"value": 12}, "fontWeight": {"value": 600}, "fill": {"signal": "mutedColor"}
+        }
+      }
+    }
+  ]
+}

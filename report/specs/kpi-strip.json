@@ -1,0 +1,254 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "KPI strip for Daily overview: Total, Mean per day, Peak day and Active days as four cards with mini charts, drawn from one daily query (Date, Total Sales, Days in Filter, Total Target). Every headline is worked out from the rows the visual receives, so it follows the date filter, the rail slicers and any Calendar Selection.",
+  "width": {"signal": "pbiContainerWidth"},
+  "height": {"signal": "pbiContainerHeight"},
+  "padding": 0,
+  "autosize": {"type": "none"},
+  "signals": [
+    {"name": "inkColor", "value": "#0b1e3f"},
+    {"name": "mutedColor", "value": "#64748b"},
+    {"name": "trackColor", "value": "#e2e8f0"},
+    {"name": "cardStroke", "value": "#e2e8f0"},
+    {"name": "cardGap", "value": 16},
+    {"name": "rampShades", "value": [0.8, 0.55, 0.25, -0.1, -0.45]},
+    {"name": "palette", "update": "[pbiColor(0, rampShades[0]), pbiColor(0, rampShades[1]), pbiColor(0, rampShades[2]), pbiColor(0, rampShades[3]), pbiColor(0, rampShades[4])]"},
+    {"name": "cardW", "update": "(width - 3 * cardGap) / 4"},
+    {"name": "cardH", "update": "height - 1"},
+    {"name": "chartX", "value": 20},
+    {"name": "chartW", "update": "cardW - 40"},
+    {"name": "chartY", "update": "min(80, cardH - 34)"},
+    {"name": "chartH", "update": "max(12, cardH - chartY - 14)"},
+    {"name": "k", "update": "data('kpi')[0] || {}"}
+  ],
+  "data": [
+    {"name": "dataset"},
+    {
+      "name": "days",
+      "source": "dataset",
+      "transform": [
+        {"type": "formula", "as": "_t", "expr": "time(toDate(datum['Date']))"},
+        {"type": "filter", "expr": "isValid(datum._t)"},
+        {"type": "formula", "as": "_d", "expr": "datum._t % 864e5 == 0 ? datetime(utcyear(datum._t), utcmonth(datum._t), utcdate(datum._t)) : datetime(year(datum._t), month(datum._t), date(datum._t))"},
+        {"type": "formula", "as": "sales", "expr": "isValid(datum['Total Sales']) ? datum['Total Sales'] : null"},
+        {"type": "formula", "as": "target", "expr": "isValid(datum['Total Target']) ? datum['Total Target'] : 0"},
+        {"type": "formula", "as": "week", "expr": "time(datetime(year(datum._d), month(datum._d), date(datum._d) + 7 - ((day(datum._d) + 6) % 7 + 1)))"},
+        {"type": "formula", "as": "month", "expr": "time(datetime(year(datum._d), month(datum._d), 1))"}
+      ]
+    },
+    {
+      "name": "kpi",
+      "source": "days",
+      "transform": [
+        {"type": "aggregate", "ops": ["sum", "count", "valid", "max", "sum"], "fields": ["sales", "_d", "sales", "sales", "target"], "as": ["total", "days", "active", "peak", "targetTotal"]},
+        {"type": "formula", "as": "total", "expr": "datum.total || 0"},
+        {"type": "formula", "as": "mean", "expr": "datum.days ? datum.total / datum.days : null"},
+        {"type": "formula", "as": "meanTarget", "expr": "datum.days ? datum.targetTotal / datum.days : null"}
+      ]
+    },
+    {
+      "name": "peakDay",
+      "source": "days",
+      "transform": [
+        {"type": "filter", "expr": "datum.sales != null && datum.sales >= k.peak"},
+        {"type": "aggregate", "ops": ["min"], "fields": ["_t"], "as": ["t"]}
+      ]
+    },
+    {
+      "name": "weeks",
+      "source": "days",
+      "transform": [
+        {"type": "aggregate", "groupby": ["week"], "ops": ["sum"], "fields": ["sales"], "as": ["sales"]},
+        {"type": "formula", "as": "sales", "expr": "datum.sales || 0"},
+        {"type": "collect", "sort": {"field": "week"}}
+      ]
+    },
+    {
+      "name": "months",
+      "source": "days",
+      "transform": [
+        {"type": "aggregate", "groupby": ["month"], "ops": ["valid", "count"], "fields": ["sales", "_d"], "as": ["active", "days"]},
+        {"type": "collect", "sort": {"field": "month"}},
+        {"type": "window", "ops": ["row_number"], "as": ["i"]}
+      ]
+    },
+    {
+      "name": "steps",
+      "source": "days",
+      "transform": [
+        {"type": "filter", "expr": "datum.sales != null"},
+        {"type": "formula", "as": "step", "expr": "k.peak > 0 ? clamp(floor(max(datum.sales, 0) / k.peak * 5), 0, 4) : 0"},
+        {"type": "aggregate", "groupby": ["step"], "ops": ["count"], "as": ["n"]},
+        {"type": "collect", "sort": {"field": "step", "order": "descending"}},
+        {"type": "window", "ops": ["sum"], "fields": ["n"], "as": ["cum"], "frame": [null, 0]},
+        {"type": "formula", "as": "x0", "expr": "(datum.cum - datum.n) / max(1, k.active)"},
+        {"type": "formula", "as": "x1", "expr": "datum.cum / max(1, k.active)"}
+      ]
+    },
+    {
+      "name": "cards",
+      "values": [
+        {"i": 0, "label": "TOTAL"},
+        {"i": 1, "label": "MEAN / DAY"},
+        {"i": 2, "label": "PEAK DAY"},
+        {"i": 3, "label": "ACTIVE DAYS"}
+      ],
+      "transform": [
+        {"type": "formula", "as": "headline", "expr": "datum.i == 0 ? pbiFormatAutoUnit(k.total || 0, '#,0.00') : datum.i == 1 ? (k.mean == null ? '' : pbiFormatAutoUnit(k.mean, '#,0.0')) : datum.i == 2 ? (length(data('peakDay')) && data('peakDay')[0].t != null ? timeFormat(data('peakDay')[0].t, '%-d %b') : 'None') : (k.days ? format(k.active, ',') + ' / ' + format(k.days, ',') : '')"}
+      ]
+    }
+  ],
+  "scales": [
+    {"name": "weekX", "type": "point", "domain": {"data": "weeks", "field": "week", "sort": true}, "range": [0, {"signal": "chartW"}]},
+    {"name": "weekY", "type": "linear", "domain": {"data": "weeks", "field": "sales"}, "zero": true, "nice": false, "range": [{"signal": "chartH"}, 0]},
+    {"name": "bullet", "type": "linear", "domain": {"signal": "[0, max(k.peak || 1, k.meanTarget || 0, k.mean || 0)]"}, "range": [0, {"signal": "chartW"}], "zero": true},
+    {"name": "monthX", "type": "band", "domain": {"data": "months", "field": "month", "sort": true}, "range": [0, {"signal": "chartW"}], "paddingInner": 0.3},
+    {"name": "monthY", "type": "linear", "domain": {"data": "months", "field": "days"}, "zero": true, "range": [{"signal": "chartH"}, 0]}
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "name": "card",
+      "from": {"data": "cards"},
+      "encode": {
+        "update": {
+          "x": {"signal": "round(datum.i * (cardW + cardGap)) + 0.5"},
+          "y": {"value": 0.5},
+          "width": {"signal": "round(cardW)"},
+          "height": {"signal": "cardH"},
+          "cornerRadius": {"value": 12},
+          "fill": {"value": "#ffffff"},
+          "stroke": {"signal": "cardStroke"},
+          "strokeWidth": {"value": 1}
+        }
+      },
+      "marks": [
+        {
+          "type": "text",
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {"value": 20}, "y": {"value": 26},
+              "text": {"signal": "parent.label"},
+              "fontSize": {"value": 11}, "fontWeight": {"value": 600},
+              "fill": {"signal": "mutedColor"}, "limit": {"signal": "cardW - 40"}
+            }
+          }
+        },
+        {
+          "type": "text",
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {"value": 20}, "y": {"value": 60},
+              "text": {"signal": "parent.headline"},
+              "fontSize": {"value": 24}, "fontWeight": {"value": 600},
+              "fill": {"signal": "inkColor"}, "limit": {"signal": "cardW - 40"}
+            }
+          }
+        },
+        {
+          "type": "area",
+          "from": {"data": "weeks"},
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {"signal": "chartX + scale('weekX', datum.week)"},
+              "y": {"signal": "chartY + scale('weekY', datum.sales)"},
+              "y2": {"signal": "chartY + chartH"},
+              "fill": {"signal": "pbiColor(0, 0.8)"},
+              "interpolate": {"value": "monotone"},
+              "opacity": {"signal": "parent.i == 0 ? 1 : 0"}
+            }
+          }
+        },
+        {
+          "type": "line",
+          "from": {"data": "weeks"},
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {"signal": "chartX + scale('weekX', datum.week)"},
+              "y": {"signal": "chartY + scale('weekY', datum.sales)"},
+              "stroke": {"signal": "pbiColor(0)"},
+              "strokeWidth": {"value": 1.5},
+              "interpolate": {"value": "monotone"},
+              "opacity": {"signal": "parent.i == 0 ? 1 : 0"}
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {"signal": "chartX"},
+              "yc": {"signal": "chartY + chartH / 2"},
+              "width": {"signal": "chartW"}, "height": {"value": 8}, "cornerRadius": {"value": 4},
+              "fill": {"signal": "trackColor"},
+              "opacity": {"signal": "parent.i == 1 && k.days ? 1 : 0"}
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {"signal": "chartX"},
+              "yc": {"signal": "chartY + chartH / 2"},
+              "width": {"signal": "scale('bullet', k.mean || 0)"}, "height": {"value": 8}, "cornerRadius": {"value": 4},
+              "fill": {"signal": "pbiColor(0)"},
+              "opacity": {"signal": "parent.i == 1 && k.days ? 1 : 0"}
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "interactive": false,
+          "encode": {
+            "update": {
+              "xc": {"signal": "chartX + scale('bullet', k.meanTarget || 0)"},
+              "yc": {"signal": "chartY + chartH / 2"},
+              "width": {"value": 3}, "height": {"value": 20}, "cornerRadius": {"value": 1.5},
+              "fill": {"signal": "inkColor"},
+              "opacity": {"signal": "parent.i == 1 && k.days ? 1 : 0"},
+              "tooltip": {"signal": "{'Mean daily target': pbiFormat(k.meanTarget, '#,0')}"}
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "from": {"data": "steps"},
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {"signal": "chartX + datum.x0 * chartW + (datum.x0 > 0 ? 2 : 0)"},
+              "x2": {"signal": "chartX + datum.x1 * chartW"},
+              "yc": {"signal": "chartY + chartH / 2"},
+              "height": {"value": 14}, "cornerRadius": {"value": 2},
+              "fill": {"signal": "palette[datum.step]"},
+              "opacity": {"signal": "parent.i == 2 ? 1 : 0"}
+            }
+          }
+        },
+        {
+          "type": "rect",
+          "from": {"data": "months"},
+          "interactive": false,
+          "encode": {
+            "update": {
+              "x": {"signal": "chartX + scale('monthX', datum.month)"},
+              "width": {"signal": "bandwidth('monthX')"},
+              "y": {"signal": "chartY + scale('monthY', datum.active)"},
+              "y2": {"signal": "chartY + chartH"},
+              "cornerRadius": {"value": 1.5},
+              "fill": {"signal": "pbiColor(0, datum.active == datum.days ? -0.1 : 0.25)"},
+              "opacity": {"signal": "parent.i == 3 ? 1 : 0"}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

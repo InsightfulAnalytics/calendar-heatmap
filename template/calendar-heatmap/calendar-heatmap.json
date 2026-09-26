@@ -92,6 +92,7 @@
     {"name": "maxValue", "update": "length(data('stats')) && data('stats')[0].scaleMax > 0 ? data('stats')[0].scaleMax : peakValue"},
     {"name": "totalValue", "update": "length(data('stats')) ? data('stats')[0].total : 0"},
     {"name": "anySelected", "update": "length(data('selectedRows')) > 0"},
+    {"name": "highlightOn", "update": "length(data('stats')) > 0 && data('stats')[0].unlitRows > 0"},
 
     {"name": "headerY", "update": "padT + 17"},
     {"name": "monthY", "update": "showHeader ? headerY + 30 : padT + 10"},
@@ -185,14 +186,15 @@
       "source": "rows",
       "transform": [
         {"type": "filter", "expr": "datum._wy == winYear"},
-        {"type": "formula", "as": "_scale", "expr": "scaleField != '' && isValid(datum[scaleField]) && datum[scaleField] !== '' ? toNumber(datum[scaleField]) : null"}
+        {"type": "formula", "as": "_scale", "expr": "scaleField != '' && isValid(datum[scaleField]) && datum[scaleField] !== '' ? toNumber(datum[scaleField]) : null"},
+        {"type": "formula", "as": "_unlit", "expr": "isValid(datum['__1__']) && datum['__1____highlight'] === null ? 1 : 0"}
       ]
     },
     {
       "name": "stats",
       "source": "windowRows",
       "transform": [
-        {"type": "aggregate", "ops": ["max", "sum", "valid", "max"], "fields": ["__1__", "__1__", "__1__", "_scale"], "as": ["maxValue", "total", "activeDays", "scaleMax"]}
+        {"type": "aggregate", "ops": ["max", "sum", "valid", "max", "sum"], "fields": ["__1__", "__1__", "__1__", "_scale", "_unlit"], "as": ["maxValue", "total", "activeDays", "scaleMax", "unlitRows"]}
       ]
     },
     {
@@ -212,6 +214,7 @@
         {"type": "lookup", "from": "windowRows", "key": "_key", "fields": ["key"], "as": ["row"]},
         {"type": "formula", "as": "value", "expr": "datum.row && isValid(datum.row['__1__']) ? datum.row['__1__'] : null"},
         {"type": "formula", "as": "kind", "expr": "datum.row ? (datum.value == null ? 'empty' : 'valued') : everyDateHasRow ? 'filteredOut' : 'empty'"},
+        {"type": "formula", "as": "unlit", "expr": "highlightOn && datum.value != null && datum.row['__1____highlight'] === null"},
         {"type": "formula", "as": "target", "expr": "targetMode && datum.row && isValid(datum.row[targetField]) && datum.row[targetField] !== '' ? toNumber(datum.row[targetField]) : null"}
       ]
     },
@@ -326,6 +329,7 @@
           ],
           "opacity": [
             {"test": "dragging && selLo != null", "signal": "datum.idx >= selLo && datum.idx <= selHi ? 1 : 0.28"},
+            {"test": "highlightOn && datum.value != null", "signal": "datum.unlit ? 0.28 : 1"},
             {"test": "anySelected", "signal": "datum.sel == 'on' ? 1 : 0.28"},
             {"value": 1}
           ],
@@ -341,7 +345,7 @@
             {"test": "datum.kind == 'filteredOut'", "value": 1},
             {"value": 0}
           ],
-          "tooltip": {"signal": "targetMode && datum.tip ? datum.tip : {'__0__': timeFormat(datum.date, '%a %d %b %Y'), '__1__': datum.value == null ? '(blank)' : pbiFormat(datum.value, '#,0')}"}
+          "tooltip": {"signal": "merge(targetMode && datum.tip ? datum.tip : {'__0__': timeFormat(datum.date, '%a %d %b %Y'), '__1__': datum.value == null ? '(blank)' : pbiFormat(datum.value, '#,0')}, datum.__row__ != null ? {'__row__': datum.__row__} : {})"}
         },
         "hover": {"strokeOpacity": {"value": 0.85}}
       }
@@ -363,6 +367,7 @@
           "strokeWidth": {"value": 2.5},
           "opacity": [
             {"test": "dragging && selLo != null", "signal": "datum.idx >= selLo && datum.idx <= selHi ? 1 : 0.28"},
+            {"test": "highlightOn && datum.value != null", "signal": "datum.unlit ? 0.28 : 1"},
             {"test": "anySelected", "signal": "datum.sel == 'on' ? 1 : 0.28"},
             {"value": 1}
           ]

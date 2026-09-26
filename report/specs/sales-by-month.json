@@ -1,0 +1,104 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Sales by month: twelve columns in fiscal order from the fiscal period number (1 is July), labels drawn by the spec, no axis or values. When a Calendar Selection highlights part of the year, each column draws its highlighted share over its full height and all twelve stay.",
+  "width": {"signal": "pbiContainerWidth"},
+  "height": {"signal": "pbiContainerHeight"},
+  "padding": 0,
+  "autosize": {"type": "none"},
+  "signals": [
+    {"name": "titleText", "value": "Sales by month"},
+    {"name": "fiscalStartMonth", "value": 7},
+    {"name": "inkColor", "value": "#0b1e3f"},
+    {"name": "mutedColor", "value": "#64748b"},
+    {"name": "padX", "value": 20},
+    {"name": "top", "value": 52},
+    {"name": "bottom", "value": 26},
+    {"name": "hasHighlight", "update": "length(data('highlighted')) > 0"}
+  ],
+  "data": [
+    {"name": "dataset"},
+    {
+      "name": "periods",
+      "transform": [
+        {"type": "sequence", "start": 1, "stop": 13, "as": "p"},
+        {"type": "formula", "as": "label", "expr": "['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][(datum.p - 1 + fiscalStartMonth - 1) % 12]"},
+        {"type": "lookup", "from": "dataset", "key": "Period", "fields": ["p"], "as": ["row"]},
+        {"type": "formula", "as": "sales", "expr": "datum.row && isValid(datum.row['Total Sales']) ? datum.row['Total Sales'] : 0"},
+        {"type": "formula", "as": "hl", "expr": "datum.row && isDefined(datum.row['Total Sales__highlight']) ? (isValid(datum.row['Total Sales__highlight']) ? datum.row['Total Sales__highlight'] : 0) : null"},
+        {"type": "formula", "as": "__row__", "expr": "datum.row ? datum.row.__row__ : null"}
+      ]
+    },
+    {
+      "name": "highlighted",
+      "source": "dataset",
+      "transform": [
+        {"type": "filter", "expr": "isDefined(datum['Total Sales__highlight']) && datum['Total Sales__highlight'] !== datum['Total Sales']"}
+      ]
+    }
+  ],
+  "scales": [
+    {"name": "x", "type": "band", "domain": {"data": "periods", "field": "p"}, "range": [{"signal": "padX"}, {"signal": "width - padX"}], "paddingInner": 0.28},
+    {"name": "y", "type": "linear", "domain": {"data": "periods", "field": "sales"}, "zero": true, "nice": false, "range": [{"signal": "height - bottom"}, {"signal": "top"}]}
+  ],
+  "marks": [
+    {
+      "type": "text",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padX"}, "y": {"value": 30},
+          "text": {"signal": "titleText"},
+          "fontSize": {"value": 15}, "fontWeight": {"value": 600}, "fill": {"signal": "inkColor"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "name": "column",
+      "from": {"data": "periods"},
+      "encode": {
+        "update": {
+          "x": {"scale": "x", "field": "p"},
+          "width": {"scale": "x", "band": 1},
+          "y": {"scale": "y", "field": "sales"},
+          "y2": {"scale": "y", "value": 0},
+          "cornerRadius": {"value": 3},
+          "fill": {"signal": "pbiColor(0)"},
+          "fillOpacity": {"signal": "hasHighlight ? 0.25 : 1"},
+          "tooltip": {"signal": "datum.row ? {'Month': datum.label, 'Sales': pbiFormat(datum.sales, '#,0'), '__row__': datum.__row__} : null"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "name": "share",
+      "from": {"data": "periods"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"scale": "x", "field": "p"},
+          "width": {"scale": "x", "band": 1},
+          "y": {"scale": "y", "signal": "datum.hl || 0"},
+          "y2": {"scale": "y", "value": 0},
+          "cornerRadius": {"value": 3},
+          "fill": {"signal": "pbiColor(0)"},
+          "opacity": {"signal": "hasHighlight && datum.hl > 0 ? 1 : 0"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "from": {"data": "periods"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"scale": "x", "field": "p", "band": 0.5},
+          "y": {"signal": "height - 8"},
+          "text": {"field": "label"},
+          "align": {"value": "center"},
+          "fontSize": {"value": 11}, "fill": {"signal": "mutedColor"}
+        }
+      }
+    }
+  ]
+}

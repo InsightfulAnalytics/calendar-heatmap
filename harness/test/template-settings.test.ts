@@ -10,6 +10,12 @@ import { CELLS, type Calendar, type Fixture, type FixtureRow } from '../src/inde
 import { loadFixture } from '../src/fixtures.ts';
 import { datesFromTo, rowsDated, sorted, useHarness } from './helpers.ts';
 
+/** The tooltip fields a viewer sees: everything but the row identity Deneb reads for report page tooltips. */
+function shown(tip: unknown): Record<string, unknown> {
+  const { __row__: _row, ...rest } = (tip ?? {}) as Record<string, unknown>;
+  return rest;
+}
+
 const harness = useHarness();
 
 /** The BI Nexus ramp, lightest to darkest (SPEC, "Colour"), and the empty colour. */
@@ -67,7 +73,8 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     assert.equal(peak?.ring, true);
     assert.equal(peak?.fill, RAMP[4]);
     assert.deepEqual(days.filter((d) => d.ring).map((d) => d.date), [PEAK]);
-    assert.deepEqual(peak?.tooltip, { Date: 'Fri 19 Dec 2025', Sales: '12,500' });
+    assert.deepEqual(shown(peak?.tooltip), { Date: 'Fri 19 Dec 2025', Sales: '12,500' });
+    assert.equal(typeof (peak?.tooltip as Record<string, unknown>).__row__, 'number', 'the tooltip carries the row identity, so a report page tooltip can resolve the day');
     const texts = (await cal.labels()).map((l) => l.text);
     for (const t of ['Sales', 'by Date', 'Less', 'More']) assert.ok(texts.includes(t), `'${t}' is drawn`);
     assert.deepEqual((await cal.swatches()).map((s) => s.fill), RAMP);
@@ -144,9 +151,9 @@ for (const { vega, timeZone, label: cell } of CELLS) {
     assert.ok(texts.includes('Under') && texts.includes('Over'));
     assert.ok(!texts.includes('Less') && !texts.includes('More'));
     assert.deepEqual((await cal.swatches()).map((s) => s.fill), [BAD, GOOD]);
-    assert.deepEqual((await cal.day(PEAK))?.tooltip, { Date: 'Fri 19 Dec 2025', Sales: '12,500', 'Daily Target': '12,500' });
+    assert.deepEqual(shown((await cal.day(PEAK))?.tooltip), { Date: 'Fri 19 Dec 2025', Sales: '12,500', 'Daily Target': '12,500' });
     const sales = targeted.rows.find((r) => r.Date === BLANK_TARGET)?.Sales as number;
-    const tip = (await cal.day(BLANK_TARGET))?.tooltip as Record<string, unknown>;
+    const tip = shown((await cal.day(BLANK_TARGET))?.tooltip);
     assert.deepEqual(Object.keys(tip), ['Date', 'Sales', 'Daily Target']);
     assert.equal(tip.Date, 'Wed 05 Mar 2025');
     assert.equal(tip.Sales, new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(sales), 'formatted as the pbiFormat stand-in formats');

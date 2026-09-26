@@ -75,6 +75,10 @@ The template's metadata turns tooltips, the context menu, selection and highligh
 Runs on Deneb 1.9 and 2.0. It reads the container size through `pbiContainerWidth` and
 `pbiContainerHeight`, in the top-level width and height only, which Deneb 2.0 still accepts.
 
+Cross-highlight from other visuals needs Deneb 2.0, which delivers the value field's highlight
+companion. Days another visual's highlight leaves out are dimmed; Empty days keep their look. Under
+Deneb 1.9, or with highlight off, nothing dims.
+
 ## Export
 
 To be written.

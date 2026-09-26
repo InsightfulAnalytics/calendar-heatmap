@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "daySummary",
+  "displayName": "Day summary",
+  "width": 320,
+  "height": 200,
+  "displayOption": "ActualSize",
+  "type": "Tooltip",
+  "visibility": "HiddenInViewMode"
+}

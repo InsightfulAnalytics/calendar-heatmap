@@ -433,7 +433,11 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   wrongly for un-highlighted rows. In Desktop the Calendar's dataset lists `Sales__highlight` beside
   the status, comparator, format and formatted companions of each measure, and none for the date
   column (#2, read from the Calendar's Vega view and from the columns of Deneb's debug view through
-  remote debugging).
+  remote debugging). As built in #16: a highlight is in force only when some valued row has a null
+  companion (with none in force Deneb gives each row its own value, and with the field absent
+  nothing dims). A dimmed day draws at the unselected days' opacity (0.28) and the Peak day ring
+  dims with its day. An in-progress drag preview wins over highlight, and highlight over the
+  Calendar's own selection.
 - **Tooltips, context menu and drill-through.** Each drawn day that has a dataset row copies that
   row's identity. Default tooltips, report page tooltips and the context menu, drill-through
   included, then resolve to that day on Deneb 1.9 and 2.0 alike. A day without a row leaves the

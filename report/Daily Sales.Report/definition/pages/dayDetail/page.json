@@ -1,0 +1,51 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "dayDetail",
+  "displayName": "Day detail",
+  "width": 1280,
+  "height": 968,
+  "displayOption": "FitToPage",
+  "type": "Drillthrough",
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "57a9f4366738e0e098d1",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "DimDate"
+              }
+            },
+            "Property": "Date"
+          }
+        },
+        "type": "Categorical",
+        "howCreated": "Drillthrough"
+      }
+    ]
+  },
+  "pageBinding": {
+    "name": "558819a36725773edd76",
+    "type": "Drillthrough",
+    "parameters": [
+      {
+        "name": "4cd2bbc753494f60581f",
+        "boundFilter": "57a9f4366738e0e098d1",
+        "asAggregation": false,
+        "qnaSingleSelectRequired": false,
+        "fieldExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "DimDate"
+              }
+            },
+            "Property": "Date"
+          }
+        }
+      }
+    ]
+  },
+  "visibility": "HiddenInViewMode"
+}

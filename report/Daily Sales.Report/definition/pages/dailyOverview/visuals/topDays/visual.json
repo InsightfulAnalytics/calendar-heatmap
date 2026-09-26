@@ -1,0 +1,233 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "topDays",
+  "position": {
+    "x": 872,
+    "y": 756,
+    "width": 392,
+    "height": 200,
+    "z": 1000,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "queryRef": "DimDate.Date",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDate"
+                    }
+                  },
+                  "Property": "Date"
+                }
+              },
+              "nativeQueryRef": "Date"
+            },
+            {
+              "queryRef": "Measure Table.Top Day Sales",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure Table"
+                    }
+                  },
+                  "Property": "Top Day Sales"
+                }
+              },
+              "nativeQueryRef": "Top Day Sales"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vega'"
+                }
+              }
+            },
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\n  \"description\": \"Top days: the five best days the model''s Top Day Sales measure returns under the page''s filters and any Calendar Selection, best first, each with its date, a pill track, a bar scaled to the best day and a compact value.\",\n  \"width\": {\n    \"signal\": \"pbiContainerWidth\"\n  },\n  \"height\": {\n    \"signal\": \"pbiContainerHeight\"\n  },\n  \"padding\": 0,\n  \"autosize\": {\n    \"type\": \"none\"\n  },\n  \"signals\": [\n    {\n      \"name\": \"titleText\",\n      \"value\": \"Top days\"\n    },\n    {\n      \"name\": \"inkColor\",\n      \"value\": \"#0b1e3f\"\n    },\n    {\n      \"name\": \"mutedColor\",\n      \"value\": \"#64748b\"\n    },\n    {\n      \"name\": \"trackColor\",\n      \"value\": \"#e2e8f0\"\n    },\n    {\n      \"name\": \"padX\",\n      \"value\": 20\n    },\n    {\n      \"name\": \"top\",\n      \"value\": 48\n    },\n    {\n      \"name\": \"labelW\",\n      \"value\": 64\n    },\n    {\n      \"name\": \"valueW\",\n      \"value\": 52\n    },\n    {\n      \"name\": \"rowH\",\n      \"update\": \"max(16, (height - top - 10) / 5)\"\n    },\n    {\n      \"name\": \"barX\",\n      \"update\": \"padX + labelW\"\n    },\n    {\n      \"name\": \"barW\",\n      \"update\": \"max(20, width - padX - valueW - barX)\"\n    },\n    {\n      \"name\": \"best\",\n      \"update\": \"length(data(''top'')) ? data(''top'')[0].value : 1\"\n    }\n  ],\n  \"data\": [\n    {\n      \"name\": \"dataset\"\n    },\n    {\n      \"name\": \"top\",\n      \"source\": \"dataset\",\n      \"transform\": [\n        {\n          \"type\": \"filter\",\n          \"expr\": \"isValid(datum[''Top Day Sales''])\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"value\",\n          \"expr\": \"datum[''Top Day Sales'']\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"_t\",\n          \"expr\": \"time(toDate(datum[''Date'']))\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"_d\",\n          \"expr\": \"datum._t % 864e5 == 0 ? datetime(utcyear(datum._t), utcmonth(datum._t), utcdate(datum._t)) : datetime(year(datum._t), month(datum._t), date(datum._t))\"\n        },\n        {\n          \"type\": \"collect\",\n          \"sort\": {\n            \"field\": [\n              \"value\",\n              \"_t\"\n            ],\n            \"order\": [\n              \"descending\",\n              \"ascending\"\n            ]\n          }\n        },\n        {\n          \"type\": \"window\",\n          \"ops\": [\n            \"row_number\"\n          ],\n          \"as\": [\n            \"rank\"\n          ]\n        },\n        {\n          \"type\": \"filter\",\n          \"expr\": \"datum.rank <= 5\"\n        }\n      ]\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"padX\"\n          },\n          \"y\": {\n            \"value\": 30\n          },\n          \"text\": {\n            \"signal\": \"titleText\"\n          },\n          \"fontSize\": {\n            \"value\": 15\n          },\n          \"fontWeight\": {\n            \"value\": 600\n          },\n          \"fill\": {\n            \"signal\": \"inkColor\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"top\"\n      },\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"padX\"\n          },\n          \"y\": {\n            \"signal\": \"top + (datum.rank - 0.5) * rowH\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"text\": {\n            \"signal\": \"timeFormat(datum._d, ''%-d %b'')\"\n          },\n          \"fontSize\": {\n            \"value\": 13\n          },\n          \"fill\": {\n            \"signal\": \"inkColor\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"rect\",\n      \"from\": {\n        \"data\": \"top\"\n      },\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"barX\"\n          },\n          \"width\": {\n            \"signal\": \"barW\"\n          },\n          \"yc\": {\n            \"signal\": \"top + (datum.rank - 0.5) * rowH\"\n          },\n          \"height\": {\n            \"value\": 8\n          },\n          \"cornerRadius\": {\n            \"value\": 4\n          },\n          \"fill\": {\n            \"signal\": \"trackColor\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"rect\",\n      \"name\": \"bar\",\n      \"from\": {\n        \"data\": \"top\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"barX\"\n          },\n          \"width\": {\n            \"signal\": \"max(4, barW * datum.value / best)\"\n          },\n          \"yc\": {\n            \"signal\": \"top + (datum.rank - 0.5) * rowH\"\n          },\n          \"height\": {\n            \"value\": 8\n          },\n          \"cornerRadius\": {\n            \"value\": 4\n          },\n          \"fill\": {\n            \"signal\": \"pbiColor(0, -0.1)\"\n          },\n          \"tooltip\": {\n            \"signal\": \"{''Date'': timeFormat(datum._d, ''%a %d %b %Y''), ''Sales'': pbiFormat(datum.value, ''#,0''), ''__row__'': datum.__row__}\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"top\"\n      },\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"width - padX\"\n          },\n          \"y\": {\n            \"signal\": \"top + (datum.rank - 0.5) * rowH\"\n          },\n          \"align\": {\n            \"value\": \"right\"\n          },\n          \"baseline\": {\n            \"value\": \"middle\"\n          },\n          \"text\": {\n            \"signal\": \"upper(pbiFormatAutoUnit(datum.value, ''#,0.0''))\"\n          },\n          \"fontSize\": {\n            \"value\": 12\n          },\n          \"fontWeight\": {\n            \"value\": 600\n          },\n          \"fill\": {\n            \"signal\": \"mutedColor\"\n          }\n        }\n      }\n    }\n  ]\n}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"background\":\"transparent\",\"view\":{\"stroke\":\"transparent\"},\"font\":\"Segoe UI\",\"text\":{\"font\":\"Segoe UI\"}}'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableContextMenu": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableHighlight": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "selectionMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'advanced'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Top days: the five best days'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E2E8F0'"
+                    }
+                  }
+                }
+              }
+            },
+            "width": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

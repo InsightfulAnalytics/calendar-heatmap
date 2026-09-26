@@ -1,0 +1,233 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "salesByMonth",
+  "position": {
+    "x": 872,
+    "y": 540,
+    "width": 392,
+    "height": 200,
+    "z": 1000,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "deneb7E15AEF80B9E4D4F8E12924291ECE89A",
+    "query": {
+      "queryState": {
+        "dataset": {
+          "projections": [
+            {
+              "queryRef": "DimDate.Period",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDate"
+                    }
+                  },
+                  "Property": "Period"
+                }
+              },
+              "nativeQueryRef": "Period"
+            },
+            {
+              "queryRef": "Measure Table.Total Sales",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure Table"
+                    }
+                  },
+                  "Property": "Total Sales"
+                }
+              },
+              "nativeQueryRef": "Total Sales"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "vega": [
+        {
+          "properties": {
+            "provider": {
+              "expr": {
+                "Literal": {
+                  "Value": "'vega'"
+                }
+              }
+            },
+            "jsonSpec": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\n  \"description\": \"Sales by month: twelve columns in fiscal order from the fiscal period number (1 is July), labels drawn by the spec, no axis or values. When a Calendar Selection highlights part of the year, each column draws its highlighted share over its full height and all twelve stay.\",\n  \"width\": {\n    \"signal\": \"pbiContainerWidth\"\n  },\n  \"height\": {\n    \"signal\": \"pbiContainerHeight\"\n  },\n  \"padding\": 0,\n  \"autosize\": {\n    \"type\": \"none\"\n  },\n  \"signals\": [\n    {\n      \"name\": \"titleText\",\n      \"value\": \"Sales by month\"\n    },\n    {\n      \"name\": \"fiscalStartMonth\",\n      \"value\": 7\n    },\n    {\n      \"name\": \"inkColor\",\n      \"value\": \"#0b1e3f\"\n    },\n    {\n      \"name\": \"mutedColor\",\n      \"value\": \"#64748b\"\n    },\n    {\n      \"name\": \"padX\",\n      \"value\": 20\n    },\n    {\n      \"name\": \"top\",\n      \"value\": 52\n    },\n    {\n      \"name\": \"bottom\",\n      \"value\": 26\n    },\n    {\n      \"name\": \"hasHighlight\",\n      \"update\": \"length(data(''highlighted'')) > 0\"\n    }\n  ],\n  \"data\": [\n    {\n      \"name\": \"dataset\"\n    },\n    {\n      \"name\": \"periods\",\n      \"transform\": [\n        {\n          \"type\": \"sequence\",\n          \"start\": 1,\n          \"stop\": 13,\n          \"as\": \"p\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"label\",\n          \"expr\": \"[''J'', ''F'', ''M'', ''A'', ''M'', ''J'', ''J'', ''A'', ''S'', ''O'', ''N'', ''D''][(datum.p - 1 + fiscalStartMonth - 1) % 12]\"\n        },\n        {\n          \"type\": \"lookup\",\n          \"from\": \"dataset\",\n          \"key\": \"Period\",\n          \"fields\": [\n            \"p\"\n          ],\n          \"as\": [\n            \"row\"\n          ]\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"sales\",\n          \"expr\": \"datum.row && isValid(datum.row[''Total Sales'']) ? datum.row[''Total Sales''] : 0\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"hl\",\n          \"expr\": \"datum.row && isDefined(datum.row[''Total Sales__highlight'']) ? (isValid(datum.row[''Total Sales__highlight'']) ? datum.row[''Total Sales__highlight''] : 0) : null\"\n        },\n        {\n          \"type\": \"formula\",\n          \"as\": \"__row__\",\n          \"expr\": \"datum.row ? datum.row.__row__ : null\"\n        }\n      ]\n    },\n    {\n      \"name\": \"highlighted\",\n      \"source\": \"dataset\",\n      \"transform\": [\n        {\n          \"type\": \"filter\",\n          \"expr\": \"isDefined(datum[''Total Sales__highlight'']) && datum[''Total Sales__highlight''] !== datum[''Total Sales'']\"\n        }\n      ]\n    }\n  ],\n  \"scales\": [\n    {\n      \"name\": \"x\",\n      \"type\": \"band\",\n      \"domain\": {\n        \"data\": \"periods\",\n        \"field\": \"p\"\n      },\n      \"range\": [\n        {\n          \"signal\": \"padX\"\n        },\n        {\n          \"signal\": \"width - padX\"\n        }\n      ],\n      \"paddingInner\": 0.28\n    },\n    {\n      \"name\": \"y\",\n      \"type\": \"linear\",\n      \"domain\": {\n        \"data\": \"periods\",\n        \"field\": \"sales\"\n      },\n      \"zero\": true,\n      \"nice\": false,\n      \"range\": [\n        {\n          \"signal\": \"height - bottom\"\n        },\n        {\n          \"signal\": \"top\"\n        }\n      ]\n    }\n  ],\n  \"marks\": [\n    {\n      \"type\": \"text\",\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"signal\": \"padX\"\n          },\n          \"y\": {\n            \"value\": 30\n          },\n          \"text\": {\n            \"signal\": \"titleText\"\n          },\n          \"fontSize\": {\n            \"value\": 15\n          },\n          \"fontWeight\": {\n            \"value\": 600\n          },\n          \"fill\": {\n            \"signal\": \"inkColor\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"rect\",\n      \"name\": \"column\",\n      \"from\": {\n        \"data\": \"periods\"\n      },\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"scale\": \"x\",\n            \"field\": \"p\"\n          },\n          \"width\": {\n            \"scale\": \"x\",\n            \"band\": 1\n          },\n          \"y\": {\n            \"scale\": \"y\",\n            \"field\": \"sales\"\n          },\n          \"y2\": {\n            \"scale\": \"y\",\n            \"value\": 0\n          },\n          \"cornerRadius\": {\n            \"value\": 3\n          },\n          \"fill\": {\n            \"signal\": \"pbiColor(0)\"\n          },\n          \"fillOpacity\": {\n            \"signal\": \"hasHighlight ? 0.25 : 1\"\n          },\n          \"tooltip\": {\n            \"signal\": \"datum.row ? {''Month'': datum.label, ''Sales'': pbiFormat(datum.sales, ''#,0''), ''__row__'': datum.__row__} : null\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"rect\",\n      \"name\": \"share\",\n      \"from\": {\n        \"data\": \"periods\"\n      },\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"scale\": \"x\",\n            \"field\": \"p\"\n          },\n          \"width\": {\n            \"scale\": \"x\",\n            \"band\": 1\n          },\n          \"y\": {\n            \"scale\": \"y\",\n            \"signal\": \"datum.hl || 0\"\n          },\n          \"y2\": {\n            \"scale\": \"y\",\n            \"value\": 0\n          },\n          \"cornerRadius\": {\n            \"value\": 3\n          },\n          \"fill\": {\n            \"signal\": \"pbiColor(0)\"\n          },\n          \"opacity\": {\n            \"signal\": \"hasHighlight && datum.hl > 0 ? 1 : 0\"\n          }\n        }\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"from\": {\n        \"data\": \"periods\"\n      },\n      \"interactive\": false,\n      \"encode\": {\n        \"update\": {\n          \"x\": {\n            \"scale\": \"x\",\n            \"field\": \"p\",\n            \"band\": 0.5\n          },\n          \"y\": {\n            \"signal\": \"height - 8\"\n          },\n          \"text\": {\n            \"field\": \"label\"\n          },\n          \"align\": {\n            \"value\": \"center\"\n          },\n          \"fontSize\": {\n            \"value\": 11\n          },\n          \"fill\": {\n            \"signal\": \"mutedColor\"\n          }\n        }\n      }\n    }\n  ]\n}'"
+                }
+              }
+            },
+            "jsonConfig": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"background\":\"transparent\",\"view\":{\"stroke\":\"transparent\"},\"font\":\"Segoe UI\",\"text\":{\"font\":\"Segoe UI\"}}'"
+                }
+              }
+            },
+            "renderMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'svg'"
+                }
+              }
+            },
+            "enableTooltips": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableContextMenu": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableSelection": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "enableHighlight": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "selectionMode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'advanced'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Sales by month, July to June'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E2E8F0'"
+                    }
+                  }
+                }
+              }
+            },
+            "width": {
+              "expr": {
+                "Literal": {
+                  "Value": "1D"
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "12D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -95,6 +95,8 @@ export interface DayScene {
   /** The ring's corner radius and its own width, in pixels. */
   ringCornerRadius?: number;
   ringBoxWidth?: number;
+  /** The ring's opacity (it dims with its day). */
+  ringOpacity?: number;
   /** The tooltip content the day hands to the host. */
   tooltip: unknown;
   /**

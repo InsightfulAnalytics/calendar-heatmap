@@ -1,0 +1,153 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "byRegion",
+  "displayName": "By region",
+  "displayOption": "FitToPage",
+  "height": 968,
+  "width": 1280,
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#F5F7FB'"
+                  }
+                }
+              }
+            }
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspace": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#F5F7FB'"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "calNorth",
+      "target": "calSouth",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calNorth",
+      "target": "calEMEA",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calNorth",
+      "target": "calAPAC",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calNorth",
+      "target": "titleText",
+      "type": "DataFilter"
+    },
+    {
+      "source": "calSouth",
+      "target": "calNorth",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calSouth",
+      "target": "calEMEA",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calSouth",
+      "target": "calAPAC",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calSouth",
+      "target": "titleText",
+      "type": "DataFilter"
+    },
+    {
+      "source": "calEMEA",
+      "target": "calNorth",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calEMEA",
+      "target": "calSouth",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calEMEA",
+      "target": "calAPAC",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calEMEA",
+      "target": "titleText",
+      "type": "DataFilter"
+    },
+    {
+      "source": "calAPAC",
+      "target": "calNorth",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calAPAC",
+      "target": "calSouth",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calAPAC",
+      "target": "calEMEA",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calAPAC",
+      "target": "titleText",
+      "type": "DataFilter"
+    },
+    {
+      "source": "regionSlicer",
+      "target": "calNorth",
+      "type": "NoFilter"
+    },
+    {
+      "source": "regionSlicer",
+      "target": "calSouth",
+      "type": "NoFilter"
+    },
+    {
+      "source": "regionSlicer",
+      "target": "calEMEA",
+      "type": "NoFilter"
+    },
+    {
+      "source": "regionSlicer",
+      "target": "calAPAC",
+      "type": "NoFilter"
+    }
+  ]
+}

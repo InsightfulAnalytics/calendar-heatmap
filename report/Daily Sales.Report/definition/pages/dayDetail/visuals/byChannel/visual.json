@@ -1,0 +1,67 @@
+{
+  "name": "byChannel",
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "queryRef": "Channel.Channel",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Channel"
+                    }
+                  },
+                  "Property": "Channel"
+                }
+              },
+              "nativeQueryRef": "Channel"
+            },
+            {
+              "queryRef": "Measure Table.Total Sales",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure Table"
+                    }
+                  },
+                  "Property": "Total Sales"
+                }
+              },
+              "nativeQueryRef": "Total Sales"
+            },
+            {
+              "queryRef": "Measure Table.Total Target",
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Measure Table"
+                    }
+                  },
+                  "Property": "Total Target"
+                }
+              },
+              "nativeQueryRef": "Total Target"
+            }
+          ]
+        }
+      }
+    },
+    "objects": {},
+    "drillFilterOtherVisuals": true
+  },
+  "position": {
+    "x": 24,
+    "y": 120,
+    "width": 604,
+    "height": 360,
+    "z": 0,
+    "tabOrder": 0
+  },
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json"
+}

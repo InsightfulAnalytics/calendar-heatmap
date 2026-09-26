@@ -14,7 +14,8 @@
     "probe": "node src/cli/probe.ts",
     "cards": "node src/cli/cards.ts",
     "calendar": "node src/cli/calendar.ts",
-    "export-fixture": "node src/cli/export-fixture.ts"
+    "export-fixture": "node src/cli/export-fixture.ts",
+    "look": "node src/cli/look.ts"
   },
   "devDependencies": {
     "@types/node": "24.13.6",

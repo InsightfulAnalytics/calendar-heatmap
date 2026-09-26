@@ -1,0 +1,78 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "targets",
+  "displayName": "Targets",
+  "displayOption": "FitToPage",
+  "height": 968,
+  "width": 1280,
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#F5F7FB'"
+                  }
+                }
+              }
+            }
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspace": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#F5F7FB'"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "targetCalendar",
+      "target": "daysOnTarget",
+      "type": "DataFilter"
+    },
+    {
+      "source": "targetCalendar",
+      "target": "daysShort",
+      "type": "DataFilter"
+    },
+    {
+      "source": "targetCalendar",
+      "target": "meanDay",
+      "type": "DataFilter"
+    },
+    {
+      "source": "targetCalendar",
+      "target": "meanTarget",
+      "type": "DataFilter"
+    },
+    {
+      "source": "targetCalendar",
+      "target": "titleText",
+      "type": "DataFilter"
+    }
+  ]
+}

@@ -5,60 +5,45 @@
   "displayOption": "FitToPage",
   "height": 968,
   "width": 1280,
-  "filterConfig": {
-    "filters": [
+  "objects": {
+    "background": [
       {
-        "name": "5c1aa7a636078969162d",
-        "field": {
-          "Column": {
-            "Expression": {
-              "SourceRef": {
-                "Entity": "DimDate"
-              }
-            },
-            "Property": "FYear"
-          }
-        },
-        "type": "Categorical",
-        "howCreated": "User",
-        "filter": {
-          "Version": 2,
-          "From": [
-            {
-              "Name": "d",
-              "Entity": "DimDate",
-              "Type": 0
-            }
-          ],
-          "Where": [
-            {
-              "Condition": {
-                "In": {
-                  "Expressions": [
-                    {
-                      "Column": {
-                        "Expression": {
-                          "SourceRef": {
-                            "Source": "d"
-                          }
-                        },
-                        "Property": "FYear"
-                      }
-                    }
-                  ],
-                  "Values": [
-                    [
-                      {
-                        "Literal": {
-                          "Value": "'FY26'"
-                        }
-                      }
-                    ]
-                  ]
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#F5F7FB'"
+                  }
                 }
               }
             }
-          ]
+          },
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspace": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "Literal": {
+                    "Value": "'#F5F7FB'"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     ]
@@ -66,17 +51,12 @@
   "visualInteractions": [
     {
       "source": "calendar",
-      "target": "dailyTable",
+      "target": "kpiStrip",
       "type": "DataFilter"
     },
     {
       "source": "calendar",
-      "target": "totalSalesCard",
-      "type": "DataFilter"
-    },
-    {
-      "source": "calendar",
-      "target": "daysInFilterCard",
+      "target": "topDays",
       "type": "DataFilter"
     },
     {
@@ -85,53 +65,363 @@
       "type": "DataFilter"
     },
     {
-      "source": "dailyTable",
+      "source": "calendar",
+      "target": "supportCalendar",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calendar",
+      "target": "webCalendar",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "calendar",
+      "target": "salesByMonth",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "supportCalendar",
+      "target": "kpiStrip",
+      "type": "DataFilter"
+    },
+    {
+      "source": "supportCalendar",
+      "target": "topDays",
+      "type": "DataFilter"
+    },
+    {
+      "source": "supportCalendar",
+      "target": "titleText",
+      "type": "DataFilter"
+    },
+    {
+      "source": "supportCalendar",
+      "target": "calendar",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "supportCalendar",
+      "target": "webCalendar",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "supportCalendar",
+      "target": "salesByMonth",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "webCalendar",
+      "target": "kpiStrip",
+      "type": "DataFilter"
+    },
+    {
+      "source": "webCalendar",
+      "target": "topDays",
+      "type": "DataFilter"
+    },
+    {
+      "source": "webCalendar",
+      "target": "titleText",
+      "type": "DataFilter"
+    },
+    {
+      "source": "webCalendar",
+      "target": "calendar",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "webCalendar",
+      "target": "supportCalendar",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "webCalendar",
+      "target": "salesByMonth",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "kpiStrip",
       "target": "calendar",
       "type": "NoFilter"
     },
     {
-      "source": "dailyTable",
-      "target": "totalSalesCard",
-      "type": "NoFilter"
-    },
-    {
-      "source": "dailyTable",
-      "target": "daysInFilterCard",
-      "type": "NoFilter"
-    },
-    {
-      "source": "dailyTable",
+      "source": "kpiStrip",
       "target": "titleText",
       "type": "NoFilter"
     },
     {
-      "source": "calendar",
-      "target": "meanPerDayCard",
-      "type": "DataFilter"
-    },
-    {
-      "source": "calendar",
-      "target": "peakDayCard",
-      "type": "DataFilter"
-    },
-    {
-      "source": "calendar",
-      "target": "activeDaysCard",
-      "type": "DataFilter"
-    },
-    {
-      "source": "dailyTable",
-      "target": "meanPerDayCard",
+      "source": "kpiStrip",
+      "target": "salesByMonth",
       "type": "NoFilter"
     },
     {
-      "source": "dailyTable",
-      "target": "peakDayCard",
+      "source": "kpiStrip",
+      "target": "topDays",
       "type": "NoFilter"
     },
     {
-      "source": "dailyTable",
-      "target": "activeDaysCard",
+      "source": "kpiStrip",
+      "target": "supportCalendar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "webCalendar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "rail",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "topBar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "dateSlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "fySlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "channelSlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "regionSlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "labelPages",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "labelDateRange",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "labelFilters",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "footerCredit",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "navDaily",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "navRegion",
+      "type": "NoFilter"
+    },
+    {
+      "source": "kpiStrip",
+      "target": "navTargets",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "calendar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "titleText",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "kpiStrip",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "topDays",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "supportCalendar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "webCalendar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "rail",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "topBar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "dateSlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "fySlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "channelSlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "regionSlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "labelPages",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "labelDateRange",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "labelFilters",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "footerCredit",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "navDaily",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "navRegion",
+      "type": "NoFilter"
+    },
+    {
+      "source": "salesByMonth",
+      "target": "navTargets",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "calendar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "titleText",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "kpiStrip",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "salesByMonth",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "supportCalendar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "webCalendar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "rail",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "topBar",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "dateSlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "fySlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "channelSlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "regionSlicer",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "labelPages",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "labelDateRange",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "labelFilters",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "footerCredit",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "navDaily",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "navRegion",
+      "type": "NoFilter"
+    },
+    {
+      "source": "topDays",
+      "target": "navTargets",
       "type": "NoFilter"
     }
   ]
