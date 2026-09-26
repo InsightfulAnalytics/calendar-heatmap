@@ -453,6 +453,14 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   Over. The target is the target column when one is named, otherwise 80% of the mean per day. In BI
   Nexus the good colour is the same blue as theme colour 1, which is acceptable because the Targets
   page shows target mode only.
+  As built: the setting `targetField` names the target column, and an empty name leaves target
+  mode off (the 80% fallback is not built yet). The colours are `pbiColor('positive')` and
+  `pbiColor('negative')`, the names Deneb 1.9 and 2.0 both register (the settings `goodColor` and
+  `badColor`). A day with a value but a blank target draws in the faint grey (`faintColor`): there
+  is no target to judge it against, so it is neither good nor bad, and a grey that is neither the
+  empty colour nor a sentiment colour says so. Empty and filtered-out days keep their own looks.
+  The Peak day ring is off in target mode, and the tooltip adds the target under the target
+  field's name.
 - **Mean per day inside the template.** The template uses the report's definition: the total over
   the calendar days in the current date filter, blank days counted as zero. It is not taken over
   the window. The template reads those days from its dataset. With "every date has a row" on, they

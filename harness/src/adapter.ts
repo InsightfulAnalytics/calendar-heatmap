@@ -11,15 +11,18 @@
 //   (the spec builds it with datetime(y, m, d), so it is the viewer's calendar day).
 // - The Peak day ring, when drawn, is a mark named RING_MARK whose datum holds the same field.
 // - A day item's datum carries the dataset row identity as __row__ when the day has a row.
+// - The legend's colour swatches, when drawn, are a mark named SWATCH_MARK.
 
 export interface SpecAdapter {
   dayMark: string;
   dayDateField: string;
   ringMark: string;
+  swatchMark: string;
 }
 
 export const DAY_MARK = 'cell';
 export const DAY_DATE_FIELD = 'date';
 export const RING_MARK = 'peakRing';
+export const SWATCH_MARK = 'legendSwatch';
 
-export const ADAPTER: SpecAdapter = { dayMark: DAY_MARK, dayDateField: DAY_DATE_FIELD, ringMark: RING_MARK };
+export const ADAPTER: SpecAdapter = { dayMark: DAY_MARK, dayDateField: DAY_DATE_FIELD, ringMark: RING_MARK, swatchMark: SWATCH_MARK };

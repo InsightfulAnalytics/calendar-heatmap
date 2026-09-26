@@ -16,7 +16,9 @@ below says what is in place so far; later tickets fill the rest.
 | Sales | measure | numeric | The day's value: a non-negative measure, such as total sales. |
 
 Map any date column and any measure: the names above are only the placeholders' names. Both are
-read by bracket access, so a field name with spaces works.
+read by bracket access, so a field name with spaces works. An optional column (a target, or a
+shared scale top) is not a placeholder: add it to the Values well and name it in `targetField` or
+`scaleField`.
 
 The date may arrive as a date, a date-time at midnight, an epoch number or ISO text
 (`2025-07-01`). Each resolves to the same calendar day in every time zone. A date-time that falls
@@ -24,8 +26,8 @@ exactly on UTC midnight is read as that UTC date; any other time is read as the 
 
 ## Settings
 
-Every setting is a signal at the top of the spec, from `titleText` to `maxAspect`. Change the value
-in place. The signals after `maxAspect` are the spec's own working and need no editing.
+Every setting is a signal at the top of the spec, from `titleText` to `badColor`. Change the value
+in place. The signals after `badColor` are the spec's own working and need no editing.
 
 | Setting | Default | What it changes |
 |---|---|---|
@@ -45,8 +47,15 @@ in place. The signals after `maxAspect` are the spec's own working and need no e
 | `gutter` | `40` | Space for the weekday labels, left of the grid. |
 | `insetR` | `20` | Space right of the grid. |
 | `fpad` | `4` | Space between the frame and the days. |
-| `gapRatio` | `0.21` | The gap between days, as a share of a day's width. |
+| `gapRatio` | `0.21` | The gap between days, as a share of a day's width. `0.21` is regular; `0.1` is dense. |
 | `maxAspect` | `1.72` | The tallest a day may be, as a multiple of its width. |
+| `cellShape` | `capsule` | `capsule` rounds each day by half its width; `square` uses a 2-pixel corner. The Peak day ring follows. |
+| `showHeader` | `true` | Off: no title, subtitle or total, and the month labels and grid move up into the space. |
+| `showLegend` | `true` | Off: no legend, and the grid takes its height. |
+| `scaleField` | `""` (off) | The name of a field whose largest value over the Window tops the steps, such as a measure that repeats the highest day across every region, so separate Calendars share one scale. Blank or zero falls back to the Window's own maximum. The Peak day stays the Window's highest day. |
+| `targetField` | `""` (off) | The name of a target field. A day with a value draws in `goodColor` when it meets or beats its target and in `badColor` when it falls short; a day with no target draws in `faintColor`. Empty and filtered-out days are unchanged, the legend reads Under and Over, the Peak day ring is off, and the tooltip adds the target. |
+| `goodColor` | `pbiColor('positive')` | Target mode's met colour: the theme's good (positive) colour. |
+| `badColor` | `pbiColor('negative')` | Target mode's missed colour: the theme's bad (negative) colour. |
 
 ## Setup
 

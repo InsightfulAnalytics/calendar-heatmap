@@ -86,10 +86,15 @@ export interface DayScene {
   stroke: string | null;
   strokeWidth: number;
   strokeOpacity: number;
+  /** The drawn day's corner radius, in pixels. */
+  cornerRadius: number;
   /** True when the Peak day ring is drawn on this day. */
   ring: boolean;
   ringStroke?: string;
   ringWidth?: number;
+  /** The ring's corner radius and its own width, in pixels. */
+  ringCornerRadius?: number;
+  ringBoxWidth?: number;
   /** The tooltip content the day hands to the host. */
   tooltip: unknown;
   /**
@@ -110,9 +115,19 @@ export interface Label {
   fontSize: number | null;
 }
 
+/** One colour swatch of the legend, left to right. */
+export interface Swatch {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill: string | null;
+}
+
 export interface Scene {
   days: DayScene[];
   labels: Label[];
+  swatches: Swatch[];
 }
 
 export type HostCall =
@@ -199,6 +214,11 @@ export class Calendar {
   /** Every label drawn (visible text), in scene order. */
   async labels(): Promise<Label[]> {
     return (await this.scene()).labels;
+  }
+
+  /** The legend's colour swatches, left to right (none when the legend is off). */
+  async swatches(): Promise<Swatch[]> {
+    return (await this.scene()).swatches;
   }
 
   async hostCalls(): Promise<HostCall[]> {

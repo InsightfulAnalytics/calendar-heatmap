@@ -358,6 +358,7 @@
     const days = new Map();
     const rings = [];
     const labels = [];
+    const swatches = [];
     walk(mounted.view.scenegraph().root, box.left + ox, box.top + oy, (mark, item, dx, dy) => {
       if (mark.name === adapter.dayMark) {
         const d = item.datum?.[adapter.dayDateField];
@@ -373,6 +374,7 @@
           stroke: normColor(item.stroke),
           strokeWidth: item.strokeWidth ?? 1,
           strokeOpacity: item.strokeOpacity ?? 1,
+          cornerRadius: item.cornerRadius ?? 0,
           ring: false,
           tooltip: clone(item.tooltip) ?? null,
           row: hasIdentity ? item.datum.__row__ : undefined,
@@ -381,7 +383,9 @@
       } else if (mark.name === adapter.ringMark) {
         const d = item.datum?.[adapter.dayDateField];
         const drawn = (item.opacity ?? 1) > 0 && item.stroke != null && (item.strokeWidth ?? 1) > 0 && (item.strokeOpacity ?? 1) > 0;
-        if (d instanceof Date && drawn) rings.push({ date: localDate(d), stroke: normColor(item.stroke), strokeWidth: item.strokeWidth ?? 1 });
+        if (d instanceof Date && drawn) rings.push({ date: localDate(d), stroke: normColor(item.stroke), strokeWidth: item.strokeWidth ?? 1, cornerRadius: item.cornerRadius ?? 0, width: item.width ?? 0 });
+      } else if (mark.name === adapter.swatchMark) {
+        if ((item.opacity ?? 1) > 0) swatches.push({ ...geometry(item, dx, dy), fill: normColor(item.fill) });
       } else if (mark.marktype === 'text') {
         const text = Array.isArray(item.text) ? item.text.join('\n') : item.text;
         const visible = text != null && text !== '' && (item.opacity ?? 1) > 0 && (item.fillOpacity ?? 1) > 0;
@@ -390,9 +394,10 @@
     });
     for (const r of rings) {
       const day = days.get(r.date);
-      if (day) Object.assign(day, { ring: true, ringStroke: r.stroke, ringWidth: r.strokeWidth });
+      if (day) Object.assign(day, { ring: true, ringStroke: r.stroke, ringWidth: r.strokeWidth, ringCornerRadius: r.cornerRadius, ringBoxWidth: r.width });
     }
-    return { days: [...days.values()].sort((a, b) => (a.date < b.date ? -1 : 1)), labels };
+    swatches.sort((a, b) => a.x - b.x);
+    return { days: [...days.values()].sort((a, b) => (a.date < b.date ? -1 : 1)), labels, swatches };
   };
 
   // Page coordinates of the centre of a day, for gesture replay.

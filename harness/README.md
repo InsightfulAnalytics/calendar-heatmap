@@ -73,7 +73,7 @@ skipped.
 | Apply evaluation | `src/page/runtime.js` | A mirror of Deneb's own source at tags 2.0.0.0 and 1.9.1.0, rule by rule, with the source lines in the comment block at the top of the file |
 | Host | `src/page/runtime.js` | Records `select` and `clear`; a selection is fed back into the dataset and the spec is embedded again, as Deneb does on a data update |
 | Theme | `src/theme.ts` | `pbiColor` with Deneb's shade maths over the theme's data colours and named colours. `pbiFormat` and `pbiFormatAutoUnit` are stand-ins |
-| Spec adapter | `src/adapter.ts` | The one place that knows the day mark (`cell`), where a day's date lives (`date`) and the ring mark (`peakRing`) |
+| Spec adapter | `src/adapter.ts` | The one place that knows the day mark (`cell`), where a day's date lives (`date`), the ring mark (`peakRing`) and the legend swatch mark (`legendSwatch`) |
 
 Not modelled yet: Deneb's simple selection mode and the host's multi-select merge (both arrive
 with Selection, T09; a shift or ctrl select is recorded, but the selection is left as it was), and
@@ -112,6 +112,7 @@ await cal.day('2025-12-19');    // fill, stroke, opacity, ring, position, size, 
                                 // identity: row is null when the identity is present but null,
                                 // undefined and hasIdentity false when the day carries none at all
 await cal.labels();             // every drawn label
+await cal.swatches();           // the legend's colour swatches, left to right
 const bg = await cal.backgroundPoint();        // a point on the view's background, off the grid
 await cal.pixelAt(bg);          // the drawn colour at a view point, '#rrggbb' (or rgba() if clear)
 await cal.clickAt({ x: 40, y: 60 });           // a click at a view point, say an empty slot
@@ -151,7 +152,8 @@ Deliberately wrong specs live in `test/specs/`. `strip.json` is the valid baseli
 `apply-date-placeholder.json` is a valid variant whose click applies a `_{date}_` placeholder, to
 tell Deneb 1.9 from 2.0.
 
-The Template's own checks are the `test/template-*.test.ts` files: the Window (calendar and fiscal
+The Template's own checks are the `test/template-*.test.ts` files: the settings (`test/template-settings.test.ts`: cell shape, header and legend switches, a shared
+scale field and target mode), the Window (calendar and fiscal
 years on the right weekday, blank slots outside it that a click cannot select), the four date
 shapes drawing identical scenes, Empty and Filtered-out days, field names with spaces, and the
 library shape with the standing gates. The prototype's drag, Peak day click, right click and

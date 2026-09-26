@@ -45,7 +45,7 @@
     "font": "Segoe UI",
     "text": {"font": "Segoe UI"}
   },
-  "description": "Calendar Heatmap: a Window of days (a calendar or fiscal year) as week columns by weekday rows, Monday first, coloured in five equal-interval steps of theme colour 1 over 0 to the Window's maximum. Empty days are drawn in the empty colour, the Peak day is ringed, and a left click or drag cross-filters a date range (advanced selection mode). The settings are the signals from titleText to maxAspect.",
+  "description": "Calendar Heatmap: a Window of days (a calendar or fiscal year) as week columns by weekday rows, Monday first, coloured in five equal-interval steps of theme colour 1 over 0 to the Window's maximum. Empty days are drawn in the empty colour, the Peak day is ringed, and a left click or drag cross-filters a date range (advanced selection mode). With a target field named, days are coloured good or bad against their target instead. The settings are the signals from titleText to badColor.",
   "width": {"signal": "pbiContainerWidth"},
   "height": {"signal": "pbiContainerHeight"},
   "padding": 0,
@@ -72,7 +72,15 @@
     {"name": "fpad", "value": 4},
     {"name": "gapRatio", "value": 0.21},
     {"name": "maxAspect", "value": 1.72},
+    {"name": "cellShape", "value": "capsule"},
+    {"name": "showHeader", "value": true},
+    {"name": "showLegend", "value": true},
+    {"name": "scaleField", "value": ""},
+    {"name": "targetField", "value": ""},
+    {"name": "goodColor", "update": "pbiColor('positive')"},
+    {"name": "badColor", "update": "pbiColor('negative')"},
 
+    {"name": "targetMode", "update": "isString(targetField) && targetField != ''"},
     {"name": "startMonth", "update": "windowMode == 'fiscal' ? clamp(round(fiscalStartMonth), 1, 12) - 1 : 0"},
     {"name": "winYear", "update": "length(data('windowStats')) && data('windowStats')[0].wy != null ? data('windowStats')[0].wy : (month(now()) >= startMonth ? year(now()) : year(now()) - 1)"},
     {"name": "winStart", "update": "datetime(winYear, startMonth, 1)"},
@@ -80,19 +88,25 @@
     {"name": "startWd", "update": "(day(winStart) + 6) % 7"},
     {"name": "nDays", "update": "length(data('calendar'))"},
     {"name": "nWeeks", "update": "floor((nDays - 1 + startWd) / 7) + 1"},
-    {"name": "maxValue", "update": "length(data('stats')) && data('stats')[0].maxValue > 0 ? data('stats')[0].maxValue : 1"},
+    {"name": "peakValue", "update": "length(data('stats')) && data('stats')[0].maxValue > 0 ? data('stats')[0].maxValue : 1"},
+    {"name": "maxValue", "update": "length(data('stats')) && data('stats')[0].scaleMax > 0 ? data('stats')[0].scaleMax : peakValue"},
     {"name": "totalValue", "update": "length(data('stats')) ? data('stats')[0].total : 0"},
     {"name": "anySelected", "update": "length(data('selectedRows')) > 0"},
 
     {"name": "headerY", "update": "padT + 17"},
-    {"name": "monthY", "update": "headerY + 30"},
+    {"name": "monthY", "update": "showHeader ? headerY + 30 : padT + 10"},
     {"name": "frameTop", "update": "monthY + 8"},
     {"name": "frameLeft", "update": "padL + gutter"},
     {"name": "availW", "update": "width - padR - insetR - frameLeft - 2 * fpad"},
-    {"name": "availH", "update": "height - padB - 3 - 26 - frameTop - 2 * fpad"},
+    {"name": "availH", "update": "height - padB - (showLegend ? 3 + 26 : 0) - frameTop - 2 * fpad"},
     {"name": "cellW", "update": "max(2, min(availW / (nWeeks + (nWeeks - 1) * gapRatio), availH / (7 + 6 * gapRatio)))"},
     {"name": "gap", "update": "cellW * gapRatio"},
     {"name": "cellH", "update": "min((availH - 6 * gap) / 7, cellW * maxAspect)"},
+    {"name": "cellRadius", "update": "cellShape == 'square' ? min(2, cellW / 2) : cellW / 2"},
+    {"name": "ringW", "update": "min(cellW * 1.45, cellH)"},
+    {"name": "ringRadius", "update": "cellShape == 'square' ? min(2, ringW / 2) : ringW / 2"},
+    {"name": "legendSwatchX", "update": "padL + (targetMode ? 38 : 29)"},
+    {"name": "legendSteps", "update": "targetMode ? 2 : 5"},
     {"name": "frameBottom", "update": "frameTop + 2 * fpad + 7 * cellH + 6 * gap"},
     {"name": "legendY", "update": "frameBottom + 26"},
     {"name": "gridW", "update": "nWeeks * cellW + (nWeeks - 1) * gap"},
@@ -169,13 +183,16 @@
     {
       "name": "windowRows",
       "source": "rows",
-      "transform": [{"type": "filter", "expr": "datum._wy == winYear"}]
+      "transform": [
+        {"type": "filter", "expr": "datum._wy == winYear"},
+        {"type": "formula", "as": "_scale", "expr": "scaleField != '' && isValid(datum[scaleField]) && datum[scaleField] !== '' ? toNumber(datum[scaleField]) : null"}
+      ]
     },
     {
       "name": "stats",
       "source": "windowRows",
       "transform": [
-        {"type": "aggregate", "ops": ["max", "sum", "valid"], "fields": ["__1__", "__1__", "__1__"], "as": ["maxValue", "total", "activeDays"]}
+        {"type": "aggregate", "ops": ["max", "sum", "valid", "max"], "fields": ["__1__", "__1__", "__1__", "_scale"], "as": ["maxValue", "total", "activeDays", "scaleMax"]}
       ]
     },
     {
@@ -194,7 +211,18 @@
         {"type": "formula", "as": "week", "expr": "floor((datum.idx + startWd) / 7)"},
         {"type": "lookup", "from": "windowRows", "key": "_key", "fields": ["key"], "as": ["row"]},
         {"type": "formula", "as": "value", "expr": "datum.row && isValid(datum.row['__1__']) ? datum.row['__1__'] : null"},
-        {"type": "formula", "as": "kind", "expr": "datum.row ? (datum.value == null ? 'empty' : 'valued') : everyDateHasRow ? 'filteredOut' : 'empty'"}
+        {"type": "formula", "as": "kind", "expr": "datum.row ? (datum.value == null ? 'empty' : 'valued') : everyDateHasRow ? 'filteredOut' : 'empty'"},
+        {"type": "formula", "as": "target", "expr": "targetMode && datum.row && isValid(datum.row[targetField]) && datum.row[targetField] !== '' ? toNumber(datum.row[targetField]) : null"}
+      ]
+    },
+    {
+      "name": "tips",
+      "source": "calendar",
+      "transform": [
+        {"type": "formula", "as": "_tipDate", "expr": "timeFormat(datum.date, '%a %d %b %Y')"},
+        {"type": "formula", "as": "_tipValue", "expr": "datum.value == null ? '(blank)' : pbiFormat(datum.value, '#,0')"},
+        {"type": "formula", "as": "_tipTarget", "expr": "datum.target == null ? '(blank)' : pbiFormat(datum.target, '#,0')"},
+        {"type": "project", "fields": ["_tipDate", "_tipValue", "_tipTarget"], "as": ["__0__", "__1__", {"signal": "targetMode ? targetField : '_target'"}]}
       ]
     },
     {
@@ -211,11 +239,18 @@
       "source": "calendar",
       "transform": [{"type": "filter", "expr": "!datum.row"}]
     },
-    {"name": "dayCells", "source": ["daysWithRow", "daysWithoutRow"]},
+    {
+      "name": "dayCells",
+      "source": ["daysWithRow", "daysWithoutRow"],
+      "transform": [
+        {"type": "formula", "as": "_tipDate", "expr": "timeFormat(datum.date, '%a %d %b %Y')"},
+        {"type": "lookup", "from": "tips", "key": "__0__", "fields": ["_tipDate"], "as": ["tip"]}
+      ]
+    },
     {
       "name": "peak",
       "source": "dayCells",
-      "transform": [{"type": "filter", "expr": "datum.value != null && datum.value >= maxValue"}]
+      "transform": [{"type": "filter", "expr": "!targetMode && datum.value != null && datum.value >= peakValue"}]
     },
     {
       "name": "monthLabels",
@@ -228,7 +263,20 @@
     },
     {
       "name": "legendBins",
-      "transform": [{"type": "sequence", "start": 0, "stop": 5, "as": "b"}]
+      "transform": [
+        {"type": "sequence", "start": 0, "stop": {"signal": "legendSteps"}, "as": "b"},
+        {"type": "filter", "expr": "showLegend"}
+      ]
+    },
+    {
+      "name": "header",
+      "values": [{}],
+      "transform": [{"type": "filter", "expr": "showHeader"}]
+    },
+    {
+      "name": "legend",
+      "values": [{}],
+      "transform": [{"type": "filter", "expr": "showLegend"}]
     }
   ],
   "scales": [
@@ -268,10 +316,12 @@
           "y": {"signal": "gridY + datum.wd * (cellH + gap)"},
           "width": {"signal": "cellW"},
           "height": {"signal": "cellH"},
-          "cornerRadius": {"signal": "cellW / 2"},
+          "cornerRadius": {"signal": "cellRadius"},
           "fill": [
             {"test": "datum.kind == 'filteredOut'", "value": "transparent"},
             {"test": "datum.value == null", "signal": "emptyColor"},
+            {"test": "targetMode && datum.target == null", "signal": "faintColor"},
+            {"test": "targetMode", "signal": "datum.value >= datum.target ? goodColor : badColor"},
             {"scale": "color", "field": "value"}
           ],
           "opacity": [
@@ -291,7 +341,7 @@
             {"test": "datum.kind == 'filteredOut'", "value": 1},
             {"value": 0}
           ],
-          "tooltip": {"signal": "{'__0__': timeFormat(datum.date, '%a %d %b %Y'), '__1__': datum.value == null ? '(blank)' : pbiFormat(datum.value, '#,0')}"}
+          "tooltip": {"signal": "targetMode && datum.tip ? datum.tip : {'__0__': timeFormat(datum.date, '%a %d %b %Y'), '__1__': datum.value == null ? '(blank)' : pbiFormat(datum.value, '#,0')}"}
         },
         "hover": {"strokeOpacity": {"value": 0.85}}
       }
@@ -305,9 +355,9 @@
         "update": {
           "xc": {"signal": "gridX + datum.week * (cellW + gap) + cellW / 2"},
           "yc": {"signal": "gridY + datum.wd * (cellH + gap) + cellH / 2"},
-          "width": {"signal": "min(cellW * 1.45, cellH)"},
+          "width": {"signal": "ringW"},
           "height": {"signal": "cellH"},
-          "cornerRadius": {"signal": "min(cellW * 1.45, cellH) / 2"},
+          "cornerRadius": {"signal": "ringRadius"},
           "fill": {"scale": "color", "field": "value"},
           "stroke": {"signal": "inkColor"},
           "strokeWidth": {"value": 2.5},
@@ -356,6 +406,7 @@
     {
       "type": "text",
       "name": "titleMark",
+      "from": {"data": "header"},
       "interactive": false,
       "encode": {
         "update": {
@@ -388,6 +439,7 @@
     {
       "type": "text",
       "name": "totalMark",
+      "from": {"data": "header"},
       "interactive": false,
       "encode": {
         "update": {
@@ -405,12 +457,13 @@
     {
       "type": "text",
       "name": "legendLess",
+      "from": {"data": "legend"},
       "interactive": false,
       "encode": {
         "update": {
           "x": {"signal": "padL"},
           "y": {"signal": "legendY"},
-          "text": {"value": "Less"},
+          "text": {"signal": "targetMode ? 'Under' : 'Less'"},
           "fontSize": {"value": 12},
           "fill": {"signal": "mutedColor"},
           "baseline": {"value": "alphabetic"}
@@ -424,24 +477,25 @@
       "interactive": false,
       "encode": {
         "update": {
-          "x": {"signal": "padL + 29 + datum.b * 14"},
+          "x": {"signal": "legendSwatchX + datum.b * 14"},
           "y": {"signal": "legendY - 9.5"},
           "width": {"value": 11},
           "height": {"value": 11},
           "cornerRadius": {"value": 2.5},
-          "fill": {"signal": "palette[datum.b]"}
+          "fill": {"signal": "targetMode ? (datum.b == 0 ? badColor : goodColor) : palette[datum.b]"}
         }
       }
     },
     {
       "type": "text",
       "name": "legendMore",
+      "from": {"data": "legend"},
       "interactive": false,
       "encode": {
         "update": {
-          "x": {"signal": "padL + 29 + 5 * 14 + 3"},
+          "x": {"signal": "legendSwatchX + legendSteps * 14 + 3"},
           "y": {"signal": "legendY"},
-          "text": {"value": "More"},
+          "text": {"signal": "targetMode ? 'Over' : 'More'"},
           "fontSize": {"value": 12},
           "fill": {"signal": "mutedColor"},
           "baseline": {"value": "alphabetic"}
