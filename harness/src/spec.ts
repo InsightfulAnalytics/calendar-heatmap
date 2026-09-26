@@ -25,9 +25,10 @@ export const TEMPLATE_FILE = projectPath('template', 'calendar-heatmap', 'calend
 
 /** Named specs. */
 export const SPECS: Record<string, SpecSource> = {
-  // T06 restructure step: the prototype checks run on the Template, its placeholders mapped to the
-  // prototype's field names, to prove the restructure changed nothing.
-  prototype: { template: TEMPLATE_FILE, fields: { __0__: 'Date', __1__: 'Sales' } },
+  prototype: { path: projectPath('prototype', 'calendar-heatmap.json'), config: projectPath('prototype', 'config.json') },
+  // The Template as an author imports it over a Date column and a Sales measure. Commit e7e3bd5 (T06)
+  // ran every prototype check on it, unchanged, before it gained any behaviour of its own.
+  template: { template: TEMPLATE_FILE, fields: { __0__: 'Date', __1__: 'Sales' } },
   // The Report's sales Calendar on Daily overview, as T01 embedded it. Read only, never written.
   'report-calendar': { visual: projectPath('report', 'Daily Sales.Report', 'definition', 'pages', 'dailyOverview', 'visuals', 'calendar', 'visual.json') },
 };

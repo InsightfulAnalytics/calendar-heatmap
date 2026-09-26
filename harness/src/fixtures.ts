@@ -126,6 +126,38 @@ function regions2025(): Fixture {
   return { name: 'regions-2025', dateField: 'Date', rows };
 }
 
+/**
+ * The every-date-present fixture: the shape a Report delivers with the never-blank helper bound
+ * (SPEC, "Every day is drawn"). One row per date of 2025 with Date, Days in Filter (1 on every
+ * row) and Sales. Five holidays have a blank value, one Sunday (5 Jan) is exactly 0, and 19 Dec
+ * is the single peak.
+ */
+function everyDate2025(): Fixture {
+  const rand = seeded(20250202);
+  const dates = datesOfYear(2025);
+  const sales = dailySales(dates, rand);
+  const blank = new Set(['2025-01-01', '2025-04-18', '2025-07-28', '2025-12-25', '2025-12-26']);
+  const rows: FixtureRow[] = dates.map((date, i) => ({
+    Date: date,
+    'Days in Filter': 1,
+    Sales: date === '2025-12-19' ? 12500 : date === '2025-01-05' ? 0 : blank.has(date) ? null : Math.min(sales[i], 11000),
+  }));
+  return { name: 'every-date-2025', dateField: 'Date', rows };
+}
+
+/**
+ * The leap-year fixture: one row per date of 2024 (366 rows), Date and Sales, 29 February with a
+ * value. Four days have a blank value.
+ */
+function leap2024(): Fixture {
+  const rand = seeded(20240229);
+  const dates = datesOfYear(2024);
+  const sales = dailySales(dates, rand);
+  const blank = new Set(['2024-01-01', '2024-03-29', '2024-12-25', '2024-12-26']);
+  const rows: FixtureRow[] = dates.map((date, i) => ({ Date: date, Sales: blank.has(date) ? null : sales[i] }));
+  return { name: 'leap-2024', dateField: 'Date', rows };
+}
+
 // ------------------------------------------------------------------ exported from the Report
 
 /**
@@ -145,6 +177,8 @@ export const FIXTURES: Record<string, () => Fixture> = {
   'report-fields-sample': reportFieldsSample,
   'base-2025': base2025,
   'regions-2025': regions2025,
+  'every-date-2025': everyDate2025,
+  'leap-2024': leap2024,
   'report-sales-fy26': reportSalesFy26,
 };
 
