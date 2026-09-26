@@ -483,7 +483,7 @@ table 'Measure Table'
 			    IF ( __Years = 1, SELECTEDVALUE ( 'DimDate'[FYear] ), __Years & " fiscal years" )
 			// The date range, as Dates Selected words it
 			VAR __Range =
-			    SUBSTITUTE ( [Dates Selected], "Selected Period: ", "" )
+			    TRIM ( SUBSTITUTE ( [Dates Selected], "Selected Period: ", "" ) )
 			VAR __Result =
 			    "Daily Sales · " & __Year & " · " & __Range
 			RETURN

@@ -15,7 +15,8 @@
     "cards": "node src/cli/cards.ts",
     "calendar": "node src/cli/calendar.ts",
     "export-fixture": "node src/cli/export-fixture.ts",
-    "look": "node src/cli/look.ts"
+    "look": "node src/cli/look.ts",
+    "accept": "node src/cli/accept.ts"
   },
   "devDependencies": {
     "@types/node": "24.13.6",

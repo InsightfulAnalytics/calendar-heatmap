@@ -95,7 +95,7 @@
           "x": {"signal": "width - padX"},
           "y": {"signal": "top + (datum.rank - 0.5) * rowH"},
           "align": {"value": "right"}, "baseline": {"value": "middle"},
-          "text": {"signal": "upper(pbiFormatAutoUnit(datum.value, '#,0.0'))"},
+          "text": {"signal": "(datum.value >= 1e6 ? format(datum.value / 1e6, '.2f') + 'M' : datum.value >= 1e3 ? format(datum.value / 1e3, '.1f') + 'K' : format(datum.value, ',.0f'))"},
           "fontSize": {"value": 12}, "fontWeight": {"value": 600}, "fill": {"signal": "mutedColor"}
         }
       }

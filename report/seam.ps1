@@ -96,7 +96,9 @@ $Report = Join-Path $Here "$ReportName.Report"
 # a Subquery column) as a Column bound to a measure. That is a false positive: the title renders.
 # Each entry must match an error exactly to be forgiven.
 $KnownValidationFalsePositives = @(
-    @{ code = 'FIELD_KIND_MISMATCH'; location = 'dailyOverview/titleText/visual.json'; field = 'Measure Table.Dates Selected' }
+    @{ code = 'FIELD_KIND_MISMATCH'; location = 'dailyOverview/titleText/visual.json'; field = 'Measure Table.Report Title' }
+    @{ code = 'FIELD_KIND_MISMATCH'; location = 'byRegion/titleText/visual.json'; field = 'Measure Table.Report Title' }
+    @{ code = 'FIELD_KIND_MISMATCH'; location = 'targets/titleText/visual.json'; field = 'Measure Table.Report Title' }
 )
 
 $script:Failures = New-Object System.Collections.ArrayList

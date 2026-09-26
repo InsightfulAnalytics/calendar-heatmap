@@ -747,6 +747,46 @@
         "VAR __J = NATURALINNERJOIN ( SELECTCOLUMNS ( __S, \"Day\", 'Sales'[Date] + 0, \"@S\", [@S] ), SELECTCOLUMNS ( __T, \"Day\", 'Targets'[Date] + 0, \"@T\", [@T] ) )",
         "RETURN COUNTROWS ( FILTER ( __J, [@S] >= [@T] ) ) + 0"
       ]
+    },
+    {
+      "name": "report title, FY26",
+      "ticket": "T08",
+      "report": "CALCULATE ( [Report Title], 'DimDate'[FYear] = \"FY26\" )",
+      "independent": "\"Daily Sales · FY26 · Jul 2025 - Jun 2026\""
+    },
+    {
+      "name": "report title, 15 Dec 2025 to 10 Jan 2026 (a range crossing 31 December)",
+      "ticket": "T08",
+      "report": "CALCULATE ( NOT ISBLANK ( [Report Title] ) && SEARCH ( \"FY26\", [Report Title], 1, 0 ) > 0, DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 12, 15 ), DATE ( 2026, 1, 10 ) ) )",
+      "independent": "TRUE ()"
+    },
+    {
+      "name": "Days on Target and Days Short of Target, {{name}}, add up to the days that have both sales and a target",
+      "ticket": "T21",
+      "each": [
+        "FY26",
+        "7 Jul to 20 Aug 2025"
+      ],
+      "report": "CALCULATE ( [Days on Target] + [Days Short of Target], {{report}} )",
+      "independent": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), NOT ISBLANK ( [Total Sales] ) && NOT ISBLANK ( [Total Target] ) ) ) + 0, {{report}} )"
+    },
+    {
+      "name": "Day summary says in words that 17 Jul 2025 had no sales",
+      "ticket": "T12",
+      "report": "CALCULATE ( [Day Sales Label], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
+      "independent": "\"No sales on this day\""
+    },
+    {
+      "name": "Day summary shows 7 Jul 2025's sales",
+      "ticket": "T12",
+      "report": "CALCULATE ( [Day Sales Label], 'DimDate'[Date] = DATE ( 2025, 7, 7 ) )",
+      "independent": "FORMAT ( SUMX ( FILTER ( 'Sales', 'Sales'[Date] = DATE ( 2025, 7, 7 ) ), 'Sales'[Amount] ), \"#,##0\" )"
+    },
+    {
+      "name": "Day label for one day",
+      "ticket": "T12",
+      "report": "CALCULATE ( [Day Label], 'DimDate'[Date] = DATE ( 2025, 7, 7 ) )",
+      "independent": "\"Mon 7 Jul 2025\""
     }
   ]
 }

@@ -1,0 +1,147 @@
+{
+  "results": [
+    {
+      "name": "baseline: the KPI strip reads the FY26 total",
+      "ok": true,
+      "detail": "TOTAL | 1.18M | MEAN / DAY | 3.2K | PEAK DAY | 4 Dec | ACTIVE DAYS | 343 / 365; expected 1.18M"
+    },
+    {
+      "name": "baseline: the KPI strip reads FY26 active days out of 365",
+      "ok": true
+    },
+    {
+      "name": "baseline: Support tickets is at full strength",
+      "ok": true
+    },
+    {
+      "name": "drag: the KPI strip total is the range total",
+      "ok": true,
+      "detail": "TOTAL | 148.3K | MEAN / DAY | 3.3K | PEAK DAY | 15 Aug | ACTIVE DAYS | 42 / 45; expected 148.3K"
+    },
+    {
+      "name": "drag: active days read out of the 45 days of the range",
+      "ok": true,
+      "detail": "TOTAL | 148.3K | MEAN / DAY | 3.3K | PEAK DAY | 15 Aug | ACTIVE DAYS | 42 / 45"
+    },
+    {
+      "name": "drag: the Peak day is the range's best day",
+      "ok": true,
+      "detail": "expected 15 Aug"
+    },
+    {
+      "name": "drag: Top days lists five days, all in July or August",
+      "ok": true,
+      "detail": "15 Aug, 14 Aug, 4 Aug, 13 Aug, 5 Aug"
+    },
+    {
+      "name": "drag: the title states the range",
+      "ok": true,
+      "detail": "Daily Sales · FY26 · 7 Jul - 20 Aug 2025"
+    },
+    {
+      "name": "drag: Sales by month keeps twelve columns and highlights July and August",
+      "ok": true,
+      "detail": "{\"columns\":12,\"shares\":2}"
+    },
+    {
+      "name": "drag: Support tickets keeps all 365 days drawn, the 312 valued days outside the range dimmed",
+      "ok": true,
+      "detail": "expected {\"dim\":312,\"full\":53}, got {\"dim\":312,\"full\":53}"
+    },
+    {
+      "name": "drag: Web sessions keeps all 365 days drawn, the 275 valued days outside the range dimmed",
+      "ok": true,
+      "detail": "expected {\"dim\":275,\"full\":90}, got {\"dim\":275,\"full\":90}"
+    },
+    {
+      "name": "clear: a background click returns the KPI strip to FY26",
+      "ok": true,
+      "detail": "TOTAL | 1.18M | MEAN / DAY | 3.2K | PEAK DAY | 4 Dec | ACTIVE DAYS | 343 / 365"
+    },
+    {
+      "name": "hover: Day summary shows Mon 7 Jul 2025",
+      "ok": true
+    },
+    {
+      "name": "hover: Day summary shows Thu 17 Jul 2025 and 'No sales on this day'",
+      "ok": true
+    },
+    {
+      "name": "drill through: Day detail opens for Mon 7 Jul 2025",
+      "ok": true,
+      "detail": "{\"\":\"Mon 7 Jul 2025\"}"
+    }
+  ],
+  "readings": {
+    "baseline": {
+      "kpi": [
+        "TOTAL",
+        "1.18M",
+        "MEAN / DAY",
+        "3.2K",
+        "PEAK DAY",
+        "4 Dec",
+        "ACTIVE DAYS",
+        "343 / 365"
+      ],
+      "title": "Daily Sales · FY26 · Jul 2025 - Jun 2026",
+      "support": {
+        "dim": 0,
+        "full": 365
+      }
+    },
+    "drag": {
+      "kpi": [
+        "TOTAL",
+        "148.3K",
+        "MEAN / DAY",
+        "3.3K",
+        "PEAK DAY",
+        "15 Aug",
+        "ACTIVE DAYS",
+        "42 / 45"
+      ],
+      "top": [
+        "Top days",
+        "15 Aug",
+        "14 Aug",
+        "4 Aug",
+        "13 Aug",
+        "5 Aug",
+        "4.5K",
+        "4.4K",
+        "4.4K",
+        "4.3K",
+        "4.3K"
+      ],
+      "title": "Daily Sales · FY26 · 7 Jul - 20 Aug 2025",
+      "support": {
+        "dim": 312,
+        "full": 53
+      },
+      "web": {
+        "dim": 275,
+        "full": 90
+      },
+      "months": {
+        "columns": 12,
+        "shares": 2
+      }
+    },
+    "cleared": {
+      "kpi": [
+        "TOTAL",
+        "1.18M",
+        "MEAN / DAY",
+        "3.2K",
+        "PEAK DAY",
+        "4 Dec",
+        "ACTIVE DAYS",
+        "343 / 365"
+      ]
+    },
+    "drill": {
+      "": "Mon 7 Jul 2025"
+    }
+  }
+}

@@ -94,7 +94,7 @@
         {"i": 3, "label": "ACTIVE DAYS"}
       ],
       "transform": [
-        {"type": "formula", "as": "headline", "expr": "datum.i == 0 ? pbiFormatAutoUnit(k.total || 0, '#,0.00') : datum.i == 1 ? (k.mean == null ? '' : pbiFormatAutoUnit(k.mean, '#,0.0')) : datum.i == 2 ? (length(data('peakDay')) && data('peakDay')[0].t != null ? timeFormat(data('peakDay')[0].t, '%-d %b') : 'None') : (k.days ? format(k.active, ',') + ' / ' + format(k.days, ',') : '')"}
+        {"type": "formula", "as": "headline", "expr": "datum.i == 0 ? ((k.total || 0) >= 1e6 ? format((k.total || 0) / 1e6, '.2f') + 'M' : (k.total || 0) >= 1e3 ? format((k.total || 0) / 1e3, '.1f') + 'K' : format((k.total || 0), ',.0f')) : datum.i == 1 ? (k.mean == null ? '' : (k.mean >= 1e6 ? format(k.mean / 1e6, '.2f') + 'M' : k.mean >= 1e3 ? format(k.mean / 1e3, '.1f') + 'K' : format(k.mean, ',.0f'))) : datum.i == 2 ? (length(data('peakDay')) && data('peakDay')[0].t != null ? timeFormat(data('peakDay')[0].t, '%-d %b') : 'None') : (k.days ? format(k.active, ',') + ' / ' + format(k.days, ',') : '')"}
       ]
     }
   ],
