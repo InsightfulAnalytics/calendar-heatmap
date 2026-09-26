@@ -11,8 +11,8 @@ import {
   type DenebVersion, type Json, type JsonObject, type ScanResult, type SpecSource,
 } from './spec.ts';
 
-export { applyLimits, withApplyLimit } from './spec.ts';
-export type { Json, JsonObject, ScanResult, ScanFinding, SpecSource } from './spec.ts';
+export { applyLimits, withApplyLimit, readTemplate, mapTemplate, TEMPLATE_FILE } from './spec.ts';
+export type { Json, JsonObject, ScanResult, ScanFinding, SpecSource, TemplateField, DenebTemplate } from './spec.ts';
 export type { Fixture, FixtureRow } from './fixtures.ts';
 
 export type VegaVersion = '6.2' | '6.4';
