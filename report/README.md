@@ -12,7 +12,8 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
 | `seam.ps1` | The report seam loop, below |
 | `tieout.json` | The DAX tie-out suite the loop runs, with its fixed set of filters. Later tickets add checks here |
 | `validate-model.ps1` | The model's offline TMDL round trip, run by the loop before Desktop applies anything |
-| `desktop/` | The Desktop driver: replays gestures in Desktop through remote debugging, the #2 probe, the #5 card check, the #6 Calendar check and the fixture export. See "Gestures in Desktop" below |
+| `desktop/` | The Desktop driver: replays gestures in Desktop through remote debugging, the #2 probe, the #6 Calendar check, the fixture export and the #27 acceptance check (`npm run accept`). See "Gestures in Desktop" below |
+| `embed.py`, `layout.py`, `specs/` | Write every Deneb visual, and the frame's layout and container formatting (see "The pages") |
 
 ## The model
 
@@ -26,6 +27,9 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
 - `Targets`: synthetic daily sales targets at the grain of `Sales` (day by channel by region), a
   DAX calculated table generated from `DimDate` by a fixed formula in the same pattern, with its
   own blank days (whole days with no rows). Its columns are hidden too.
+- `Support Tickets` and `Web Sessions`: synthetic daily counts at the date grain only (no channel
+  or region), generated the same way: tickets are weekday heavy with a November to January surge,
+  sessions weekend heavy. Each has its own blank days.
 - `Channel` and `Region`: the dimensions, DAX calculated tables of their members sorted by a hidden
   order column, related many to one from `Sales` and `Targets`.
 - `Measure Table`, every measure in the house DAX style:
@@ -43,26 +47,48 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
   - `Days in Filter`: the never-blank helper, a count of date rows. Every Calendar binds it beside its
     value measure, so it receives every date as a row, blank-sales days included, under any channel
     or region filter.
-  - `Dates Selected`: the title text.
+  - `Dates Selected`: the date range text, and `Report Title`: the title, "Daily Sales · FY26 · Jul
+    2025 - Jun 2026", built from it.
+  - `Total Tickets`, `Total Sessions`: the other two Calendars' values.
+  - `Region Scale Max`: the best single day of any region across the dates the visual shows, the
+    By region Calendars' shared scale.
+  - `Target Hit`, `Days on Target`, `Days Short of Target`: a day judged against its target, and
+    the counts on Targets.
+  - `Day Label`, `Day Sales Label`, `Day Target Label`: Day summary and Day detail's words.
 
 The DAX functions need compatibility level 1702. The DAX Studio TOM assembly on this machine
 (19.84.1.0) predates them, so `validate-model.ps1` round-trips a copy of the definition without
 `functions.tmdl` (the pbip:tmdl skill's documented workaround) and says so; Desktop loads and
 queries the function, which the tie-out checks.
 
-## The page
+## The pages
 
-Daily overview holds the Calendar, the title, the `Daily rows` table, a month slicer, and five
-native cards: Total sales, Days in filter, Mean per day, Peak day and Active days. The Calendar
-filters the table, the title and every card; the table filters nothing. The page filter limits it
-to FY26 (`DimDate[FYear]`, since #6) until the rail's fiscal year slicer arrives (#8).
+Every visible page is a 1280 by 968 canvas with the same frame: a left rail (three page buttons,
+the date range, a fiscal year slicer that opens on the latest year, a channel slicer, the footer
+credit) and a top bar (the `Report Title` measure and a region slicer). The slicers are not synced
+across pages: pbir cannot write a sync group, so each page holds its own.
 
-The Calendar is the Template (`template/calendar-heatmap/`) over `Date` and `Sales`, embedded by
-#6 with a July fiscal-year Window and 'every date has a row' on, because it binds the never-blank
-`Days in Filter` helper. So it draws FY26 from 1 July 2025, and a day with no sales is an Empty day.
-It keeps the visual name `calendar` and the legacy container signal names, which Deneb 1.9 needs.
-To embed it again, write the Template with `npm run template` in `harness/` and embed that with the
-deneb-pbir skill (the command is at the top of `harness/src/cli/template.ts`).
+- **Daily overview**: the KPI strip (`specs/kpi-strip.json`: Total with a weekly sparkline, Mean
+  per day with a bullet against the mean daily target, Peak day with the share of days in each
+  step, Active days with a column per month), the sales Calendar, the Support tickets Calendar
+  (square cells), the Web sessions Calendar (dense), Sales by month (`specs/sales-by-month.json`)
+  and Top days (`specs/top-days.json`). Each Calendar filters the KPI strip, Top days and the
+  title, and highlights Sales by month and the other two Calendars; the others send nothing.
+- **By region**: one Calendar per region, each filtered to its region, all coloured on the
+  `Region Scale Max` measure through the Template's `scaleField`, so a value draws the same
+  colour in every region. The region slicer does not filter them.
+- **Targets**: the sales Calendar in target mode against `Total Target`, with Days on target,
+  Days short of target, Mean per day and Mean daily target cards.
+- **Day summary** (hidden tooltip page, 320 by 200): the day, its sales in words or "No sales on
+  this day", and its target. Every Calendar shows it on hover (tooltip type Canvas).
+- **Day detail** (hidden drill-through on `DimDate[Date]`): the day's sales and target by channel
+  and by region, with a Back button.
+
+Every Deneb visual is written by `embed.py` (each Calendar from the Template with its own
+settings, listed at the top of the script; the other three from `specs/`), and the frame's
+positions, container formatting, tooltip page and alt text by `layout.py`. Run both after any
+Template, spec or layout change, then the seam loop. Every Calendar keeps the legacy container
+signal names, which Deneb 1.9 needs.
 
 ## The report seam loop
 
@@ -155,7 +181,9 @@ npm run desktop -- open --plain      # start it without a port
 npm run desktop -- save              # save through the title bar Save button
 npm run desktop -- close             # close it, answering the save prompt with Don't save
 npm run probe                        # the #2 probe, end to end (below)
-npm run cards                        # the #5 card check (below)
+npm run accept                       # the #27 acceptance check: one drag, a hover and a drill through on Daily overview
+npm run look -- --page "By region"   # select a page and print what each visual draws
+npm run cards                        # the #5 card check (retired: its native cards were replaced by the KPI strip)
 npm run calendar                     # the #6 Calendar check (below)
 npm run export-fixture               # the sales Calendar's FY26 rows as a harness fixture (below)
 npm run export-fixture -- --check    # export again; fail unless identical to the committed fixture

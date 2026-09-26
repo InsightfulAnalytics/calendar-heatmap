@@ -29,21 +29,19 @@ Learnings and notes live in the Vault, under
 
 ## Status
 
-- 2026-09-25: feasibility study done and prototype rendered. Click, drag, right click and clear have
-  been replayed in a headless browser only, not yet in Power BI Desktop.
-- 2026-09-25: wave 1 built. The template seam harness (T03) and the probe Report (T01) pass their
-  acceptance checks. The courtesy note to Lumeric Visuals is drafted in the Vault, not yet sent. Next:
-  Tim runs the probe checklist in `checklists/probe/` (T02).
-- 2026-09-26: the probe (#2) answered every gating Desktop question without a human, replaying
-  gestures in Desktop through WebView2 remote debugging. The answers are in the SPEC; later tickets
-  replay their Desktop gestures the same way.
-- 2026-09-26: the sales model (#5) has its channel and region dimensions and every sales KPI measure
-  (Total, Mean per day, Peak day, Active days, Top days), tied out by DAX under a fixed set of
-  filters, with native cards on Daily overview and the sales Calendar's FY26 rows exported as a
-  harness fixture.
-- 2026-09-26: the Template skeleton (#6) is in `template/calendar-heatmap/`: calendar or fiscal-year
-  Windows on the right weekday in any time zone, whatever shape the date arrives in, Empty and
-  Filtered-out days, and the library checker as a standing gate. The Report's sales Calendar is the
-  Template, drawing FY26 under an FY26 page filter.
+- 2026-09-25 to 26: feasibility, prototype, the template seam harness (#3), the probe Report (#1),
+  the Desktop probe (#2), the sales model (#5) and the Template skeleton (#6).
+- 2026-09-26: close-out on a lean scope (Tim: expedite; library extras deferred, time zones left to
+  each viewer since the Service runs in UTC). The Report has its frame and all five pages: Daily
+  overview (KPI strip, the sales, support tickets and web sessions Calendars, Sales by month, Top
+  days), By region (one Calendar per region on a shared scale), Targets (target mode), and the
+  hidden Day summary tooltip and Day detail drill-through. The Template gained cell shape, header
+  and legend switches, a shared scale field, target mode and inbound highlight dimming. Proof: the
+  harness (476 checks), the seam's DAX tie-out, and `npm run accept` in `report/desktop`, which
+  replays one drag, a hover and a drill through in Desktop (15 checks, `evidence/27-acceptance/`).
+- Deferred to the backlog (closed as not planned, reopen if wanted): rolling and multi-year
+  Windows, week start, in-spec small multiples, the selection-limit handling, Deneb 1.9 scratch
+  checks and PDF export, markers and value labels, the in-Calendar KPI strip and month totals.
+- Open, Tim's: the courtesy note to Lumeric (#4), then republishing and the library PR (#29).
 - The finished template goes to the public [Deneb template library](https://github.com/InsightfulAnalytics/Deneb)
   once a courtesy note has gone to Lumeric Visuals.
