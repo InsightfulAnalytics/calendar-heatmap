@@ -23,8 +23,11 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
   why it never reads the date table's blank row, is in the project LEARNINGS
   (`Vault\Projects\Calendar Heatmap\LEARNINGS.md`). Its Channel and Region columns are hidden:
   filters go through the dimensions.
+- `Targets`: synthetic daily sales targets at the grain of `Sales` (day by channel by region), a
+  DAX calculated table generated from `DimDate` by a fixed formula in the same pattern, with its
+  own blank days (whole days with no rows). Its columns are hidden too.
 - `Channel` and `Region`: the dimensions, DAX calculated tables of their members sorted by a hidden
-  order column, related many to one from `Sales`.
+  order column, related many to one from `Sales` and `Targets`.
 - `Measure Table`, every measure in the house DAX style:
   - `Total Sales`: the sum of the amounts.
   - `Mean per Day`: the total over every calendar day in the date filter, blank days counted as zero
@@ -34,6 +37,9 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
     365`) by a dynamic format string from the `Fmt.OutOf` function in `functions.tmdl`.
   - `Top Day Sales`: a day's total only when it is one of the five best days in the visual's filter,
     so a visual of the date and this measure shows exactly the Top days.
+  - `Total Target`: the sum of the targets.
+  - `Mean Daily Target`: the total target over every calendar day in the date filter, a day with no
+    target counted as zero (the divisor of `Mean per Day`).
   - `Days in Filter`: the never-blank helper, a count of date rows. Every Calendar binds it beside its
     value measure, so it receives every date as a row, blank-sales days included, under any channel
     or region filter.

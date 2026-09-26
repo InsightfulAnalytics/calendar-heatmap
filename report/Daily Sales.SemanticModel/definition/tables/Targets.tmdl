@@ -1,0 +1,135 @@
+/// Synthetic daily sales targets at the day by channel by region grain, the grain of Sales, generated inside the model from the date table's dates by a fixed formula. Days with no target have no rows.
+table Targets
+	lineageTag: e8e81ac2-8331-41bc-b458-ba1e3f8cd4cb
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: dd-mmm-yy
+		lineageTag: 615dd967-e23a-4524-93f8-3dfc44865483
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Channel
+		dataType: string
+		isHidden
+		lineageTag: 27ef73f8-4d0f-419f-a36a-9253dbb67ba4
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Channel]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		isHidden
+		lineageTag: 7ad94350-d8fe-4443-a97b-1b3a358b04af
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Region]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Target
+		dataType: int64
+		isHidden
+		formatString: #,##0
+		lineageTag: 02949b04-25c6-4170-b264-61f75abfd32c
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Target]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Targets = calculated
+		mode: import
+		source =
+				// Synthetic targets: one row per day, channel and region, the grain of Sales, from a fixed
+				// formula (never RAND, so every refresh gives the same rows). ALLNOBLANKROW reads the date
+				// table's dates without its blank row, so the relationship back to DimDate cannot turn
+				// circular.
+				VAR __Dates =
+				    ALLNOBLANKROW ( 'DimDate'[Date] )
+				// Channels and regions with the same shares of a day as the Sales generator
+				VAR __Channels =
+				    DATATABLE (
+				        "Channel", STRING,
+				        "Channel Index", INTEGER,
+				        "Channel Share", DOUBLE,
+				        {
+				            { "Online", 1, 0.45 },
+				            { "Retail", 2, 0.35 },
+				            { "Wholesale", 3, 0.2 }
+				        }
+				    )
+				VAR __Regions =
+				    DATATABLE (
+				        "Region", STRING,
+				        "Region Index", INTEGER,
+				        "Region Share", DOUBLE,
+				        {
+				            { "North", 1, 0.35 },
+				            { "South", 2, 0.25 },
+				            { "EMEA", 3, 0.25 },
+				            { "APAC", 4, 0.15 }
+				        }
+				    )
+				// Day-level inputs: the date serial number, ISO weekday (1 Monday to 7 Sunday) and month
+				VAR __Days =
+				    ADDCOLUMNS (
+				        __Dates,
+				        "@Serial", CONVERT ( 'DimDate'[Date], INTEGER ),
+				        "@Weekday", WEEKDAY ( 'DimDate'[Date], 2 ),
+				        "@Month", MONTH ( 'DimDate'[Date] )
+				    )
+				// Blank target days: a fixed quadratic residue test, not the sales one, drops about one
+				// day in 25, whole days only
+				VAR __TargetDays =
+				    FILTER (
+				        __Days,
+				        MOD ( [@Serial] * [@Serial] + 13 * [@Serial], 101 ) >= 4
+				    )
+				// The grain: every target day crossed with every channel and every region
+				VAR __Grid =
+				    CROSSJOIN ( __TargetDays, __Channels, __Regions )
+				// The expected day of the sales generator without its wobble (weekends at 45%, a season
+				// rising to a December peak), stretched by month between 98% and 102% so that some
+				// months are mostly hit and others mostly missed
+				VAR __Rows =
+				    ADDCOLUMNS (
+				        __Grid,
+				        "@Target",
+				            VAR __WeekdayFactor =
+				                IF ( [@Weekday] >= 6, 0.45, 1 )
+				            VAR __SeasonFactor =
+				                0.7 + 0.6 * ( [@Month] - 1 ) / 11
+				                    + IF ( [@Month] = 12, 0.25, 0 )
+				            VAR __Stretch =
+				                0.98 + 0.01 * MOD ( [@Month] * 7, 5 )
+				            RETURN
+				                ROUND (
+				                    4000 * [Channel Share] * [Region Share]
+				                        * __WeekdayFactor * __SeasonFactor * __Stretch,
+				                    0
+				                )
+				    )
+				// Keep the fact table's columns: the date the relationship uses, channel, region and a
+				// whole-number target, so a measure and a sum over the rows agree exactly
+				VAR __Result =
+				    SELECTCOLUMNS (
+				        __Rows,
+				        "Date", 'DimDate'[Date],
+				        "Channel", [Channel],
+				        "Region", [Region],
+				        "Target", CONVERT ( [@Target], INTEGER )
+				    )
+				RETURN
+				    __Result
+

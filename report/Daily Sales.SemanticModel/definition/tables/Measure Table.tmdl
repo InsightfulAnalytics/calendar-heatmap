@@ -281,6 +281,34 @@ table 'Measure Table'
 		displayFolder: Sales
 		lineageTag: ae8e88c7-918a-4613-84c8-2afe0abd1d89
 
+	/// Sum of the daily sales targets in the current filter context. Targets carry channel and region like Sales, so a channel or region filter narrows the target with the sales it is compared against. Blank when no target row survives the filter.
+	measure 'Total Target' =
+
+			// Add up the target over the target rows the filter context leaves
+			SUM ( 'Targets'[Target] )
+		formatString: #,##0
+		displayFolder: Targets
+		lineageTag: f449e8a8-702f-4aa7-bcfc-e961d4f42e8f
+
+	/// The mean daily target: the total target over every calendar day in the current date filter, a day with no target counted as zero, so it divides by the same days as Mean per Day and the two compare like with like. Blank only when the filter holds no days.
+	measure 'Mean Daily Target' =
+
+			// Every calendar day in the current date filter, counted from the date table, so days
+			// with no target rows are in the divisor
+			VAR __Days =
+			    COUNTROWS ( 'DimDate' )
+			// The total target over those days; a day with no target adds zero
+			VAR __Target =
+			    COALESCE ( [Total Target], 0 )
+			// The mean per calendar day; blank only when the filter holds no days at all
+			VAR __Result =
+			    DIVIDE ( __Target, __Days )
+			RETURN
+			    __Result
+		formatString: #,##0
+		displayFolder: Targets
+		lineageTag: 3f2f6858-c8ad-448e-b095-5216cf3660f1
+
 	/// Days with sales in the current date filter, both the days and their sales read through the date table. Formatted out of the calendar days in the filter, such as 37 / 45, while the value stays a number. Reads 0 on a filter whose days have no sales, and blank only when the filter holds no days.
 	measure 'Active Days' =
 			

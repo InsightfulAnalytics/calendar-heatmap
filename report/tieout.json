@@ -5,13 +5,17 @@
     { "name": "sales amount", "expr": "SUM ( 'Sales'[Amount] )" },
     { "name": "sales position checksum", "expr": "SUMX ( 'Sales', 'Sales'[Amount] * MOD ( CONVERT ( 'Sales'[Date], INTEGER ), 101 ) )" },
     { "name": "date rows", "expr": "COUNTROWS ( 'DimDate' )" },
-    { "name": "channel and region rows", "expr": "COUNTROWS ( 'Channel' ) * 100 + COUNTROWS ( 'Region' )" }
+    { "name": "channel and region rows", "expr": "COUNTROWS ( 'Channel' ) * 100 + COUNTROWS ( 'Region' )" },
+    { "name": "target rows", "expr": "COUNTROWS ( 'Targets' )" },
+    { "name": "target amount", "expr": "SUM ( 'Targets'[Target] )" },
+    { "name": "target position checksum", "expr": "SUMX ( 'Targets', 'Targets'[Target] * MOD ( CONVERT ( 'Targets'[Date], INTEGER ), 101 ) )" }
   ],
   "filters": [
     {
       "name": "FY26",
       "report": "'DimDate'[FYear] = \"FY26\"",
       "salesRows": "'Sales'[Date] >= DATE ( 2025, 7, 1 ) && 'Sales'[Date] <= DATE ( 2026, 6, 30 )",
+      "targetRows": "'Targets'[Date] >= DATE ( 2025, 7, 1 ) && 'Targets'[Date] <= DATE ( 2026, 6, 30 )",
       "from": "DATE ( 2025, 7, 1 )",
       "to": "DATE ( 2026, 6, 30 )",
       "days": "365"
@@ -20,6 +24,7 @@
       "name": "FY24",
       "report": "'DimDate'[FYear] = \"FY24\"",
       "salesRows": "'Sales'[Date] >= DATE ( 2023, 7, 1 ) && 'Sales'[Date] <= DATE ( 2024, 6, 30 )",
+      "targetRows": "'Targets'[Date] >= DATE ( 2023, 7, 1 ) && 'Targets'[Date] <= DATE ( 2024, 6, 30 )",
       "from": "DATE ( 2023, 7, 1 )",
       "to": "DATE ( 2024, 6, 30 )",
       "days": "366"
@@ -28,6 +33,7 @@
       "name": "7 Jul to 20 Aug 2025",
       "report": "DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) )",
       "salesRows": "'Sales'[Date] >= DATE ( 2025, 7, 7 ) && 'Sales'[Date] <= DATE ( 2025, 8, 20 )",
+      "targetRows": "'Targets'[Date] >= DATE ( 2025, 7, 7 ) && 'Targets'[Date] <= DATE ( 2025, 8, 20 )",
       "from": "DATE ( 2025, 7, 7 )",
       "to": "DATE ( 2025, 8, 20 )",
       "days": "45"
@@ -36,6 +42,7 @@
       "name": "FY26, channel Retail",
       "report": "'DimDate'[FYear] = \"FY26\", 'Channel'[Channel] = \"Retail\"",
       "salesRows": "'Sales'[Date] >= DATE ( 2025, 7, 1 ) && 'Sales'[Date] <= DATE ( 2026, 6, 30 ) && 'Sales'[Channel] = \"Retail\"",
+      "targetRows": "'Targets'[Date] >= DATE ( 2025, 7, 1 ) && 'Targets'[Date] <= DATE ( 2026, 6, 30 ) && 'Targets'[Channel] = \"Retail\"",
       "from": "DATE ( 2025, 7, 1 )",
       "to": "DATE ( 2026, 6, 30 )",
       "days": "365"
@@ -44,6 +51,7 @@
       "name": "FY26, region EMEA",
       "report": "'DimDate'[FYear] = \"FY26\", 'Region'[Region] = \"EMEA\"",
       "salesRows": "'Sales'[Date] >= DATE ( 2025, 7, 1 ) && 'Sales'[Date] <= DATE ( 2026, 6, 30 ) && 'Sales'[Region] = \"EMEA\"",
+      "targetRows": "'Targets'[Date] >= DATE ( 2025, 7, 1 ) && 'Targets'[Date] <= DATE ( 2026, 6, 30 ) && 'Targets'[Region] = \"EMEA\"",
       "from": "DATE ( 2025, 7, 1 )",
       "to": "DATE ( 2026, 6, 30 )",
       "days": "365"
@@ -177,15 +185,15 @@
     },
     {
       "name": "model tables (no hidden local date tables)",
-      "ticket": "T01, T05",
+      "ticket": "T01, T05, T14",
       "report": "CONCATENATEX ( INFO.TABLES (), [Name], \", \", [Name], ASC )",
-      "independent": "\"Channel, DimDate, Measure Table, Region, Sales\""
+      "independent": "\"Channel, DimDate, Measure Table, Region, Sales, Targets\""
     },
     {
-      "name": "three relationships (date, channel, region), each active and single direction, many to one",
-      "ticket": "T01, T05",
+      "name": "six relationships (Sales and Targets each to date, channel and region), each active and single direction, many to one",
+      "ticket": "T01, T05, T14",
       "report": "COUNTROWS ( FILTER ( INFO.RELATIONSHIPS (), [IsActive] && [CrossFilteringBehavior] = 1 && [FromCardinality] = 2 && [ToCardinality] = 1 ) ) & \" of \" & COUNTROWS ( INFO.RELATIONSHIPS () )",
-      "independent": "\"3 of 3\""
+      "independent": "\"6 of 6\""
     },
     {
       "name": "the Channel dimension lists its members in display order, with no blank row",
@@ -460,6 +468,79 @@
       "ticket": "T05",
       "report": "CONCATENATEX ( INFO.USERDEFINEDFUNCTIONS (), [Name], \", \", [Name], ASC )",
       "independent": "\"Fmt.OutOf\""
+    },
+    {
+      "name": "Mean daily target, {{name}}: the total target over the {{days}} calendar days of the date table",
+      "ticket": "T14",
+      "each": "filters",
+      "report": "CALCULATE ( [Mean Daily Target], {{report}} )",
+      "independent": "DIVIDE ( SUMX ( FILTER ( 'Targets', {{targetRows}} ), 'Targets'[Target] ), COUNTROWS ( FILTER ( ALL ( 'DimDate'[Date] ), 'DimDate'[Date] >= {{from}} && 'DimDate'[Date] <= {{to}} ) ) )",
+      "tolerance": 1e-9
+    },
+    {
+      "name": "Mean daily target, {{name}}, divides the total target by {{days}} calendar days",
+      "ticket": "T14",
+      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "report": "CALCULATE ( DIVIDE ( [Total Target], [Mean Daily Target] ), {{report}} )",
+      "independent": "{{days}}",
+      "tolerance": 1e-9
+    },
+    {
+      "name": "Total target, {{name}}: the sum of the target rows",
+      "ticket": "T14",
+      "each": "filters",
+      "report": "CALCULATE ( [Total Target], {{report}} )",
+      "independent": "SUMX ( FILTER ( 'Targets', {{targetRows}} ), 'Targets'[Target] )"
+    },
+    {
+      "name": "{{name}} holds days with no target rows (blank target days)",
+      "ticket": "T14",
+      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "report": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), ISBLANK ( [Total Target] ) ) ), {{report}} ) >= 1",
+      "independent": "TRUE ()"
+    },
+    {
+      "name": "{{name}}: the days with no target are exactly the calendar days no target row names",
+      "ticket": "T14",
+      "each": ["FY26", "FY24", "7 Jul to 20 Aug 2025"],
+      "report": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), ISBLANK ( [Total Target] ) ) ), {{report}} ) + 0",
+      "independent": "COUNTROWS ( EXCEPT ( CALENDAR ( {{from}}, {{to}} ), SELECTCOLUMNS ( FILTER ( 'Targets', 'Targets'[Date] >= {{from}} && 'Targets'[Date] <= {{to}} ), \"Date\", 'Targets'[Date] ) ) ) + 0"
+    },
+    {
+      "name": "7 Jul to 20 Aug 2025 has no target on 16 Jul, 4 Aug and 18 Aug (worked out from the generator's rule)",
+      "ticket": "T14",
+      "report": "CALCULATE ( CONCATENATEX ( FILTER ( VALUES ( 'DimDate'[Date] ), ISBLANK ( [Total Target] ) ), FORMAT ( 'DimDate'[Date], \"yyyy-mm-dd\" ), \", \", 'DimDate'[Date], ASC ), DATESBETWEEN ( 'DimDate'[Date], DATE ( 2025, 7, 7 ), DATE ( 2025, 8, 20 ) ) )",
+      "independent": "\"2025-07-16, 2025-08-04, 2025-08-18\""
+    },
+    {
+      "name": "a blank target day is a whole day: every day with a target has a row for each of the 12 channel and region pairs",
+      "ticket": "T14",
+      "report": "COUNTROWS ( FILTER ( ADDCOLUMNS ( DISTINCT ( 'Targets'[Date] ), \"@Rows\", CALCULATE ( COUNTROWS ( 'Targets' ) ) ), [@Rows] <> 12 ) ) + 0",
+      "independent": "0"
+    },
+    {
+      "name": "the targets are read from the date table's dates, never its blank row: every target row finds its date",
+      "ticket": "T14",
+      "report": "COUNTROWS ( FILTER ( 'Targets', NOT ISBLANK ( RELATED ( 'DimDate'[Date] ) ) ) ) + 0",
+      "independent": "COUNTROWS ( 'Targets' )"
+    },
+    {
+      "name": "the date table shows no blank row: every Sales and Targets row finds its date",
+      "ticket": "T14",
+      "report": "COUNTROWS ( VALUES ( 'DimDate'[Date] ) )",
+      "independent": "COUNTROWS ( ALLNOBLANKROW ( 'DimDate'[Date] ) )"
+    },
+    {
+      "name": "every target row finds its Channel and its Region member",
+      "ticket": "T14",
+      "report": "COUNTROWS ( FILTER ( 'Targets', NOT ISBLANK ( RELATED ( 'Channel'[Channel] ) ) && NOT ISBLANK ( RELATED ( 'Region'[Region] ) ) ) ) + 0",
+      "independent": "COUNTROWS ( 'Targets' )"
+    },
+    {
+      "name": "targets follow the channel and region filters: the Retail and EMEA targets are each part of the whole, not all of it",
+      "ticket": "T14",
+      "report": "CALCULATE ( [Total Target], 'Channel'[Channel] = \"Retail\" ) < [Total Target] && CALCULATE ( [Total Target], 'Region'[Region] = \"EMEA\" ) < [Total Target]",
+      "independent": "TRUE ()"
     }
   ]
 }

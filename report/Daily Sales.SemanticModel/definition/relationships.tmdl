@@ -10,3 +10,15 @@ relationship c3ce9157-afd6-4c44-850a-e04f3ee8519d
 	fromColumn: Sales.Region
 	toColumn: Region.Region
 
+relationship 116a864a-2d2f-411b-907c-98b71d1270a3
+	fromColumn: Targets.Date
+	toColumn: DimDate.Date
+
+relationship eb03f6b2-7f69-4118-87c8-ebba4587a286
+	fromColumn: Targets.Channel
+	toColumn: Channel.Channel
+
+relationship 27d2ce1f-9431-44e7-a54b-52c8cdda5d6e
+	fromColumn: Targets.Region
+	toColumn: Region.Region
+

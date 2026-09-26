@@ -26,6 +26,7 @@ ref table DimDate
 ref table 'Measure Table'
 ref table Channel
 ref table Region
+ref table Targets
 
 ref cultureInfo en-US
 

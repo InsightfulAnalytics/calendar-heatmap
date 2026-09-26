@@ -350,7 +350,15 @@ function Get-Col($Row, [string]$Name) {
     if ($p) { return $p.Value } else { return $null }
 }
 function Invoke-DaxQuery([string]$Query) {
-    $r = Invoke-Pbir @('model', $Report, '-q', $Query, '--json')
+    # Straight after a canvas reload (step 5) Desktop's local API can refuse a query for a few
+    # seconds with "Local model is not open in Power BI Desktop". That one message is retried, for
+    # up to 30 seconds; any other failure throws at once. See the project LEARNINGS.
+    for ($attempt = 1; ; $attempt++) {
+        $r = Invoke-Pbir @('model', $Report, '-q', $Query, '--json')
+        $transient = ($r.Code -ne 0) -and ((($r.Err + $r.Out) -join ' ') -match 'Local model is not open in Power BI Desktop')
+        if (-not $transient -or $attempt -ge 7) { break }
+        Start-Sleep -Seconds 5
+    }
     if ($r.Code -ne 0) { throw ("pbir model -q exited {0}: {1}" -f $r.Code, ($r.Err -join ' ')) }
     # Windows PowerShell 5.1's ConvertFrom-Json emits a JSON array as one object, so @() around the
     # pipeline would nest it; unroll it from a variable instead.

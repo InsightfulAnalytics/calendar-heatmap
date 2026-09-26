@@ -536,8 +536,19 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   members with a hidden display-order column (North, South, EMEA, APAC; Online, Retail, Wholesale),
   related many to one from Sales, whose own Channel and Region columns are hidden so every filter
   goes through a dimension. The Sales generator keeps its own member list (it carries the shares),
-  so the tie-out checks that every sales row finds its member and every member has sales. Only
-  Sales carries channel and region.
+  so the tie-out checks that every sales row finds its member and every member has sales. Sales
+  and Targets carry channel and region (#14); the support tickets and web sessions tables do not.
+- **Daily targets (#14).** `Targets` is a DAX calculated table at the grain of Sales (day by
+  channel by region), related many to one to the date table and both dimensions, so a channel or
+  region filter narrows the target with the sales it is compared against. Each row's target is the
+  Sales generator's expected day without its wobble (weekends at 45%, the season rising to a
+  December peak), stretched by month between 98% and 102% so some months are mostly hit and others
+  mostly missed. Blank target days are whole days with no rows, chosen by a second quadratic
+  residue rule, `MOD ( s * s + 13 * s, 101 ) >= 4` on the date serial `s` (22 days in FY26, 22 in
+  FY24, and 16 Jul, 4 Aug and 18 Aug in 7 Jul to 20 Aug 2025, none of them a no-sales day there).
+  The mean daily target is the total target over the calendar days in the current date filter, a
+  day with no target counted as zero: the divisor of Mean per day, so the bullet compares like with
+  like.
 - **Sample data is synthetic and lives inside the model.** The PBIP opens and publishes with no
   external files, gateway or credentials. It covers three fiscal years, FY24 to FY26 (1 July 2023 to
   30 June 2026), so FY24 carries 29 February 2024 and the leap day can be checked in Desktop. Each
