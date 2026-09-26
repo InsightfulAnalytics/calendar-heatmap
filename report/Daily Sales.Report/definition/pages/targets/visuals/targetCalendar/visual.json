@@ -61,7 +61,6 @@
               "displayName": "Sales"
             },
             {
-              "queryRef": "Measure Table.Total Target",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -72,6 +71,7 @@
                   "Property": "Total Target"
                 }
               },
+              "queryRef": "Measure Table.Total Target",
               "nativeQueryRef": "Total Target"
             }
           ]
@@ -161,14 +161,14 @@
             "viewportHeight": {
               "expr": {
                 "Literal": {
-                  "Value": "362D"
+                  "Value": "530D"
                 }
               }
             },
             "viewportWidth": {
               "expr": {
                 "Literal": {
-                  "Value": "1202D"
+                  "Value": "1018D"
                 }
               }
             },

@@ -4,9 +4,9 @@
   "position": {
     "x": 216,
     "y": 540,
-    "width": 640,
-    "height": 200,
     "z": 1000,
+    "height": 200,
+    "width": 640,
     "tabOrder": 1000
   },
   "visual": {
@@ -46,7 +46,6 @@
               "displayName": "Days in Filter"
             },
             {
-              "queryRef": "Measure Table.Total Tickets",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -57,6 +56,7 @@
                   "Property": "Total Tickets"
                 }
               },
+              "queryRef": "Measure Table.Total Tickets",
               "nativeQueryRef": "Total Tickets"
             }
           ]
@@ -127,6 +127,67 @@
               "expr": {
                 "Literal": {
                   "Value": "'advanced'"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.0'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "stateManagement": [
+        {
+          "properties": {
+            "viewportHeight": {
+              "expr": {
+                "Literal": {
+                  "Value": "170D"
+                }
+              }
+            },
+            "viewportWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "610D"
+                }
+              }
+            },
+            "supportFieldConfiguration": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"Date\":{\"highlight\":false,\"highlightStatus\":false,\"highlightComparator\":false,\"format\":false,\"formatted\":false,\"names\":false},\"Days in Filter\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true,\"names\":false},\"Total Tickets\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true,\"names\":false}}'"
+                }
+              }
+            },
+            "denebMetaVersion": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2'"
+                }
+              }
+            },
+            "consolidateFieldParameters": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "developer": [
+        {
+          "properties": {
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2.0.0.0'"
                 }
               }
             }

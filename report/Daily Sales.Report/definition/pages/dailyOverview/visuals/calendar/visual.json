@@ -147,14 +147,14 @@
             "viewportHeight": {
               "expr": {
                 "Literal": {
-                  "Value": "362D"
+                  "Value": "270D"
                 }
               }
             },
             "viewportWidth": {
               "expr": {
                 "Literal": {
-                  "Value": "1202D"
+                  "Value": "1018D"
                 }
               }
             },

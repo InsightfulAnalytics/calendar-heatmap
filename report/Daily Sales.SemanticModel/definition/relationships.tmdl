@@ -22,7 +22,6 @@ relationship 27d2ce1f-9431-44e7-a54b-52c8cdda5d6e
 	fromColumn: Targets.Region
 	toColumn: Region.Region
 
-
 relationship dbdc3e7f-4fcf-4826-a222-b10a8585b027
 	fromColumn: 'Support Tickets'.Date
 	toColumn: DimDate.Date
@@ -30,3 +29,4 @@ relationship dbdc3e7f-4fcf-4826-a222-b10a8585b027
 relationship 5a44bd6b-972e-4590-b891-d3ec1f43891b
 	fromColumn: 'Web Sessions'.Date
 	toColumn: DimDate.Date
+

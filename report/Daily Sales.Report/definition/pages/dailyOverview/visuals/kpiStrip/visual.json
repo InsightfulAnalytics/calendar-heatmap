@@ -46,7 +46,6 @@
               "displayName": "Days in Filter"
             },
             {
-              "queryRef": "Measure Table.Total Sales",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -57,10 +56,10 @@
                   "Property": "Total Sales"
                 }
               },
+              "queryRef": "Measure Table.Total Sales",
               "nativeQueryRef": "Total Sales"
             },
             {
-              "queryRef": "Measure Table.Total Target",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -71,6 +70,7 @@
                   "Property": "Total Target"
                 }
               },
+              "queryRef": "Measure Table.Total Target",
               "nativeQueryRef": "Total Target"
             }
           ]
@@ -141,6 +141,67 @@
               "expr": {
                 "Literal": {
                   "Value": "'advanced'"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.0'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "stateManagement": [
+        {
+          "properties": {
+            "viewportHeight": {
+              "expr": {
+                "Literal": {
+                  "Value": "100D"
+                }
+              }
+            },
+            "viewportWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "1020D"
+                }
+              }
+            },
+            "supportFieldConfiguration": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"Date\":{\"highlight\":false,\"highlightStatus\":false,\"highlightComparator\":false,\"format\":false,\"formatted\":false,\"names\":false},\"Days in Filter\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true,\"names\":false},\"Total Sales\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true,\"names\":false},\"Total Target\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true,\"names\":false}}'"
+                }
+              }
+            },
+            "denebMetaVersion": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2'"
+                }
+              }
+            },
+            "consolidateFieldParameters": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "developer": [
+        {
+          "properties": {
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2.0.0.0'"
                 }
               }
             }

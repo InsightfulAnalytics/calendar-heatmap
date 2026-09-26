@@ -4,9 +4,9 @@
   "position": {
     "x": 872,
     "y": 540,
-    "width": 392,
-    "height": 200,
     "z": 1000,
+    "height": 200,
+    "width": 392,
     "tabOrder": 1000
   },
   "visual": {
@@ -16,7 +16,6 @@
         "dataset": {
           "projections": [
             {
-              "queryRef": "DimDate.Period",
               "field": {
                 "Column": {
                   "Expression": {
@@ -27,10 +26,10 @@
                   "Property": "Period"
                 }
               },
+              "queryRef": "DimDate.Period",
               "nativeQueryRef": "Period"
             },
             {
-              "queryRef": "Measure Table.Total Sales",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -41,6 +40,7 @@
                   "Property": "Total Sales"
                 }
               },
+              "queryRef": "Measure Table.Total Sales",
               "nativeQueryRef": "Total Sales"
             }
           ]
@@ -111,6 +111,67 @@
               "expr": {
                 "Literal": {
                   "Value": "'advanced'"
+                }
+              }
+            },
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'6.4.0'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "stateManagement": [
+        {
+          "properties": {
+            "viewportHeight": {
+              "expr": {
+                "Literal": {
+                  "Value": "170D"
+                }
+              }
+            },
+            "viewportWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "362D"
+                }
+              }
+            },
+            "supportFieldConfiguration": {
+              "expr": {
+                "Literal": {
+                  "Value": "'{\"Period\":{\"highlight\":false,\"highlightStatus\":false,\"highlightComparator\":false,\"format\":false,\"formatted\":false,\"names\":false},\"Total Sales\":{\"highlight\":true,\"highlightStatus\":true,\"highlightComparator\":true,\"format\":true,\"formatted\":true,\"names\":false}}'"
+                }
+              }
+            },
+            "denebMetaVersion": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2'"
+                }
+              }
+            },
+            "consolidateFieldParameters": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "developer": [
+        {
+          "properties": {
+            "version": {
+              "expr": {
+                "Literal": {
+                  "Value": "'2.0.0.0'"
                 }
               }
             }

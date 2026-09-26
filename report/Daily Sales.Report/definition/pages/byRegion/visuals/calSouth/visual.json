@@ -61,7 +61,6 @@
               "displayName": "Sales"
             },
             {
-              "queryRef": "Measure Table.Region Scale Max",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -72,6 +71,7 @@
                   "Property": "Region Scale Max"
                 }
               },
+              "queryRef": "Measure Table.Region Scale Max",
               "nativeQueryRef": "Region Scale Max"
             }
           ]
@@ -161,14 +161,14 @@
             "viewportHeight": {
               "expr": {
                 "Literal": {
-                  "Value": "362D"
+                  "Value": "182D"
                 }
               }
             },
             "viewportWidth": {
               "expr": {
                 "Literal": {
-                  "Value": "1202D"
+                  "Value": "1018D"
                 }
               }
             },
@@ -364,7 +364,6 @@
           }
         },
         "type": "Categorical",
-        "howCreated": "User",
         "filter": {
           "Version": 2,
           "From": [
@@ -403,7 +402,8 @@
               }
             }
           ]
-        }
+        },
+        "howCreated": "User"
       }
     ]
   }

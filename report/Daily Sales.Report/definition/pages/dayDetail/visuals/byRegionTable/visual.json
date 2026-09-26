@@ -1,5 +1,14 @@
 {
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
   "name": "byRegionTable",
+  "position": {
+    "x": 652,
+    "y": 120,
+    "z": 0,
+    "height": 360,
+    "width": 604,
+    "tabOrder": 0
+  },
   "visual": {
     "visualType": "tableEx",
     "query": {
@@ -7,7 +16,6 @@
         "Values": {
           "projections": [
             {
-              "queryRef": "Region.Region",
               "field": {
                 "Column": {
                   "Expression": {
@@ -18,10 +26,10 @@
                   "Property": "Region"
                 }
               },
+              "queryRef": "Region.Region",
               "nativeQueryRef": "Region"
             },
             {
-              "queryRef": "Measure Table.Total Sales",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -32,10 +40,10 @@
                   "Property": "Total Sales"
                 }
               },
+              "queryRef": "Measure Table.Total Sales",
               "nativeQueryRef": "Total Sales"
             },
             {
-              "queryRef": "Measure Table.Total Target",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -46,22 +54,28 @@
                   "Property": "Total Target"
                 }
               },
+              "queryRef": "Measure Table.Total Target",
               "nativeQueryRef": "Total Target"
             }
           ]
         }
       }
     },
-    "objects": {},
+    "objects": {
+      "columnHeaders": [
+        {
+          "properties": {
+            "autoSizeColumnWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "drillFilterOtherVisuals": true
-  },
-  "position": {
-    "x": 652,
-    "y": 120,
-    "width": 604,
-    "height": 360,
-    "z": 0,
-    "tabOrder": 0
-  },
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json"
+  }
 }
