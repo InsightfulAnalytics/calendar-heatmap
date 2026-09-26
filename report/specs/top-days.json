@@ -43,7 +43,7 @@
         "update": {
           "x": {"signal": "padX"}, "y": {"value": 30},
           "text": {"signal": "titleText"},
-          "fontSize": {"value": 15}, "fontWeight": {"value": 600}, "fill": {"signal": "inkColor"}
+          "fontSize": {"value": 16}, "fontWeight": {"value": 600}, "fill": {"signal": "inkColor"}
         }
       }
     },

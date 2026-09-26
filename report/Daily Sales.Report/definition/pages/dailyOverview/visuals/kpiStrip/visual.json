@@ -98,7 +98,7 @@
             "jsonConfig": {
               "expr": {
                 "Literal": {
-                  "Value": "'{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"background\":\"transparent\",\"view\":{\"stroke\":\"transparent\"},\"font\":\"Segoe UI\",\"text\":{\"font\":\"Segoe UI\"}}'"
+                  "Value": "'{\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"},\"background\":\"transparent\",\"view\":{\"stroke\":\"transparent\"},\"font\":\"Arial, Segoe UI, Helvetica Neue, sans-serif\",\"text\":{\"font\":\"Arial, Segoe UI, Helvetica Neue, sans-serif\"}}'"
                 }
               }
             },

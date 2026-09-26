@@ -30,7 +30,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "11D"
                 }
               }
             },
@@ -62,7 +62,14 @@
             "leftMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "8D"
+                  "Value": "0D"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Arial'"
                 }
               }
             }
@@ -144,10 +151,10 @@
     }
   },
   "position": {
-    "x": 8,
-    "y": 180,
-    "width": 184,
-    "height": 36,
+    "x": 12,
+    "y": 172,
+    "width": 176,
+    "height": 32,
     "z": 0,
     "tabOrder": 0
   },

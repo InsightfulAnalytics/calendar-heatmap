@@ -3,9 +3,9 @@
   "name": "regionSlicer",
   "position": {
     "x": 1064,
-    "y": 12,
+    "y": 14,
     "z": 0,
-    "height": 40,
+    "height": 36,
     "width": 192,
     "tabOrder": 0
   },
@@ -55,6 +55,33 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "items": [
+        {
+          "properties": {
+            "textSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Arial'"
+                }
+              }
+            },
+            "padding": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
                 }
               }
             }

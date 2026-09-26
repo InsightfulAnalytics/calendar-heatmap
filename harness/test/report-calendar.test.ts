@@ -22,6 +22,12 @@ const withoutSchema = ({ $schema: _schema, ...spec }: JsonObject) => spec;
 /** The Report's settings for its sales Calendar (#6): a July fiscal year, every date a row. */
 const REPORT_SETTINGS = { windowMode: 'fiscal', fiscalStartMonth: 7, everyDateHasRow: true };
 const EMPTY = '#f1f5f9';
+/** The Report's font (report/embed.py): the theme's Arial first; the Template's own default stays Segoe UI. */
+const REPORT_FONT = 'Arial, Segoe UI, Helvetica Neue, sans-serif';
+const inReportFont = (spec: JsonObject): JsonObject => {
+  const config = (spec.config ?? {}) as JsonObject;
+  return { ...spec, config: { ...config, font: REPORT_FONT, text: { ...((config.text ?? {}) as JsonObject), font: REPORT_FONT } } };
+};
 
 test("a Deneb visual source whose file is missing fails loudly and names the file", () => {
   assert.throws(() => specAsRun({ visual: 'no-such-report/visual.json' }, '6.4'), /no-such-report[\/]visual\.json/);
@@ -52,10 +58,10 @@ const regions = loadFixture('regions-2025');
 for (const { vega, timeZone, label: cell } of CELLS) {
   const render = () => harness.render({ spec: 'report-calendar', fixture: 'report-sales-fy26', vega, timeZone });
 
-  test(`${cell} the Report's Calendar is the Template over Date and Sales with a July fiscal-year Window and 'every date has a row' on, and nothing else changed, as Deneb ${DENEB_OF[vega]} runs them`, () => {
+  test(`${cell} the Report's Calendar is the Template over Date and Sales with a July fiscal-year Window, 'every date has a row' on and the Report's Arial font, and nothing else changed, as Deneb ${DENEB_OF[vega]} runs them`, () => {
     const report = specAsRun('report-calendar', vega);
     const template = specAsRun('template', vega, undefined, REPORT_SETTINGS);
-    assert.deepEqual(withoutSchema(report), withoutSchema(template));
+    assert.deepEqual(withoutSchema(report), withoutSchema(inReportFont(template)));
   });
 
   test(`${cell} the Report's Calendar draws FY26 from the Report's rows: 1 July 2025 in its first column, 30 June 2026 in its last, the no-sales days as Empty days`, async () => {

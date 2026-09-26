@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.9.0/schema.json",
   "name": "labelDateRange",
   "position": {
-    "x": 16,
-    "y": 228,
+    "x": 12,
+    "y": 224,
     "z": 5000,
-    "width": 168,
+    "width": 176,
     "height": 24,
     "tabOrder": 5000
   },

@@ -19,10 +19,6 @@ WHITE, CARD_BORDER, INK = '#FFFFFF', '#E2E8F0', '#0B1E3F'
 # style: 'card' = white rounded card, 'bare' = no background or border, None = leave formatting alone
 LAYOUT = {
     'dailyOverview': {
-        'rail': (0, 0, 200, 968, None),
-        'topBar': (200, 0, 1080, 64, None),
-        'titleText': (216, 10, 760, 44, None),
-        'regionSlicer': (1064, 12, 192, 40, 'pill'),
         'kpiStrip': (216, 80, 1048, 128, 'bare'),
         'calendar': (216, 224, 1048, 300, 'shadowCard'),
         'supportCalendar': (216, 540, 640, 200, 'card'),
@@ -37,13 +33,31 @@ LAYOUT = {
         'calAPAC': (216, 740, 1048, 212, 'card'),
     },
     'targets': {
-        'targetCalendar': (216, 80, 1048, 560, 'card'),
-        'daysOnTarget': (216, 656, 250, 120, 'card'),
-        'daysShort': (482, 656, 250, 120, 'card'),
-        'meanDay': (748, 656, 250, 120, 'card'),
-        'meanTarget': (1014, 656, 250, 120, 'card'),
+        'targetCalendar': (216, 80, 1048, 320, 'card'),
+        'daysOnTarget': (216, 416, 250, 120, 'card'),
+        'daysShort': (482, 416, 250, 120, 'card'),
+        'meanDay': (748, 416, 250, 120, 'card'),
+        'meanTarget': (1014, 416, 250, 120, 'card'),
     },
 }
+
+# The frame every visible page shares: rail, top bar and their contents. Everything in the rail
+# starts at the same left edge (RAIL_X) and every slicer is the same width.
+RAIL_X, RAIL_W = 12, 176
+FRAME = {
+    'rail': (0, 0, 200, 968, None),
+    'topBar': (200, 0, 1080, 64, None),
+    'titleText': (216, 10, 760, 44, None),
+    'regionSlicer': (1064, 14, 192, 36, 'pill'),
+    'navDaily': (RAIL_X, 100, RAIL_W, 32, None),
+    'navRegion': (RAIL_X, 136, RAIL_W, 32, None),
+    'navTargets': (RAIL_X, 172, RAIL_W, 32, None),
+    'dateSlicer': (RAIL_X, 252, RAIL_W, 72, 'bare'),
+    'fySlicer': (RAIL_X, 380, RAIL_W, 36, 'bare'),
+    'channelSlicer': (RAIL_X, 448, RAIL_W, 36, 'bare'),
+}
+for _page in ('dailyOverview', 'byRegion', 'targets'):
+    LAYOUT[_page] = {**FRAME, **LAYOUT[_page]}
 
 # Calendars whose day hover shows the Day summary page (pbir's tooltip command has no page option
 # and refuses the Deneb visual). Canvas is the enum value meaning "report page".
@@ -103,14 +117,17 @@ def container(style):
 
 
 # page folder -> textbox name -> (x, y, width, height, text, font size, colour, bold)
-LABELS = {
-    'dailyOverview': {
-        'labelPages': (16, 72, 168, 24, 'PAGES', 9, '#64748B', True),
-        'labelDateRange': (16, 228, 168, 24, 'DATE RANGE', 9, '#64748B', True),
-        'labelFilters': (16, 340, 168, 24, 'FILTERS', 9, '#64748B', True),
-        'footerCredit': (16, 928, 168, 28, 'Layout after Lumeric Visuals', 8, '#94A3B8', False),
-    },
+SECTION = (9, '#64748B', True)
+FIELD = (9, '#64748B', False)
+_RAIL_LABELS = {
+    'labelPages': (RAIL_X, 72, RAIL_W, 24, 'PAGES', *SECTION),
+    'labelDateRange': (RAIL_X, 224, RAIL_W, 24, 'DATE RANGE', *SECTION),
+    'labelFilters': (RAIL_X, 336, RAIL_W, 24, 'FILTERS', *SECTION),
+    'labelYear': (RAIL_X, 356, RAIL_W, 24, 'Fiscal year', *FIELD),
+    'labelChannel': (RAIL_X, 424, RAIL_W, 24, 'Channel', *FIELD),
+    'footerCredit': (RAIL_X, 928, RAIL_W, 28, 'Layout after Lumeric Visuals', 8, '#64748B', False),
 }
+LABELS = {page: dict(_RAIL_LABELS) for page in ('dailyOverview', 'byRegion', 'targets')}
 
 
 def textbox(name, spec):

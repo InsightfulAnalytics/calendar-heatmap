@@ -451,7 +451,7 @@
         "update": {
           "x": {"signal": "width - padR"},
           "y": {"signal": "headerY"},
-          "text": {"signal": "pbiFormatAutoUnit(totalValue, '#,0.00')"},
+          "text": {"signal": "abs(totalValue) >= 1e6 ? format(totalValue / 1e6, '.2f') + 'M' : abs(totalValue) >= 1e3 ? format(totalValue / 1e3, '.1f') + 'K' : format(totalValue, ',.0f')"},
           "fontSize": {"value": 15},
           "fontWeight": {"value": 600},
           "fill": {"signal": "inkColor"},

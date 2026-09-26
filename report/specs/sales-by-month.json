@@ -13,7 +13,8 @@
     {"name": "padX", "value": 20},
     {"name": "top", "value": 52},
     {"name": "bottom", "value": 26},
-    {"name": "hasHighlight", "update": "length(data('highlighted')) > 0"}
+    {"name": "hasHighlight", "update": "length(data('highlighted')) > 0"},
+    {"name": "yearSales", "update": "length(data('totals')) ? data('totals')[0].sales : 0"}
   ],
   "data": [
     {"name": "dataset"},
@@ -25,8 +26,14 @@
         {"type": "lookup", "from": "dataset", "key": "Period", "fields": ["p"], "as": ["row"]},
         {"type": "formula", "as": "sales", "expr": "datum.row && isValid(datum.row['Total Sales']) ? datum.row['Total Sales'] : 0"},
         {"type": "formula", "as": "hl", "expr": "datum.row && isDefined(datum.row['Total Sales__highlight']) ? (isValid(datum.row['Total Sales__highlight']) ? datum.row['Total Sales__highlight'] : 0) : null"},
-        {"type": "formula", "as": "__row__", "expr": "datum.row ? datum.row.__row__ : null"}
+        {"type": "formula", "as": "__row__", "expr": "datum.row ? datum.row.__row__ : null"},
+        {"type": "formula", "as": "name", "expr": "['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][(datum.p - 1 + fiscalStartMonth - 1) % 12]"}
       ]
+    },
+    {
+      "name": "totals",
+      "source": "periods",
+      "transform": [{"type": "aggregate", "fields": ["sales", "hl"], "ops": ["sum", "sum"], "as": ["sales", "hl"]}]
     },
     {
       "name": "highlighted",
@@ -48,7 +55,7 @@
         "update": {
           "x": {"signal": "padX"}, "y": {"value": 30},
           "text": {"signal": "titleText"},
-          "fontSize": {"value": 15}, "fontWeight": {"value": 600}, "fill": {"signal": "inkColor"}
+          "fontSize": {"value": 16}, "fontWeight": {"value": 600}, "fill": {"signal": "inkColor"}
         }
       }
     },
@@ -65,7 +72,7 @@
           "cornerRadius": {"value": 3},
           "fill": {"signal": "pbiColor(0)"},
           "fillOpacity": {"signal": "hasHighlight ? 0.25 : 1"},
-          "tooltip": {"signal": "datum.row ? {'Month': datum.label, 'Sales': pbiFormat(datum.sales, '#,0'), '__row__': datum.__row__} : null"}
+          "tooltip": {"signal": "!datum.row ? null : hasHighlight ? {'Month': datum.name, 'Sales': format(datum.sales, ',.0f'), 'Share of year': yearSales ? format(datum.sales / yearSales, '.1%') : '', 'Selected days': format(datum.hl || 0, ',.0f'), 'Selected share of month': datum.sales ? format((datum.hl || 0) / datum.sales, '.0%') : '', '__row__': datum.__row__} : {'Month': datum.name, 'Sales': format(datum.sales, ',.0f'), 'Share of year': yearSales ? format(datum.sales / yearSales, '.1%') : '', '__row__': datum.__row__}"}
         }
       }
     },

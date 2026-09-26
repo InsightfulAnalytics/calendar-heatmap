@@ -11,6 +11,7 @@ Template or spec change:
 
 Set DENEB_SPEC to move deneb_spec.py.
 """
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -21,6 +22,7 @@ PAGES = HERE / 'Daily Sales.Report' / 'definition' / 'pages'
 OUT = HARNESS / 'out' / 'embed'
 DENEB_SPEC = os.environ.get('DENEB_SPEC', str(Path.home() / '.claude/skills/custom-visuals/skills/deneb-pbir/scripts/deneb_spec.py'))
 
+FONT = 'Arial, Segoe UI, Helvetica Neue, sans-serif'
 REPORT = ['windowMode=fiscal', 'fiscalStartMonth=7', 'everyDateHasRow=true']
 
 # (page, visual) -> (field mappings, settings beyond the Report-wide ones)
@@ -30,8 +32,9 @@ CALENDARS = {
     ('dailyOverview', 'webCalendar'): (['__1__=Total Sessions'], ['titleText=Web sessions', 'gapRatio=0.1', 'showLegend=false']),
     ('targets', 'targetCalendar'): ([], ['titleText=Sales against target', 'targetField=Total Target']),
 }
-for region, legend in [('North', False), ('South', False), ('EMEA', False), ('APAC', True)]:
-    CALENDARS[('byRegion', f'cal{region}')] = ([], [f'titleText={region}', 'scaleField=Region Scale Max', f'showLegend={"true" if legend else "false"}'])
+# Every region keeps its legend, so the four Calendars are the same size
+for region in ['North', 'South', 'EMEA', 'APAC']:
+    CALENDARS[('byRegion', f'cal{region}')] = ([], [f'titleText={region}', 'scaleField=Region Scale Max'])
 
 SPECS = {
     ('dailyOverview', 'kpiStrip'): 'kpi-strip.json',
@@ -59,6 +62,7 @@ def embed(page, visual, spec, config):
 if __name__ == '__main__':
     OUT.mkdir(parents=True, exist_ok=True)
     config = OUT / 'config.json'
+    report_config = OUT / 'report-config.json'
     for (page, visual), (fields, settings) in CALENDARS.items():
         spec = OUT / f'{visual}.json'
         args = ['npm', 'run', '-s', 'template', '--', '--out', str(spec), '--config-out', str(config)]
@@ -67,6 +71,11 @@ if __name__ == '__main__':
         for option in REPORT + settings:
             args += ['--option', option]
         run(args, cwd=HARNESS)
-        embed(page, visual, spec, config)
+        # The Report's font is the theme's Arial, first in the stack; the Template's own default stays Segoe UI
+        cfg = json.loads(config.read_text(encoding='utf-8'))
+        cfg['font'] = FONT
+        cfg.setdefault('text', {})['font'] = FONT
+        report_config.write_text(json.dumps(cfg, indent=2), encoding='utf-8')
+        embed(page, visual, spec, report_config)
     for (page, visual), name in SPECS.items():
-        embed(page, visual, HERE / 'specs' / name, config)
+        embed(page, visual, HERE / 'specs' / name, report_config)
