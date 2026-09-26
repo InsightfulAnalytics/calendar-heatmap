@@ -10,7 +10,8 @@
   "scripts": {
     "test": "node --test --test-concurrency=4 --test-reporter=./src/reporter.ts \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "render": "node src/cli/render.ts"
+    "render": "node src/cli/render.ts",
+    "template": "node src/cli/template.ts"
   },
   "devDependencies": {
     "@types/node": "24.13.6",

@@ -16,7 +16,7 @@
                 "Entity": "DimDate"
               }
             },
-            "Property": "Year"
+            "Property": "FYear"
           }
         },
         "type": "Categorical",
@@ -42,7 +42,7 @@
                             "Source": "d"
                           }
                         },
-                        "Property": "Year"
+                        "Property": "FYear"
                       }
                     }
                   ],
@@ -50,7 +50,7 @@
                     [
                       {
                         "Literal": {
-                          "Value": "2025L"
+                          "Value": "'FY26'"
                         }
                       }
                     ]

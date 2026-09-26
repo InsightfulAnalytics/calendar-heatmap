@@ -6,7 +6,7 @@
 // It connects to Desktop through the canvas debugging port, starting Desktop with it when needed
 // (closing a Desktop that holds the PBIP without the port, answering Don't save). Then, reading every
 // card from the canvas:
-//   1. with no Selection, the cards show the page filter's values (calendar 2025);
+//   1. with no Selection, the cards show the page filter's values (FY26, since #6);
 //   2. a drag from 7 July to 20 August 2025, replayed on the Calendar, sets the cards to that
 //      range's values (45 days), and the Calendar flags exactly those 45 rows on;
 //   3. a click on the Calendar background clears the Selection, and the cards read as in step 1;
@@ -128,14 +128,14 @@ try {
     const cal = desktop.deneb(CALENDAR);
     await desktop.waitForCanvas(cal);
     await desktop.settle([cal]);
-    const YEAR = expectedCards('2025-01-01', '2025-12-31');
+    const PERIOD = expectedCards('2025-07-01', '2026-06-30'); // the page filter, FY26
     const RANGE = expectedCards('2025-07-07', '2025-08-20');
 
     // Start from no Selection, whatever an earlier run left.
     await cal.backgroundClick();
     await desktop.settle([cal]);
     await expectSelected(cal, '1 no Selection', 0, 365);
-    await expectCards(desktop, '1 no Selection (the page filter, calendar 2025)', YEAR);
+    await expectCards(desktop, '1 no Selection (the page filter, FY26)', PERIOD);
     await desktop.screenshot(path.join(OUT, '01-no-selection.png'), { canvasOnly: true });
 
     await cal.drag('2025-07-07', '2025-08-20');
@@ -147,7 +147,7 @@ try {
     await cal.backgroundClick();
     await desktop.settle([cal]);
     await expectSelected(cal, '3 background click', 0, 365);
-    await expectCards(desktop, '3 background click (the Selection is gone)', YEAR);
+    await expectCards(desktop, '3 background click (the Selection is gone)', PERIOD);
     await desktop.screenshot(path.join(OUT, '03-cleared.png'), { canvasOnly: true });
   } finally {
     await desktop.disconnect();
@@ -156,7 +156,7 @@ try {
   const onDisk = filtersOnDisk();
   readings.filtersOnDisk = onDisk;
   const pageFilterFields = onDisk.page.map((f) => JSON.stringify((f as { field?: unknown }).field));
-  checkEqual('4 on disk: Daily overview holds exactly its one page filter, on DimDate Year', pageFilterFields, [JSON.stringify({ Column: { Expression: { SourceRef: { Entity: 'DimDate' } }, Property: 'Year' } })]);
+  checkEqual('4 on disk: Daily overview holds exactly its one page filter, on DimDate FYear', pageFilterFields, [JSON.stringify({ Column: { Expression: { SourceRef: { Entity: 'DimDate' } }, Property: 'FYear' } })]);
   checkEqual('4 on disk: no visual on Daily overview carries a filter of its own', Object.keys(onDisk.visuals), []);
   checkEqual('4 Desktop still holds the PBIP', desktopInstances().length, 1);
 } catch (e) {

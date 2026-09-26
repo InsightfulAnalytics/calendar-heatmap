@@ -9,6 +9,14 @@ test('the container-name scan passes on the prototype', () => {
   assert.deepEqual(containerScan('prototype'), { ok: true, findings: [] });
 });
 
+test('the container-name scan passes on the Template: the legacy container names appear only in its top-level width and height', () => {
+  assert.deepEqual(containerScan('template'), { ok: true, findings: [] });
+});
+
+test("the container-name scan passes on the Report's embedded Calendar", () => {
+  assert.deepEqual(containerScan('report-calendar'), { ok: true, findings: [] });
+});
+
 test('the container-name scan passes on the valid test strip', () => {
   assert.equal(containerScan('test/specs/strip.json').ok, true);
 });
