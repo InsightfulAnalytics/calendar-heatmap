@@ -166,6 +166,29 @@ export interface PageReading {
   tables: Record<string, TableReading>;
 }
 
+/** Whether the canvas debugging port answers. */
+export async function portAnswers(port = DEBUG_PORT): Promise<boolean> {
+  return (await cdpVersion(port)) !== undefined;
+}
+
+/**
+ * A connection to the Desktop instance holding the PBIP, through the debugging port. When the port
+ * does not answer, a Desktop holding the PBIP alone is closed (Don't save) and started again with
+ * the port; any other Desktop running stops it.
+ */
+export async function desktopWithPort(port = DEBUG_PORT): Promise<Desktop> {
+  if (!(await portAnswers(port))) {
+    if (desktopProcesses().length > 0) {
+      const mine = desktopInstances();
+      if (mine.length !== 1 || desktopProcesses().length !== 1) throw new Error('another Power BI Desktop is running; this check needs the PBIP alone in Desktop');
+      console.log(`  ....  closing Desktop ${mine[0].pid} (no debugging port): ${await closeDesktop(mine[0].pid)}`);
+    }
+    const i = await launchDesktop({ debugPort: port });
+    console.log(`  ....  Desktop ${i.pid} opened ${i.currentFilePath} with the debugging port`);
+  }
+  return connectDesktop(port);
+}
+
 export async function connectDesktop(port = DEBUG_PORT): Promise<Desktop> {
   const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
   const page = await waitFor('the report view page', 60, () => browser.contexts().flatMap((c) => c.pages()).find((p) => p.url().includes('/reportView.html')));
@@ -363,8 +386,8 @@ export class DenebVisual {
     return (await this.frame()).evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
   }
 
-  /** Every drawn day: its date, its box on screen, and the dataset row it shows (by the row's own date). */
-  async days(): Promise<{ date: string; x: number; y: number; width: number; height: number; rowDay: string | null; row: number | null }[]> {
+  /** Every drawn day: its date, its box on screen, its fill, and the dataset row it shows (by the row's own date). */
+  async days(): Promise<{ date: string; x: number; y: number; width: number; height: number; fill: string | null; rowDay: string | null; row: number | null }[]> {
     const frame = await this.frame();
     return frame.evaluate((a) => {
       const pad = (n: number) => String(n).padStart(2, '0');
@@ -381,7 +404,7 @@ export class DenebVisual {
         if (!(d instanceof Date)) continue;
         const b = el.getBoundingClientRect();
         const row = typeof it.datum.__row__ === 'number' ? (it.datum.__row__ as number) : null;
-        out.push({ date: key(d), x: b.x, y: b.y, width: b.width, height: b.height, row, rowDay: row === null ? null : rowDay.get(row) ?? null });
+        out.push({ date: key(d), x: b.x, y: b.y, width: b.width, height: b.height, fill: el.getAttribute('fill'), row, rowDay: row === null ? null : rowDay.get(row) ?? null });
       }
       return out;
     }, this.adapter);

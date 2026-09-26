@@ -17,10 +17,7 @@
 import { readFileSync, readdirSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { parseArgs, isDeepStrictEqual } from 'node:util';
-import {
-  DEBUG_PORT, PBIP, PROJECT, REPORT, closeDesktop, connectDesktop, dax, desktopInstances, desktopProcesses,
-  launchDesktop, type Desktop, type DenebVisual,
-} from '../desktop.ts';
+import { PBIP, PROJECT, REPORT, dax, desktopInstances, desktopWithPort, type Desktop, type DenebVisual } from '../desktop.ts';
 
 const { values } = parseArgs({ options: { out: { type: 'string' } } });
 const OUT = path.resolve(values.out ?? path.join(PROJECT, 'evidence', '05-sales-model'));
@@ -70,23 +67,6 @@ RETURN ROW (
 }
 
 // ---------------------------------------------------------------------------------------------
-
-async function portAnswers(): Promise<boolean> {
-  try { return (await fetch(`http://127.0.0.1:${DEBUG_PORT}/json/version`, { signal: AbortSignal.timeout(2000) })).ok; } catch { return false; }
-}
-
-async function desktopWithPort(): Promise<Desktop> {
-  if (!(await portAnswers())) {
-    if (desktopProcesses().length > 0) {
-      const mine = desktopInstances();
-      if (mine.length !== 1 || desktopProcesses().length !== 1) throw new Error('another Power BI Desktop is running; this check needs the PBIP alone in Desktop');
-      console.log(`  ....  closing Desktop ${mine[0].pid} (no debugging port): ${await closeDesktop(mine[0].pid)}`);
-    }
-    const i = await launchDesktop({ debugPort: DEBUG_PORT });
-    console.log(`  ....  Desktop ${i.pid} opened ${i.currentFilePath} with the debugging port`);
-  }
-  return connectDesktop(DEBUG_PORT);
-}
 
 async function readCards(desktop: Desktop): Promise<Record<keyof typeof CARDS, string | undefined>> {
   const { cards } = await desktop.read();

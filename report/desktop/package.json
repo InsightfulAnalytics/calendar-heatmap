@@ -13,6 +13,7 @@
     "desktop": "node src/cli/desktop.ts",
     "probe": "node src/cli/probe.ts",
     "cards": "node src/cli/cards.ts",
+    "calendar": "node src/cli/calendar.ts",
     "export-fixture": "node src/cli/export-fixture.ts"
   },
   "devDependencies": {

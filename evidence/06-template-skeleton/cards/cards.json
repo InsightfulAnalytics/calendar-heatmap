@@ -1,0 +1,199 @@
+{
+  "at": "2026-09-26T00:54:31.315Z",
+  "pbip": "B:\\VS Code Files\\PBI Projects\\Calendar Heatmap\\report\\Daily Sales.pbip",
+  "readings": {
+    "1 no Selection (the page filter, FY26)": {
+      "shown": {
+        "total": "1,183,682",
+        "mean": "3,243",
+        "peak": "4 Dec 2025",
+        "active": "343 / 365",
+        "days": "365"
+      },
+      "expected": {
+        "total": "1,183,682",
+        "mean": "3,243",
+        "peak": "4 Dec 2025",
+        "active": "343 / 365",
+        "days": "365"
+      }
+    },
+    "2 drag 7 Jul to 20 Aug 2025": {
+      "shown": {
+        "total": "148,343",
+        "mean": "3,297",
+        "peak": "15 Aug 2025",
+        "active": "42 / 45",
+        "days": "45"
+      },
+      "expected": {
+        "total": "148,343",
+        "mean": "3,297",
+        "peak": "15 Aug 2025",
+        "active": "42 / 45",
+        "days": "45"
+      }
+    },
+    "3 background click (the Selection is gone)": {
+      "shown": {
+        "total": "1,183,682",
+        "mean": "3,243",
+        "peak": "4 Dec 2025",
+        "active": "343 / 365",
+        "days": "365"
+      },
+      "expected": {
+        "total": "1,183,682",
+        "mean": "3,243",
+        "peak": "4 Dec 2025",
+        "active": "343 / 365",
+        "days": "365"
+      }
+    },
+    "filtersOnDisk": {
+      "page": [
+        {
+          "name": "5c1aa7a636078969162d",
+          "field": {
+            "Column": {
+              "Expression": {
+                "SourceRef": {
+                  "Entity": "DimDate"
+                }
+              },
+              "Property": "FYear"
+            }
+          },
+          "type": "Categorical",
+          "howCreated": "User",
+          "filter": {
+            "Version": 2,
+            "From": [
+              {
+                "Name": "d",
+                "Entity": "DimDate",
+                "Type": 0
+              }
+            ],
+            "Where": [
+              {
+                "Condition": {
+                  "In": {
+                    "Expressions": [
+                      {
+                        "Column": {
+                          "Expression": {
+                            "SourceRef": {
+                              "Source": "d"
+                            }
+                          },
+                          "Property": "FYear"
+                        }
+                      }
+                    ],
+                    "Values": [
+                      [
+                        {
+                          "Literal": {
+                            "Value": "'FY26'"
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "visuals": {}
+    }
+  },
+  "results": [
+    {
+      "name": "1 no Selection: the Calendar flags all 365 rows neutral",
+      "ok": true
+    },
+    {
+      "name": "1 no Selection (the page filter, FY26): the Total sales card reads 1,183,682",
+      "ok": true
+    },
+    {
+      "name": "1 no Selection (the page filter, FY26): the Mean per day card reads 3,243",
+      "ok": true
+    },
+    {
+      "name": "1 no Selection (the page filter, FY26): the Peak day card reads 4 Dec 2025",
+      "ok": true
+    },
+    {
+      "name": "1 no Selection (the page filter, FY26): the Active days card reads 343 / 365",
+      "ok": true
+    },
+    {
+      "name": "1 no Selection (the page filter, FY26): the Days in filter card reads 365",
+      "ok": true
+    },
+    {
+      "name": "2 drag 7 Jul to 20 Aug 2025: the Calendar flags 45 rows on and 320 off",
+      "ok": true
+    },
+    {
+      "name": "2 drag 7 Jul to 20 Aug 2025: the Total sales card reads 148,343",
+      "ok": true
+    },
+    {
+      "name": "2 drag 7 Jul to 20 Aug 2025: the Mean per day card reads 3,297",
+      "ok": true
+    },
+    {
+      "name": "2 drag 7 Jul to 20 Aug 2025: the Peak day card reads 15 Aug 2025",
+      "ok": true
+    },
+    {
+      "name": "2 drag 7 Jul to 20 Aug 2025: the Active days card reads 42 / 45",
+      "ok": true
+    },
+    {
+      "name": "2 drag 7 Jul to 20 Aug 2025: the Days in filter card reads 45",
+      "ok": true
+    },
+    {
+      "name": "3 background click: the Calendar flags all 365 rows neutral",
+      "ok": true
+    },
+    {
+      "name": "3 background click (the Selection is gone): the Total sales card reads 1,183,682",
+      "ok": true
+    },
+    {
+      "name": "3 background click (the Selection is gone): the Mean per day card reads 3,243",
+      "ok": true
+    },
+    {
+      "name": "3 background click (the Selection is gone): the Peak day card reads 4 Dec 2025",
+      "ok": true
+    },
+    {
+      "name": "3 background click (the Selection is gone): the Active days card reads 343 / 365",
+      "ok": true
+    },
+    {
+      "name": "3 background click (the Selection is gone): the Days in filter card reads 365",
+      "ok": true
+    },
+    {
+      "name": "4 on disk: Daily overview holds exactly its one page filter, on DimDate FYear",
+      "ok": true
+    },
+    {
+      "name": "4 on disk: no visual on Daily overview carries a filter of its own",
+      "ok": true
+    },
+    {
+      "name": "4 Desktop still holds the PBIP",
+      "ok": true
+    }
+  ]
+}
