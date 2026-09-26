@@ -12,7 +12,7 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
 | `seam.ps1` | The report seam loop, below |
 | `tieout.json` | The DAX tie-out suite the loop runs, with its fixed set of filters. Later tickets add checks here |
 | `validate-model.ps1` | The model's offline TMDL round trip, run by the loop before Desktop applies anything |
-| `desktop/` | The Desktop driver: replays gestures in Desktop through remote debugging, the #2 probe, the #5 card check and the fixture export. See "Gestures in Desktop" below |
+| `desktop/` | The Desktop driver: replays gestures in Desktop through remote debugging, the #2 probe, the #5 card check, the #6 Calendar check and the fixture export. See "Gestures in Desktop" below |
 
 ## The model
 
@@ -49,7 +49,14 @@ queries the function, which the tie-out checks.
 Daily overview holds the Calendar, the title, the `Daily rows` table, a month slicer, and five
 native cards: Total sales, Days in filter, Mean per day, Peak day and Active days. The Calendar
 filters the table, the title and every card; the table filters nothing. The page filter limits it
-to calendar 2025 until the rail's fiscal year slicer arrives (#8).
+to FY26 (`DimDate[FYear]`, since #6) until the rail's fiscal year slicer arrives (#8).
+
+The Calendar is the Template (`template/calendar-heatmap/`) over `Date` and `Sales`, embedded by
+#6 with a July fiscal-year Window and 'every date has a row' on, because it binds the never-blank
+`Days in Filter` helper. So it draws FY26 from 1 July 2025, and a day with no sales is an Empty day.
+It keeps the visual name `calendar` and the legacy container signal names, which Deneb 1.9 needs.
+To embed it again, write the Template with `npm run template` in `harness/` and embed that with the
+deneb-pbir skill (the command is at the top of `harness/src/cli/template.ts`).
 
 ## The report seam loop
 
@@ -143,6 +150,7 @@ npm run desktop -- save              # save through the title bar Save button
 npm run desktop -- close             # close it, answering the save prompt with Don't save
 npm run probe                        # the #2 probe, end to end (below)
 npm run cards                        # the #5 card check (below)
+npm run calendar                     # the #6 Calendar check (below)
 npm run export-fixture               # the sales Calendar's FY26 rows as a harness fixture (below)
 npm run export-fixture -- --check    # export again; fail unless identical to the committed fixture
 npm test                             # offline checks, no Desktop needed
@@ -200,6 +208,10 @@ both cards, the title and the Calendar's own selected flags; then saves, audits 
 exits 1 on any failure. Expected values come from literals, from date arithmetic in the probe, and
 from independent DAX over the rows. The answers are recorded in the SPEC.
 
+The probe was written for #2's page filter, calendar 2025, and still expects it: since #6 moved the
+page to FY26 it has not been updated or run. Bring its expectations to the page filter before the
+next ticket that needs it.
+
 The probe reads dates in the machine's own time zone only. **Never change Windows' time zone** to
 read another one (Tim, 2026-09-26): other zones are proved in the harness only. The probe checks at
 the end that the zone is the one it started in, and `npm test` fails if any script here sets the
@@ -212,9 +224,22 @@ project LEARNINGS.
 when needed), then reads Total sales, Mean per day, Peak day, Active days and Days in filter off the
 canvas: with no Selection, after a drag from 7 July to 20 August 2025 replayed on the Calendar, and
 after a background click. Each reading must equal the value worked out from independent DAX over
-the Sales rows and date arithmetic (148,343, 3,297, 15 Aug 2025 and 42 / 45 for the drag). It then
-checks on disk that the page holds only its page filter and no visual has a filter of its own.
-Screenshots and `cards.json` go to `--out`, by default `evidence/05-sales-model/`.
+the Sales rows and date arithmetic (148,343, 3,297, 15 Aug 2025 and 42 / 45 for the drag). With no
+Selection it expects the page filter's values, FY26 since #6. It then checks on disk that the page
+holds only its page filter, on `DimDate[FYear]`, and no visual has a filter of its own. Screenshots
+and `cards.json` go to `--out`, by default `evidence/05-sales-model/`; #6's rerun is in
+`evidence/06-template-skeleton/cards/`.
+
+### The #6 Calendar check
+
+`npm run calendar -- [--out <folder>]` connects the same way, clears any Selection with a
+background click, and reads every drawn day off the Calendar's SVG: its date, its box and its fill.
+It checks that the Calendar draws exactly the 365 FY26 days, 1 July 2025 in the first week column
+and 30 June 2026 in the last, each day in its weekday's row (Monday at the top) and its week's
+column, and that the 22 days with no sales, and only they, draw in the empty colour and keep their
+own row. The expected days come from date arithmetic and independent DAX over the date table and
+the Sales rows. The screenshot and `calendar.json` go to `--out`, by default
+`evidence/06-template-skeleton/`.
 
 ### The Report-exported fixture
 

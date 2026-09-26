@@ -2,8 +2,10 @@
 
 A throwaway Vega spec. It shows that Deneb can draw a capsule-cell calendar heatmap after the
 Calendar Heatmap by [Lumeric Visuals](https://lumericvisuals.com/visuals/calendar-heatmap). It is
-not the template yet: the project spec (`SPEC.md` at the project root) describes the template and
-the working report built from it.
+not the template: #6 restructured it into the Template in `../template/calendar-heatmap/`, which is
+where the work continues. It stays here unchanged, as the reference the harness's prototype checks
+run on. The project spec (`SPEC.md` at the project root) describes the template and the working
+report built from it.
 
 ![BI Nexus render](render-bi-nexus.png)
 

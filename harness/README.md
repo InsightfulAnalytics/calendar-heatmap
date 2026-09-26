@@ -19,6 +19,7 @@ Run from this folder. Node 24 runs the TypeScript directly; the browser is the i
 npm install          # once: TypeScript, Playwright's library (no browser download), Vega 6.2 and 6.4
 npm test             # every check; one pass or fail line each; exits 1 on any failure
 npm run typecheck    # tsc --noEmit
+npm run template -- --out out/spec.json --option windowMode=fiscal   # the Template as Deneb's import leaves it
 npm run render -- --spec prototype --fixture base-2025 --size 1080x362 --theme bi-nexus `
   --option titleText=Revenue `
   --check "fill 2025-12-19 #113d77" --check "drag 2025-07-07 2025-08-20 selects 42"
@@ -35,14 +36,40 @@ the top of `src/checks.ts`: `fill`, `label`, `tooltip`, `ring`, `drag ... select
 `click ... selects n` and `scan`. A single test file runs with
 `node --test --test-reporter=./src/reporter.ts test/apply.test.ts`.
 
+`template` writes the Template (`../template/calendar-heatmap/calendar-heatmap.json`) the way
+Deneb's import leaves it: usermeta gone, each placeholder replaced by its field's name (the declared
+names unless `--field __0__=Order Date` says otherwise), each `--option name=value` set as that
+setting's value, and with `--config-out` its config in a file of its own. The Report's Calendar is
+embedded from that output with the deneb-pbir skill (the command is at the top of
+`src/cli/template.ts`).
+
+## The standing gates
+
+`npm test` also runs two tools that live outside this repo on the Template, so every Template
+ticket passes them (`src/gates.ts`, checked in `test/template-package.test.ts`):
+
+- The Deneb template library's offline checker (`tools/check-templates.mjs` in the library clone,
+  `B:\VS Code Files\Deneb` by default; set `DENEB_LIBRARY` to move it). It runs on the Template's
+  folder with its draft sample file, in each of the three time zones, and its `--render` SVG is read
+  back: 365 days, the weekday labels Monday first, and 1 January 2025 in the Wednesday row. It runs
+  a second time on a copy set as the Report sets it and fed the Report-exported fixture, where
+  1 July 2025 must sit in the first column's Tuesday row.
+- The deneb-pbir parse check (the skill's `renderer/render.mjs`; set `DENEB_PBIR_RENDERER` to move
+  it) under the Deneb 1.9 and 2.0 rules, on the Template over its sample file and on the Report's
+  Calendar over the rows the Report delivers. Under 1.9 no Deneb 2.0 container name may appear.
+
+A tool that is not where the variable says fails its gate and names the variable; nothing is
+skipped.
+
 ## What it models
 
 | Piece | Where | Notes |
 |---|---|---|
 | Spec loading | `src/spec.ts` | Merges a config the way `prototype/prep.py` does; option overrides set top-level signal values. Deneb 1.9 gets `pbiContainerWidth`, `pbiContainerHeight` and `pbiContainer`; Deneb 2.0 gets its textual rewrite to `denebContainer` |
-| Report visuals | `src/spec.ts` | A `{ visual }` source reads a Deneb `visual.json` read-only, as the deneb-pbir skill decodes it: `jsonSpec` and `jsonConfig` are single-quoted PBIR literals with `''` for `'`, JSONC comments allowed. A missing file fails, naming it. `report-calendar` is the Report's sales Calendar on Daily overview |
+| Templates | `src/spec.ts` | A `{ template, fields }` source reads a v1 Deneb template and maps it as Deneb's import does: every `__N__` key in the text becomes its field's encoded name. An unmapped or undeclared key fails. `template` is the Template under its declared names, Date and Sales |
+| Report visuals | `src/spec.ts` | A `{ visual }` source reads a Deneb `visual.json` read-only, as the deneb-pbir skill decodes it: `jsonSpec` and `jsonConfig` are single-quoted PBIR literals with `''` for `'`, JSONC comments allowed. A missing file fails, naming it. `report-calendar` is the Report's sales Calendar on Daily overview, the Template since #6 |
 | Row delivery | `src/page/runtime.js` | Fixture fields, then `<measure>__highlight` when highlight values are given, then `__row__` and `__selected__` (`on`, `off`, or `neutral` when nothing is selected) |
-| Date delivery | `dateDelivery` | `local` midnight (default: what Desktop delivers, read by #2 in the machine's own zone, Sydney; other zones are proved here only, and Windows' time zone is never changed), `utc` midnight, or `text`. Only the date field's shape changes |
+| Date delivery | `dateDelivery` | `local` midnight (default: what Desktop delivers, read by #2 in the machine's own zone, Sydney; other zones are proved here only, and Windows' time zone is never changed), `utc` midnight, `text` (ISO) or `epoch` (a UTC-midnight number). Only the date field's shape changes |
 | Apply evaluation | `src/page/runtime.js` | A mirror of Deneb's own source at tags 2.0.0.0 and 1.9.1.0, rule by rule, with the source lines in the comment block at the top of the file |
 | Host | `src/page/runtime.js` | Records `select` and `clear`; a selection is fed back into the dataset and the spec is embedded again, as Deneb does on a data update |
 | Theme | `src/theme.ts` | `pbiColor` with Deneb's shade maths over the theme's data colours and named colours. `pbiFormat` and `pbiFormatAutoUnit` are stand-ins |
@@ -61,12 +88,13 @@ drag over more than 50 rows is refused and a smaller one applies.
 ## The interface
 
 ```ts
-import { openHarness, specAsRun, specFields, applyLimits, withApplyLimit } from './src/index.ts';
+import { openHarness, specAsRun, specFields, applyLimits, withApplyLimit, mapTemplate, TEMPLATE_FILE } from './src/index.ts';
 
 const harness = await openHarness();
 const cal = await harness.render({
-  spec: 'prototype',            // or 'report-calendar', a .json path relative to harness/,
-                                // { path, config }, or { visual } (a Deneb visual.json)
+  spec: 'template',             // or 'prototype', 'report-calendar', a .json path relative to
+                                // harness/, { path, config }, { visual } (a Deneb visual.json)
+                                // or { template, fields } (a v1 template and its field names)
   fixture: 'base-2025',         // or a Fixture object
   size: { width: 1080, height: 362 },
   theme: 'bi-nexus',
@@ -80,15 +108,19 @@ await cal.drag('2025-07-07', '2025-08-20');   // also click, rightClick, middleC
                                                // backgroundClick, dragReleasedOutside; shift and ctrl
 await cal.hostCalls();          // [{ type: 'select', rows, dates, multiSelect }] or [{ type: 'clear' }]
 await cal.applyCalls();         // each call's expression, options and Deneb-style result
-await cal.day('2025-12-19');    // fill, opacity, ring, position, size, tooltip, row identity:
-                                // row is null when the identity is present but null, undefined
-                                // and hasIdentity false when the day carries none at all
+await cal.day('2025-12-19');    // fill, stroke, opacity, ring, position, size, tooltip, row
+                                // identity: row is null when the identity is present but null,
+                                // undefined and hasIdentity false when the day carries none at all
 await cal.labels();             // every drawn label
+const bg = await cal.backgroundPoint();        // a point on the view's background, off the grid
+await cal.pixelAt(bg);          // the drawn colour at a view point, '#rrggbb' (or rgba() if clear)
+await cal.clickAt({ x: 40, y: 60 });           // a click at a view point, say an empty slot
 await cal.vegaVersion();        // '6.2.0' or '6.4.0', as the page's Vega bundle reports itself
 await harness.close();
 
 // No browser needed for these:
 const spec = specAsRun('report-calendar', '6.2');  // the spec as that Vega version's Deneb runs it
+mapTemplate(TEMPLATE_FILE, { __0__: 'Order Date', __1__: 'Total Sales' });  // the Template, imported
 specFields('report-calendar');   // the fields a Deneb visual binds: ['Date', 'Days in Filter', 'Sales']
 applyLimits(spec);               // each apply call's limit as written: ['2500']
 withApplyLimit(spec, 'L');       // the spec with every apply call's limit written as L
@@ -111,17 +143,26 @@ and keep mark names in `src/adapter.ts`.
 A check that records what the prototype does where the SPEC asks for something else is a
 characterisation, not a requirement: its name says so and names the ticket that changes it (for
 example the null identity of a day with no row, which T12 changes). "The prototype checks pass
-unchanged" (T06) holds for it only until that ticket.
+unchanged" (T06) holds for it only until that ticket. The prototype stays as it was; the Template
+(#6) gives a day with no row no identity at all when 'every date has a row' is off
+(`test/template-days.test.ts`).
 
 Deliberately wrong specs live in `test/specs/`. `strip.json` is the valid baseline they vary.
 `apply-date-placeholder.json` is a valid variant whose click applies a `_{date}_` placeholder, to
 tell Deneb 1.9 from 2.0.
 
+The Template's own checks are the `test/template-*.test.ts` files: the Window (calendar and fiscal
+years on the right weekday, blank slots outside it that a click cannot select), the four date
+shapes drawing identical scenes, Empty and Filtered-out days, field names with spaces, and the
+library shape with the standing gates. The prototype's drag, Peak day click, right click and
+background click checks in `test/prototype.test.ts` also run on the Template.
+
 The Report's embedded Calendar (`report-calendar`) is checked in `test/report-calendar.test.ts`:
-it must equal the prototype, config merged, apart from its apply limit of 2,500, and the
-prototype's drag, Peak day click, right click and background click checks in
-`test/prototype.test.ts` also run on it, fed `report-fields-sample` (the prototype sample under the
-Report's field names). The Report is read, never written: it belongs to the report seam.
+it must equal the Template over Date and Sales with the Report's settings (a July fiscal-year
+Window, 'every date has a row' on) and nothing else changed, and it is driven over the
+Report-exported `report-sales-fy26` rows: FY26 drawn whole, a drag, a Peak day click, a right click,
+a background click and the apply limit. The Report is read, never written: it belongs to the report
+seam.
 
 ## Adding a fixture
 
@@ -129,7 +170,9 @@ Add a generator function to `src/fixtures.ts` and register it in `FIXTURES`. Use
 anything random and `datesOfYear(y)` for dates, and keep dates as `YYYY-MM-DD` text: delivery turns
 them into what the spec receives, inside the page, in the page's time zone. Then add its name and
 sha256 fingerprint to `FINGERPRINTS` in `test/fixtures.test.ts`, with a test of the properties it
-promises. The fingerprint is a deliberate change detector: it is what proves the fixture is the
+promises. `leap-2024` (every day of 2024, four blank) and `every-date-2025` (every day of 2025
+with the never-blank `Days in Filter` helper, five blank) were added by #6.
+The fingerprint is a deliberate change detector: it is what proves the fixture is the
 same on every run and machine, so update it only in a commit that means to change the fixture.
 Row order is row identity: row `i` is delivered as `__row__ = i`.
 
