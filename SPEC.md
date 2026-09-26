@@ -471,11 +471,20 @@ library, ready to contribute once a courtesy note has gone to Lumeric Visuals.
   its weekday's row showing its own row. Windows' time zone is never changed to read another zone
   (Tim, 2026-09-26). Other zones are proved in the harness only: every template check runs in UTC,
   Pacific/Auckland and America/Los_Angeles with local-midnight delivery. The harness's host setting
-  is therefore `dateDelivery: 'local'`, its default. Should a later Deneb deliver dates another way
-  (UTC midnight, or strings), change only the step that parses the date, not the lookup or the
-  selection expression. The spec uses local date functions only and builds the lookup key and the
-  selection bounds the same way. Leap years are handled by stepping calendar dates, never by adding
-  a fixed number of milliseconds.
+  is therefore `dateDelivery: 'local'`, its default. Other hosts deliver other shapes: the library
+  checker a local-midnight Date, a text column its ISO string. So the date parse step (#6) accepts
+  a Date, an epoch number or a date string, reads its instant, and takes the UTC calendar date when
+  the instant falls exactly on UTC midnight and the local calendar date otherwise. A local midnight
+  falls on UTC midnight only where the offset is zero, and there both dates agree, so every shape
+  resolves to the same day in every zone (the harness draws the same scene from local, UTC, text
+  and epoch deliveries in all six cells). A date-time at exactly UTC midnight is read as that UTC
+  date, which the README states. The spec uses local date functions only and builds the lookup key
+  and the selection bounds the same way. The selection expression, carried over unchanged from the
+  prototype, still reads a row's date as its instant, so it matches the right rows only for
+  local-midnight delivery, which is what Deneb gives; a host that delivers another shape draws the
+  right days but would select by that shape's instant (Selection, #9, may apply the same parse).
+  Leap years are handled by stepping calendar dates, never by adding a fixed number of
+  milliseconds.
 - **Deneb versions.** The spec reads the container size through the legacy signals (pbiContainer
   width and height), which Deneb 1.9 needs and Deneb 2.0 rewrites to its own names when it loads the
   spec. It references them only in the top-level width and height, and everything inside uses

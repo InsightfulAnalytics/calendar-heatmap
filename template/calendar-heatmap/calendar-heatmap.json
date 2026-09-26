@@ -146,8 +146,9 @@
       "name": "rows",
       "source": "dataset",
       "transform": [
-        {"type": "formula", "as": "_d", "expr": "toDate(datum['__0__'])"},
-        {"type": "filter", "expr": "isValid(datum._d)"},
+        {"type": "formula", "as": "_t", "expr": "datum['__0__'] == null || datum['__0__'] === '' ? null : time(toDate(datum['__0__']))"},
+        {"type": "filter", "expr": "isValid(datum._t)"},
+        {"type": "formula", "as": "_d", "expr": "datum._t % 864e5 == 0 ? datetime(utcyear(datum._t), utcmonth(datum._t), utcdate(datum._t)) : datetime(year(datum._t), month(datum._t), date(datum._t))"},
         {"type": "formula", "as": "_key", "expr": "timeFormat(datum._d, '%Y-%m-%d')"},
         {"type": "formula", "as": "_wy", "expr": "month(datum._d) >= startMonth ? year(datum._d) : year(datum._d) - 1"}
       ]

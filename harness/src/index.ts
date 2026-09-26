@@ -39,13 +39,14 @@ export const CELLS: (Cell & { label: string })[] = VEGA_VERSIONS.flatMap((vega) 
   TIME_ZONES.map((timeZone) => ({ vega, timeZone, label: cellLabel({ vega, timeZone }) })));
 
 /**
- * How the host delivers a date column: local midnight, UTC midnight or the date as text. Desktop
- * delivers a Date at local midnight in the viewer's time zone (SPEC, "Dates and time zones": read
- * by #2 in the machine's own zone, Sydney; Windows' time zone is never changed, so the other zones
- * are proved here only), so 'local' is the default and the other two are the alternatives the
- * spec must not depend on.
+ * How the host delivers a date column: a Date at local midnight, a Date at UTC midnight, the date
+ * as ISO text ('2025-07-01'), or the UTC-midnight epoch number. Desktop delivers a Date at local
+ * midnight in the viewer's time zone (SPEC, "Dates and time zones": read by #2 in the machine's own
+ * zone, Sydney; Windows' time zone is never changed, so the other zones are proved here only), so
+ * 'local' is the default and the others are the shapes other hosts (the library checker, a
+ * showcase, a text column) may deliver, which the Template must draw on the same day.
  */
-export const DATE_DELIVERIES = ['local', 'utc', 'text'] as const;
+export const DATE_DELIVERIES = ['local', 'utc', 'text', 'epoch'] as const;
 export type DateDelivery = (typeof DATE_DELIVERIES)[number];
 
 /** What to render. The cell (vega and timeZone) defaults to DEFAULT_CELL, field by field. */

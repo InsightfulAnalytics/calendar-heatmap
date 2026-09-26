@@ -1,5 +1,5 @@
 // npm run render -- --spec prototype --fixture prototype-sample [--size 1080x362] [--theme bi-nexus]
-//   [--option name=value ...] [--vega 6.2|6.4] [--tz <zone>] [--date-delivery local|utc|text]
+//   [--option name=value ...] [--vega 6.2|6.4] [--tz <zone>] [--date-delivery local|utc|text|epoch]
 //   [--check "<check>" ...]
 //
 // Renders the spec in headless Edge in every cell asked for. With no --vega and no --tz that is all

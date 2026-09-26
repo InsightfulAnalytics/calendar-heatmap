@@ -231,6 +231,7 @@
     if (text == null) return text;
     if (mode === 'text') return text;
     const [y, mo, d] = String(text).split('-').map(Number);
+    if (mode === 'epoch') return Date.UTC(y, mo - 1, d);
     return mode === 'utc' ? new Date(Date.UTC(y, mo - 1, d)) : new Date(y, mo - 1, d);
   };
 

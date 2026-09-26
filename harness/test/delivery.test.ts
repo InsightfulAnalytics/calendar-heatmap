@@ -1,5 +1,6 @@
 // Delivering fixture rows the way Deneb does. The date delivery setting (local midnight, UTC
-// midnight or text) changes the date field's shape and nothing else, in every time zone.
+// midnight, text or the epoch number) changes the date field's shape and nothing else, in every
+// time zone.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CELLS, DATE_DELIVERIES } from '../src/index.ts';
@@ -12,7 +13,7 @@ const MIDNIGHT = '00:00:00.000';
 const harness = useHarness();
 
 for (const { vega, timeZone, label: cell } of CELLS) {
-  test(`${cell} switching date delivery between local midnight, UTC midnight and text changes the rows' date shape and nothing else`, async () => {
+  test(`${cell} switching date delivery between local midnight, UTC midnight, text and the epoch number changes the rows' date shape and nothing else`, async () => {
     const delivered: Record<string, Record<string, unknown>[]> = {};
     for (const dateDelivery of DATE_DELIVERIES) {
       const cal = await harness.render({ spec: 'prototype', fixture: 'base-2025', vega, timeZone, dateDelivery });
@@ -23,10 +24,12 @@ for (const { vega, timeZone, label: cell } of CELLS) {
       assert.deepEqual(pick(delivered.local[i].Date, 'type', 'localDate', 'localTime'), { type: 'Date', localDate: row.Date, localTime: MIDNIGHT });
       assert.deepEqual(pick(delivered.utc[i].Date, 'type', 'utcDate', 'utcTime'), { type: 'Date', utcDate: row.Date, utcTime: MIDNIGHT });
       assert.deepEqual(delivered.text[i].Date, { type: 'string', value: row.Date });
+      assert.equal(delivered.epoch[i].Date, Date.parse(`${row.Date}T00:00:00Z`));
     });
     const withoutDate = (rows: Record<string, unknown>[]) => rows.map(({ Date: _date, ...rest }) => rest);
     assert.deepEqual(withoutDate(delivered.utc), withoutDate(delivered.local));
     assert.deepEqual(withoutDate(delivered.text), withoutDate(delivered.local));
+    assert.deepEqual(withoutDate(delivered.epoch), withoutDate(delivered.local));
     assert.deepEqual(withoutDate(delivered.local), base.rows.map((r, i) => ({ Sales: r.Sales, __row__: i, __selected__: 'neutral' })));
   });
 
