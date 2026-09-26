@@ -11,14 +11,23 @@ export type DenebVersion = '1.9' | '2.0';
 
 /**
  * Where a spec comes from: a spec JSON file with an optional config JSON file (Deneb's separate
- * config) to merge into it, or a Deneb visual's visual.json in a PBIR report, whose embedded spec
- * and config are read the way Deneb stores them (see readDenebVisual).
+ * config) to merge into it; a Deneb visual's visual.json in a PBIR report, whose embedded spec and
+ * config are read the way Deneb stores them (see readDenebVisual); or a Deneb template, whose
+ * placeholders are mapped to field names the way Deneb's import maps them (see readTemplate).
  */
-export type SpecSource = { path: string; config?: string } | { visual: string };
+export type SpecSource =
+  | { path: string; config?: string }
+  | { visual: string }
+  | { template: string; fields: Record<string, string> };
 
-/** Named specs. The template adds its entry here when it exists. */
+/** The Template: template/calendar-heatmap/, in the library's shape. */
+export const TEMPLATE_FILE = projectPath('template', 'calendar-heatmap', 'calendar-heatmap.json');
+
+/** Named specs. */
 export const SPECS: Record<string, SpecSource> = {
-  prototype: { path: projectPath('prototype', 'calendar-heatmap.json'), config: projectPath('prototype', 'config.json') },
+  // T06 restructure step: the prototype checks run on the Template, its placeholders mapped to the
+  // prototype's field names, to prove the restructure changed nothing.
+  prototype: { template: TEMPLATE_FILE, fields: { __0__: 'Date', __1__: 'Sales' } },
   // The Report's sales Calendar on Daily overview, as T01 embedded it. Read only, never written.
   'report-calendar': { visual: projectPath('report', 'Daily Sales.Report', 'definition', 'pages', 'dailyOverview', 'visuals', 'calendar', 'visual.json') },
 };
@@ -129,12 +138,63 @@ export function readDenebVisual(file: string): DenebVisual {
   };
 }
 
+/** One placeholder a Deneb template declares (usermeta.dataset, template metadata version 1). */
+export interface TemplateField {
+  key: string;
+  name: string;
+  type: string;
+  kind: string;
+  description?: string;
+}
+
+export interface DenebTemplate {
+  /** The spec body with usermeta removed and every placeholder still in place. */
+  body: JsonObject;
+  usermeta: JsonObject;
+  fields: TemplateField[];
+}
+
+const PLACEHOLDER = /__\d+__/g;
+
+/** Read a Deneb template (version 1 metadata) without mapping its placeholders. */
+export function readTemplate(file: string): DenebTemplate {
+  if (!existsSync(file)) throw new Error(`the template ${file} does not exist`);
+  const { usermeta, ...body } = readJson(file);
+  if (!usermeta || typeof usermeta !== 'object' || Array.isArray(usermeta)) throw new Error(`${file} has no usermeta block`);
+  const fields = ((usermeta as JsonObject).dataset ?? []) as unknown as TemplateField[];
+  return { body, usermeta: usermeta as JsonObject, fields };
+}
+
+/**
+ * The template's spec as Deneb's import leaves it: usermeta removed, and each placeholder key
+ * replaced in the spec text by the mapped field's name, encoded as Deneb encodes a field name. A
+ * declared placeholder with no mapping, or a mapping for an undeclared one, fails.
+ */
+export function mapTemplate(file: string, fields: Record<string, string>): JsonObject {
+  const template = readTemplate(file);
+  const declared = template.fields.map((f) => f.key);
+  const missing = declared.filter((k) => !(k in fields));
+  if (missing.length) throw new Error(`${file}: no field mapped to ${missing.join(', ')}`);
+  const extra = Object.keys(fields).filter((k) => !declared.includes(k));
+  if (extra.length) throw new Error(`${file}: ${extra.join(', ')} is not a placeholder the template declares`);
+  const text = JSON.stringify(template.body).replace(PLACEHOLDER, (key) => {
+    const name = fields[key];
+    return name === undefined ? key : JSON.stringify(denebFieldName(name)).slice(1, -1);
+  });
+  return JSON.parse(text) as JsonObject;
+}
+
 /**
  * Read a spec and merge its config the way prototype/prep.py does: the config becomes the spec's
  * config, with a white background so a screenshot reads like the Power BI visual container. A
- * Deneb visual's jsonConfig is merged the same way.
+ * Deneb visual's jsonConfig and a template's own config are merged the same way.
  */
 export function loadSpec(source: SpecSource): JsonObject {
+  if ('template' in source) {
+    const spec = mapTemplate(source.template, source.fields);
+    if (spec.config) spec.config = { ...(spec.config as JsonObject), background: '#ffffff' };
+    return spec;
+  }
   if ('visual' in source) {
     const { spec, config } = readDenebVisual(source.visual);
     if (config) spec.config = { ...config, background: '#ffffff' };

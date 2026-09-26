@@ -1,0 +1,440 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "usermeta": {
+    "deneb": {
+      "build": "1.9.1.0",
+      "metaVersion": 1,
+      "provider": "vega",
+      "providerVersion": "6.2.0"
+    },
+    "information": {
+      "name": "Calendar Heatmap",
+      "description": "A year of daily values as week columns by weekday rows, coloured in steps of theme colour 1, with empty days drawn, the peak day ringed, and a click or drag to cross-filter a date range. Design after Lumeric Visuals (lumericvisuals.com).",
+      "author": "Timothy Osborn, after Lumeric Visuals",
+      "uuid": "e51c3d31-ff74-484a-a735-1d1a216677e5",
+      "generated": "2026-09-26T00:00:00.000Z"
+    },
+    "dataset": [
+      {
+        "key": "__0__",
+        "name": "Date",
+        "description": "The day: a date column, such as the date table's date. One row per day.",
+        "type": "dateTime",
+        "kind": "column"
+      },
+      {
+        "key": "__1__",
+        "name": "Sales",
+        "description": "The day's value: a non-negative measure, such as total sales.",
+        "type": "numeric",
+        "kind": "measure"
+      }
+    ],
+    "interactivity": {
+      "tooltip": true,
+      "contextMenu": true,
+      "selection": true,
+      "highlight": true,
+      "dataPointLimit": 50
+    }
+  },
+  "config": {
+    "autosize": {"type": "fit", "contains": "padding"},
+    "background": "transparent",
+    "view": {"stroke": "transparent"},
+    "font": "Segoe UI",
+    "text": {"font": "Segoe UI"}
+  },
+  "description": "Calendar heatmap prototype: one year of days as 53 x 7 capsule cells (Monday first), a 5-class equal-interval ramp over [0, max] in shades of theme colour 1 (pbiColor(0)), empty days drawn, peak day ringed, left click or drag to cross-filter a date range (advanced selection mode).",
+  "width": {"signal": "pbiContainerWidth"},
+  "height": {"signal": "pbiContainerHeight"},
+  "padding": 0,
+  "signals": [
+    {"name": "titleText", "value": "Sales"},
+    {"name": "subtitleText", "value": "by Order Date"},
+    {"name": "rampShades", "value": [0.8, 0.55, 0.25, -0.1, -0.45]},
+    {"name": "palette", "update": "[pbiColor(0, rampShades[0]), pbiColor(0, rampShades[1]), pbiColor(0, rampShades[2]), pbiColor(0, rampShades[3]), pbiColor(0, rampShades[4])]"},
+    {"name": "emptyColor", "value": "#f1f5f9"},
+    {"name": "inkColor", "value": "#0b1e3f"},
+    {"name": "mutedColor", "value": "#475569"},
+    {"name": "faintColor", "value": "#94a3b8"},
+    {"name": "frameColor", "value": "#e2e8f0"},
+    {"name": "padL", "value": 24},
+    {"name": "padR", "value": 24},
+    {"name": "padT", "value": 14},
+    {"name": "padB", "value": 12},
+    {"name": "gutter", "value": 40},
+    {"name": "insetR", "value": 20},
+    {"name": "fpad", "value": 4},
+    {"name": "gapRatio", "value": 0.21},
+    {"name": "maxAspect", "value": 1.72},
+    {"name": "showOutsideDays", "value": true},
+
+    {"name": "yr", "update": "length(data('yearStats')) && data('yearStats')[0].yr != null ? data('yearStats')[0].yr : year(now())"},
+    {"name": "jan1", "update": "datetime(yr, 0, 1)"},
+    {"name": "nDays", "update": "round((time(datetime(yr + 1, 0, 1)) - time(jan1)) / 864e5)"},
+    {"name": "jan1Wd", "update": "(day(jan1) + 6) % 7"},
+    {"name": "nWeeks", "update": "floor((nDays - 1 + jan1Wd) / 7) + 1"},
+    {"name": "maxSales", "update": "length(data('stats')) && data('stats')[0].maxSales > 0 ? data('stats')[0].maxSales : 1"},
+    {"name": "totalSales", "update": "length(data('stats')) ? data('stats')[0].total : 0"},
+    {"name": "anySelected", "update": "length(data('selectedRows')) > 0"},
+
+    {"name": "headerY", "update": "padT + 17"},
+    {"name": "monthY", "update": "headerY + 30"},
+    {"name": "frameTop", "update": "monthY + 8"},
+    {"name": "frameLeft", "update": "padL + gutter"},
+    {"name": "availW", "update": "width - padR - insetR - frameLeft - 2 * fpad"},
+    {"name": "availH", "update": "height - padB - 3 - 26 - frameTop - 2 * fpad"},
+    {"name": "cellW", "update": "max(2, min(availW / (nWeeks + (nWeeks - 1) * gapRatio), availH / (7 + 6 * gapRatio)))"},
+    {"name": "gap", "update": "cellW * gapRatio"},
+    {"name": "cellH", "update": "min((availH - 6 * gap) / 7, cellW * maxAspect)"},
+    {"name": "frameBottom", "update": "frameTop + 2 * fpad + 7 * cellH + 6 * gap"},
+    {"name": "legendY", "update": "frameBottom + 26"},
+    {"name": "gridW", "update": "nWeeks * cellW + (nWeeks - 1) * gap"},
+    {"name": "gridX", "update": "frameLeft + fpad"},
+    {"name": "gridY", "update": "frameTop + fpad"},
+
+    {
+      "name": "downIdx",
+      "value": null,
+      "on": [
+        {"events": "@cell:mousedown[event.button === 0]", "update": "datum.idx"},
+        {"events": "view:mousedown[event.button === 0][!event.item || event.item.mark.name !== 'cell']", "update": "null"}
+      ]
+    },
+    {
+      "name": "headIdx",
+      "value": null,
+      "on": [
+        {"events": "@cell:mousedown[event.button === 0]", "update": "datum.idx"},
+        {"events": "[@cell:mousedown[event.button === 0], window:mouseup] > @cell:mouseover", "update": "datum.idx"},
+        {"events": "view:mousedown[event.button === 0][!event.item || event.item.mark.name !== 'cell']", "update": "null"}
+      ]
+    },
+    {
+      "name": "dragging",
+      "value": false,
+      "on": [
+        {"events": "@cell:mousedown[event.button === 0]", "update": "true"},
+        {"events": "window:mouseup", "update": "false"}
+      ]
+    },
+    {"name": "selLo", "update": "downIdx == null ? null : min(downIdx, headIdx)"},
+    {"name": "selHi", "update": "downIdx == null ? null : max(downIdx, headIdx)"},
+    {
+      "name": "rangeFilter",
+      "update": "selLo == null ? '' : 'inrange(time(toDate(datum[\"__0__\"])), [' + time(datetime(yr, 0, 1 + selLo)) + ', ' + (time(datetime(yr, 0, 2 + selHi)) - 1) + '])'"
+    },
+    {
+      "name": "pbiCrossFilterSelection",
+      "value": {},
+      "on": [
+        {
+          "events": "view:mouseup[event.button === 0]",
+          "update": "downIdx == null ? pbiCrossFilterClear() : pbiCrossFilterApply(event, rangeFilter, {limit: 400})"
+        }
+      ]
+    }
+  ],
+  "data": [
+    {"name": "dataset"},
+    {
+      "name": "rows",
+      "source": "dataset",
+      "transform": [
+        {"type": "formula", "as": "_d", "expr": "toDate(datum['__0__'])"},
+        {"type": "filter", "expr": "isValid(datum._d)"},
+        {"type": "formula", "as": "_key", "expr": "timeFormat(datum._d, '%Y-%m-%d')"},
+        {"type": "formula", "as": "_yr", "expr": "year(datum._d)"}
+      ]
+    },
+    {
+      "name": "yearStats",
+      "source": "rows",
+      "transform": [{"type": "aggregate", "ops": ["max"], "fields": ["_yr"], "as": ["yr"]}]
+    },
+    {
+      "name": "yearRows",
+      "source": "rows",
+      "transform": [{"type": "filter", "expr": "datum._yr == yr"}]
+    },
+    {
+      "name": "stats",
+      "source": "yearRows",
+      "transform": [
+        {"type": "aggregate", "ops": ["max", "sum", "valid"], "fields": ["__1__", "__1__", "__1__"], "as": ["maxSales", "total", "activeDays"]}
+      ]
+    },
+    {
+      "name": "selectedRows",
+      "source": "yearRows",
+      "transform": [{"type": "filter", "expr": "datum.__selected__ == 'on'"}]
+    },
+    {
+      "name": "calendar",
+      "transform": [
+        {"type": "sequence", "start": 0, "stop": {"signal": "nDays"}, "as": "idx"},
+        {"type": "formula", "as": "date", "expr": "datetime(yr, 0, 1 + datum.idx)"},
+        {"type": "formula", "as": "key", "expr": "timeFormat(datum.date, '%Y-%m-%d')"},
+        {"type": "formula", "as": "wd", "expr": "(day(datum.date) + 6) % 7"},
+        {"type": "formula", "as": "week", "expr": "floor((dayofyear(datum.date) - 1 + jan1Wd) / 7)"},
+        {"type": "lookup", "from": "yearRows", "key": "_key", "fields": ["key"], "as": ["row"]},
+        {"type": "formula", "as": "Sales", "expr": "datum.row && isValid(datum.row['__1__']) ? datum.row['__1__'] : null"},
+        {"type": "formula", "as": "__row__", "expr": "datum.row ? datum.row.__row__ : null"},
+        {"type": "formula", "as": "sel", "expr": "datum.row ? datum.row.__selected__ : null"}
+      ]
+    },
+    {
+      "name": "outsideDays",
+      "transform": [
+        {"type": "sequence", "start": 0, "stop": {"signal": "showOutsideDays ? nWeeks * 7 : 0"}, "as": "slot"},
+        {"type": "filter", "expr": "datum.slot < jan1Wd || datum.slot >= jan1Wd + nDays"},
+        {"type": "formula", "as": "week", "expr": "floor(datum.slot / 7)"},
+        {"type": "formula", "as": "wd", "expr": "datum.slot % 7"}
+      ]
+    },
+    {
+      "name": "peak",
+      "source": "calendar",
+      "transform": [{"type": "filter", "expr": "datum.Sales != null && datum.Sales >= maxSales"}]
+    },
+    {
+      "name": "monthLabels",
+      "source": "calendar",
+      "transform": [{"type": "filter", "expr": "date(datum.date) == 1 && month(datum.date) % 2 == 0"}]
+    },
+    {
+      "name": "weekdayLabels",
+      "values": [{"wd": 0, "t": "M"}, {"wd": 2, "t": "W"}, {"wd": 4, "t": "F"}, {"wd": 6, "t": "S"}]
+    },
+    {
+      "name": "legendBins",
+      "transform": [{"type": "sequence", "start": 0, "stop": 5, "as": "b"}]
+    }
+  ],
+  "scales": [
+    {
+      "name": "color",
+      "type": "quantize",
+      "domain": {"signal": "[0, maxSales]"},
+      "range": {"signal": "palette"}
+    }
+  ],
+  "marks": [
+    {
+      "type": "rect",
+      "name": "frame",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "round(frameLeft) + 0.5"},
+          "y": {"signal": "round(frameTop) + 0.5"},
+          "width": {"signal": "round(gridW + 2 * fpad)"},
+          "height": {"signal": "round(frameBottom - frameTop)"},
+          "cornerRadius": {"value": 8},
+          "fill": {"value": "transparent"},
+          "stroke": {"signal": "frameColor"},
+          "strokeWidth": {"value": 1}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "name": "outsideCell",
+      "from": {"data": "outsideDays"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "gridX + datum.week * (cellW + gap)"},
+          "y": {"signal": "gridY + datum.wd * (cellH + gap)"},
+          "width": {"signal": "cellW"},
+          "height": {"signal": "cellH"},
+          "cornerRadius": {"signal": "cellW / 2"},
+          "fill": {"signal": "emptyColor"},
+          "opacity": {"signal": "(dragging && selLo != null) || anySelected ? 0.28 : 0.55"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "name": "cell",
+      "from": {"data": "calendar"},
+      "encode": {
+        "enter": {"cursor": {"value": "pointer"}},
+        "update": {
+          "x": {"signal": "gridX + datum.week * (cellW + gap)"},
+          "y": {"signal": "gridY + datum.wd * (cellH + gap)"},
+          "width": {"signal": "cellW"},
+          "height": {"signal": "cellH"},
+          "cornerRadius": {"signal": "cellW / 2"},
+          "fill": [
+            {"test": "datum.Sales == null", "signal": "emptyColor"},
+            {"scale": "color", "field": "Sales"}
+          ],
+          "opacity": [
+            {"test": "dragging && selLo != null", "signal": "datum.idx >= selLo && datum.idx <= selHi ? 1 : 0.28"},
+            {"test": "anySelected", "signal": "datum.sel == 'on' ? 1 : 0.28"},
+            {"value": 1}
+          ],
+          "stroke": {"signal": "inkColor"},
+          "strokeWidth": {"value": 1.25},
+          "strokeOpacity": {"value": 0},
+          "tooltip": {"signal": "{'__0__': timeFormat(datum.date, '%a %d %b %Y'), '__1__': datum.Sales == null ? '(blank)' : pbiFormat(datum.Sales, '#,0')}"}
+        },
+        "hover": {"strokeOpacity": {"value": 0.85}}
+      }
+    },
+    {
+      "type": "rect",
+      "name": "peakRing",
+      "from": {"data": "peak"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "xc": {"signal": "gridX + datum.week * (cellW + gap) + cellW / 2"},
+          "yc": {"signal": "gridY + datum.wd * (cellH + gap) + cellH / 2"},
+          "width": {"signal": "min(cellW * 1.45, cellH)"},
+          "height": {"signal": "cellH"},
+          "cornerRadius": {"signal": "min(cellW * 1.45, cellH) / 2"},
+          "fill": {"scale": "color", "field": "Sales"},
+          "stroke": {"signal": "inkColor"},
+          "strokeWidth": {"value": 2.5},
+          "opacity": [
+            {"test": "dragging && selLo != null", "signal": "datum.idx >= selLo && datum.idx <= selHi ? 1 : 0.28"},
+            {"test": "anySelected", "signal": "datum.sel == 'on' ? 1 : 0.28"},
+            {"value": 1}
+          ]
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "monthLabel",
+      "from": {"data": "monthLabels"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "gridX + datum.week * (cellW + gap)"},
+          "y": {"signal": "monthY"},
+          "text": {"signal": "timeFormat(datum.date, '%b')"},
+          "fontSize": {"value": 10},
+          "fill": {"signal": "mutedColor"},
+          "align": {"value": "left"},
+          "baseline": {"value": "alphabetic"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "weekdayLabel",
+      "from": {"data": "weekdayLabels"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "frameLeft - 18"},
+          "y": {"signal": "gridY + datum.wd * (cellH + gap) + cellH / 2"},
+          "text": {"field": "t"},
+          "fontSize": {"value": 10},
+          "fill": {"signal": "faintColor"},
+          "align": {"value": "center"},
+          "baseline": {"value": "middle"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "titleMark",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padL"},
+          "y": {"signal": "headerY"},
+          "text": {"signal": "titleText"},
+          "fontSize": {"value": 16},
+          "fontWeight": {"value": 600},
+          "fill": {"signal": "inkColor"},
+          "baseline": {"value": "alphabetic"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "subtitleMark",
+      "from": {"data": "titleMark"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "datum.bounds.x2 + 10"},
+          "y": {"signal": "headerY"},
+          "text": {"signal": "subtitleText"},
+          "fontSize": {"value": 12.5},
+          "fill": {"signal": "mutedColor"},
+          "baseline": {"value": "alphabetic"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "totalMark",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "width - padR"},
+          "y": {"signal": "headerY"},
+          "text": {"signal": "pbiFormatAutoUnit(totalSales, '#,0.00')"},
+          "fontSize": {"value": 15},
+          "fontWeight": {"value": 600},
+          "fill": {"signal": "inkColor"},
+          "align": {"value": "right"},
+          "baseline": {"value": "alphabetic"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "legendLess",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padL"},
+          "y": {"signal": "legendY"},
+          "text": {"value": "Less"},
+          "fontSize": {"value": 12},
+          "fill": {"signal": "mutedColor"},
+          "baseline": {"value": "alphabetic"}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "name": "legendSwatch",
+      "from": {"data": "legendBins"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padL + 29 + datum.b * 14"},
+          "y": {"signal": "legendY - 9.5"},
+          "width": {"value": 11},
+          "height": {"value": 11},
+          "cornerRadius": {"value": 2.5},
+          "fill": {"signal": "palette[datum.b]"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "legendMore",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padL + 29 + 5 * 14 + 3"},
+          "y": {"signal": "legendY"},
+          "text": {"value": "More"},
+          "fontSize": {"value": 12},
+          "fill": {"signal": "mutedColor"},
+          "baseline": {"value": "alphabetic"}
+        }
+      }
+    }
+  ]
+}
