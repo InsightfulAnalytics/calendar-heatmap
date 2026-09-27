@@ -161,7 +161,7 @@
             "viewportHeight": {
               "expr": {
                 "Literal": {
-                  "Value": "530D"
+                  "Value": "290D"
                 }
               }
             },

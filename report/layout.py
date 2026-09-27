@@ -45,13 +45,16 @@ LAYOUT = {
     },
 }
 
-# The frame every visible page shares: rail, top bar and their contents. Everything in the rail
-# starts at the same left edge (RAIL_X) and every slicer is the same width.
-RAIL_X, RAIL_W = 12, 176
+# The frame every visible page shares: rail, top bar and their contents. The rail's contents sit in
+# one centred column (RAIL_X to RAIL_X + RAIL_W inside the 200-wide rail) and every slicer is the
+# same width. The theme pads every visual by 14; the frame's shapes, the title and the rail's
+# contents are drawn flush (FLUSH), so the white rail and top bar fill their boxes and the rail's
+# texts, buttons and slicers all start on the same edge.
+RAIL_X, RAIL_W = 20, 160
 FRAME = {
     'rail': (0, 0, 200, 968, None),
     'topBar': (200, 0, 1080, 64, None),
-    'titleText': (216, 10, 760, 44, None),
+    'titleText': (216, 17, 820, 32, None),
     'regionSlicer': (1064, 14, 192, 36, 'pill'),
     'navDaily': (RAIL_X, 100, RAIL_W, 32, None),
     'navRegion': (RAIL_X, 136, RAIL_W, 32, None),
@@ -60,6 +63,8 @@ FRAME = {
     'fySlicer': (RAIL_X, 380, RAIL_W, 36, 'bare'),
     'channelSlicer': (RAIL_X, 448, RAIL_W, 36, 'bare'),
 }
+FLUSH = {'rail', 'topBar', 'titleText', 'navDaily', 'navRegion', 'navTargets', 'dateSlicer', 'fySlicer', 'channelSlicer'}
+NO_PADDING = [{'properties': {side: {'expr': {'Literal': {'Value': '0D'}}} for side in ('top', 'bottom', 'left', 'right')}}]
 for _page in ('dailyOverview', 'byRegion', 'targets'):
     LAYOUT[_page] = {**FRAME, **LAYOUT[_page]}
 
@@ -164,7 +169,7 @@ def textbox(name, spec):
         'visual': {
             'visualType': 'textbox',
             'objects': {'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': text, 'textStyle': style}]}]}}]},
-            'visualContainerObjects': container('bare'),
+            'visualContainerObjects': {**container('bare'), 'padding': NO_PADDING},
             'drillFilterOtherVisuals': True,
         },
     }
@@ -183,11 +188,13 @@ def apply(page, name, spec):
     # pbir cp gives a copied visual a random name; the folder name is the one every table here uses
     visual['name'] = name
     visual['position'].update({'x': x, 'y': y, 'width': w, 'height': h})
+    vco = visual['visual'].setdefault('visualContainerObjects', {})
     if style:
-        vco = visual['visual'].setdefault('visualContainerObjects', {})
         for key, value in container(style).items():
             # keep any other properties already on the object (alt text lives in general)
             vco[key] = value
+    if name in FLUSH:
+        vco['padding'] = NO_PADDING
     path.write_text(json.dumps(visual, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
 
 
