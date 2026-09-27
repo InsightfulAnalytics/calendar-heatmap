@@ -1,6 +1,6 @@
 # Spec: Calendar Heatmap template and working report
 
-Status: built on a lean scope (2026-09-26 close-out; see the README Status for what was deferred). Before that: ready for agent. Tim confirmed both test seams on 2026-09-25 (see Testing Decisions). On
+Status: finished on a lean scope (close-out 2026-09-26, Day summary redesign and README screenshots 2026-09-27; see the README Status for what was deferred). Before that: ready for agent. Tim confirmed both test seams on 2026-09-25 (see Testing Decisions). On
 2026-09-26 he dropped the click-through checklists: agents build everything and verify it
 themselves, and only the outward steps (the courtesy note, publishing, the library PR) stay his.
 Written 2026-09-25 from the feasibility study and prototype session, then reviewed by three critics

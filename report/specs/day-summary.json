@@ -1,0 +1,165 @@
+{
+  "$schema": "https://vega.github.io/schema/vega/v6.json",
+  "description": "Day summary: the one visual on the Calendars' tooltip page, over the seven Week Days rows of the hovered day's Monday to Sunday week. The day's date; its sales in ink with its variance to target beside them in the theme's good or bad colour; then the week as columns of each day's variance to target, the hovered day at full strength, and a count of the week's days on target. A day meets its target when its sales equal or beat it, as in Target Hit.",
+  "width": {"signal": "pbiContainerWidth"},
+  "height": {"signal": "pbiContainerHeight"},
+  "padding": 0,
+  "autosize": {"type": "none"},
+  "signals": [
+    {"name": "inkColor", "value": "#0b1e3f"},
+    {"name": "mutedColor", "value": "#64748b"},
+    {"name": "faintColor", "value": "#cbd5e1"},
+    {"name": "letterColor", "value": "#94a3b8"},
+    {"name": "goodColor", "update": "pbiColor('positive')"},
+    {"name": "badColor", "update": "pbiColor('negative')"},
+    {"name": "padX", "value": 16},
+    {"name": "headlineY", "value": 62},
+    {"name": "barReach", "value": 30},
+    {"name": "baseY", "update": "height - 76"},
+    {"name": "dayLabel", "update": "length(data('dataset')) ? data('dataset')[0]['Day Label'] : ''"},
+    {"name": "reach", "update": "length(data('reach')) ? max(0.05, data('reach')[0].reach) : 0.05"},
+    {"name": "judged", "update": "length(data('tally')) ? data('tally')[0].judged : 0"},
+    {"name": "hits", "update": "length(data('tally')) ? data('tally')[0].hits : 0"}
+  ],
+  "data": [
+    {"name": "dataset"},
+    {
+      "name": "week",
+      "source": "dataset",
+      "transform": [
+        {"type": "formula", "as": "o", "expr": "datum['Offset']"},
+        {"type": "formula", "as": "letter", "expr": "['M', 'T', 'W', 'T', 'F', 'S', 'S'][datum['Offset']]"},
+        {"type": "formula", "as": "s", "expr": "isValid(datum['Week Day Sales']) ? datum['Week Day Sales'] : null"},
+        {"type": "formula", "as": "t", "expr": "isValid(datum['Week Day Target']) ? datum['Week Day Target'] : null"},
+        {"type": "formula", "as": "v", "expr": "datum.s != null && datum.t != null ? datum.s - datum.t : null"},
+        {"type": "formula", "as": "pct", "expr": "datum.v != null && datum.t != 0 ? datum.v / datum.t : null"},
+        {"type": "formula", "as": "state", "expr": "datum.s == null ? 'nosales' : datum.t == null ? 'notarget' : datum.v >= 0 ? 'over' : 'under'"},
+        {"type": "formula", "as": "current", "expr": "datum['Week Day Is Current'] == 1"},
+        {"type": "formula", "as": "hit", "expr": "datum.state == 'over' ? 1 : 0"},
+        {"type": "formula", "as": "judge", "expr": "datum.state == 'over' || datum.state == 'under' ? 1 : 0"},
+        {"type": "formula", "as": "absPct", "expr": "datum.pct != null ? abs(datum.pct) : 0"}
+      ]
+    },
+    {"name": "current", "source": "week", "transform": [{"type": "filter", "expr": "datum.current"}]},
+    {"name": "tally", "source": "week", "transform": [{"type": "aggregate", "fields": ["hit", "judge"], "ops": ["sum", "sum"], "as": ["hits", "judged"]}]},
+    {"name": "reach", "source": "week", "transform": [{"type": "aggregate", "fields": ["absPct"], "ops": ["max"], "as": ["reach"]}]}
+  ],
+  "scales": [
+    {"name": "x", "type": "band", "domain": [0, 1, 2, 3, 4, 5, 6], "range": [{"signal": "padX"}, {"signal": "width - padX"}], "paddingInner": 0.3},
+    {"name": "y", "type": "linear", "domain": [{"signal": "-reach"}, {"signal": "reach"}], "zero": false, "nice": false, "range": [{"signal": "baseY + barReach"}, {"signal": "baseY - barReach"}]}
+  ],
+  "marks": [
+    {
+      "type": "text",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padX"}, "y": {"value": 28},
+          "text": {"signal": "dayLabel"},
+          "fontSize": {"value": 12}, "fill": {"signal": "mutedColor"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "sales",
+      "from": {"data": "current"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padX"}, "y": {"signal": "headlineY"},
+          "text": {"signal": "datum.s == null ? 'No sales on this day' : format(datum.s, ',.0f')"},
+          "fontSize": {"signal": "datum.s == null ? 16 : 26"},
+          "fontWeight": {"value": 600},
+          "fill": {"signal": "datum.s == null ? mutedColor : inkColor"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "variance",
+      "from": {"data": "sales"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "datum.bounds.x2 + 10"}, "y": {"signal": "headlineY"},
+          "text": {"signal": "datum.datum.state == 'over' || datum.datum.state == 'under' ? (datum.datum.v >= 0 ? '▲ +' : '▼ −') + format(abs(datum.datum.v), ',.0f') + (datum.datum.pct != null ? ' (' + (datum.datum.v >= 0 ? '+' : '−') + format(abs(datum.datum.pct), '.1%') + ')' : '') : datum.datum.state == 'notarget' ? 'No target on this day' : ''"},
+          "fontSize": {"signal": "datum.datum.state == 'notarget' ? 12 : 15"},
+          "fontWeight": {"signal": "datum.datum.state == 'notarget' ? 400 : 600"},
+          "fill": {"signal": "datum.datum.state == 'over' ? goodColor : datum.datum.state == 'under' ? badColor : mutedColor"}
+        }
+      }
+    },
+    {
+      "type": "rule",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padX"}, "x2": {"signal": "width - padX"},
+          "y": {"signal": "baseY"},
+          "stroke": {"signal": "faintColor"}, "strokeWidth": {"value": 1}
+        }
+      }
+    },
+    {
+      "type": "rect",
+      "name": "weekBar",
+      "from": {"data": "week"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"scale": "x", "field": "o"},
+          "width": {"scale": "x", "band": 1},
+          "y": {"signal": "datum.pct >= 0 ? baseY - max(1, baseY - scale('y', datum.pct)) : baseY"},
+          "height": {"signal": "max(1, abs(scale('y', datum.pct) - baseY))"},
+          "cornerRadius": {"value": 3},
+          "fill": {"signal": "datum.pct >= 0 ? goodColor : badColor"},
+          "opacity": {"signal": "datum.pct == null ? 0 : datum.current ? 1 : 0.35"}
+        }
+      }
+    },
+    {
+      "type": "symbol",
+      "name": "weekDot",
+      "from": {"data": "week"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "scale('x', datum.o) + bandwidth('x') / 2"},
+          "y": {"signal": "baseY"},
+          "shape": {"value": "circle"}, "size": {"value": 28},
+          "fill": {"signal": "faintColor"},
+          "opacity": {"signal": "datum.pct == null ? 1 : 0"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "weekLetter",
+      "from": {"data": "week"},
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "scale('x', datum.o) + bandwidth('x') / 2"},
+          "y": {"signal": "baseY + barReach + 16"},
+          "align": {"value": "center"},
+          "text": {"field": "letter"},
+          "fontSize": {"value": 11},
+          "fontWeight": {"signal": "datum.current ? 700 : 400"},
+          "fill": {"signal": "datum.current ? inkColor : letterColor"}
+        }
+      }
+    },
+    {
+      "type": "text",
+      "interactive": false,
+      "encode": {
+        "update": {
+          "x": {"signal": "padX"}, "y": {"signal": "height - 10"},
+          "text": {"signal": "judged ? 'Week: ' + hits + ' of ' + judged + ' days on target' : 'Week: no days with both sales and a target'"},
+          "fontSize": {"value": 12}, "fill": {"signal": "mutedColor"}
+        }
+      }
+    }
+  ]
+}

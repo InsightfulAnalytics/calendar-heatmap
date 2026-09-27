@@ -1,0 +1,22 @@
+/// The seven days of a Monday to Sunday week, one row per day, numbered by their offset from Monday (0 to 6). Related to no table: Day summary's week draws one column per row, and the Week Day measures place each row in the week of the day the filter holds.
+table 'Week Days'
+	isHidden
+	lineageTag: 77ac2e92-1f54-4764-bdeb-4215c31a87d1
+
+	column Offset
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b9c92629-cd77-488e-857c-a9b5e2ac681b
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Offset]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Week Days' = calculated
+		mode: import
+		source =
+				// Monday is 0 and Sunday 6, the Calendar's row order
+				SELECTCOLUMNS ( GENERATESERIES ( 0, 6, 1 ), "Offset", [Value] )
+

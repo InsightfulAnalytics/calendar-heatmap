@@ -217,9 +217,9 @@
     },
     {
       "name": "model tables (no hidden local date tables)",
-      "ticket": "T01, T05, T14, T16, T24",
+      "ticket": "T01, T05, T12, T14, T16, T24",
       "report": "CONCATENATEX ( INFO.TABLES (), [Name], \", \", [Name], ASC )",
-      "independent": "\"Channel, DimDate, Measure Table, Region, Sales, Support Tickets, Targets, Web Sessions\""
+      "independent": "\"Channel, DimDate, Measure Table, Region, Sales, Support Tickets, Targets, Web Sessions, Week Days\""
     },
     {
       "name": "eight relationships (Sales and Targets each to date, channel and region; Support Tickets and Web Sessions to date), each active and single direction, many to one",
@@ -771,22 +771,40 @@
       "independent": "CALCULATE ( COUNTROWS ( FILTER ( VALUES ( 'DimDate'[Date] ), NOT ISBLANK ( [Total Sales] ) && NOT ISBLANK ( [Total Target] ) ) ) + 0, {{report}} )"
     },
     {
-      "name": "Day summary says in words that 17 Jul 2025 had no sales",
-      "ticket": "T12",
-      "report": "CALCULATE ( [Day Sales Label], 'DimDate'[Date] = DATE ( 2025, 7, 17 ) )",
-      "independent": "\"No sales on this day\""
-    },
-    {
-      "name": "Day summary shows 7 Jul 2025's sales",
-      "ticket": "T12",
-      "report": "CALCULATE ( [Day Sales Label], 'DimDate'[Date] = DATE ( 2025, 7, 7 ) )",
-      "independent": "FORMAT ( SUMX ( FILTER ( 'Sales', 'Sales'[Date] = DATE ( 2025, 7, 7 ) ), 'Sales'[Amount] ), \"#,##0\" )"
-    },
-    {
       "name": "Day label for one day",
       "ticket": "T12",
       "report": "CALCULATE ( [Day Label], 'DimDate'[Date] = DATE ( 2025, 7, 7 ) )",
       "independent": "\"Mon 7 Jul 2025\""
+    },
+    {
+      "name": "Day summary's week for Wed 9 Jul 2025: Week Day Sales over the seven Week Days rows add up to the sales of Mon 7 to Sun 13 Jul 2025",
+      "ticket": "T12",
+      "report": "CALCULATE ( SUMX ( VALUES ( 'Week Days'[Offset] ), [Week Day Sales] ), 'DimDate'[Date] = DATE ( 2025, 7, 9 ) )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] >= DATE ( 2025, 7, 7 ) && 'Sales'[Date] <= DATE ( 2025, 7, 13 ) ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "Day summary's week for Wed 9 Jul 2025: Week Day Target over the seven rows adds up to the targets of Mon 7 to Sun 13 Jul 2025",
+      "ticket": "T12",
+      "report": "CALCULATE ( SUMX ( VALUES ( 'Week Days'[Offset] ), [Week Day Target] ), 'DimDate'[Date] = DATE ( 2025, 7, 9 ) )",
+      "independent": "SUMX ( FILTER ( 'Targets', 'Targets'[Date] >= DATE ( 2025, 7, 7 ) && 'Targets'[Date] <= DATE ( 2025, 7, 13 ) ), 'Targets'[Target] )"
+    },
+    {
+      "name": "Day summary's week for Tue 1 Jul 2025 under FY26 is whole: it keeps Mon 30 Jun 2025 from FY25",
+      "ticket": "T12",
+      "report": "CALCULATE ( SUMX ( VALUES ( 'Week Days'[Offset] ), [Week Day Sales] ), 'DimDate'[Date] = DATE ( 2025, 7, 1 ), 'DimDate'[FYear] = \"FY26\" )",
+      "independent": "SUMX ( FILTER ( 'Sales', 'Sales'[Date] >= DATE ( 2025, 6, 30 ) && 'Sales'[Date] <= DATE ( 2025, 7, 6 ) ), 'Sales'[Amount] )"
+    },
+    {
+      "name": "Day summary's week for Sun 13 Jul 2025 starts on Mon 7 Jul 2025",
+      "ticket": "T12",
+      "report": "CALCULATE ( CALCULATE ( [Week Day Date], 'Week Days'[Offset] = 0 ), 'DimDate'[Date] = DATE ( 2025, 7, 13 ) )",
+      "independent": "DATE ( 2025, 7, 7 )"
+    },
+    {
+      "name": "Day summary's week for Wed 9 Jul 2025 marks exactly one row as the day, Wednesday (offset 2)",
+      "ticket": "T12",
+      "report": "CALCULATE ( CONCATENATEX ( FILTER ( VALUES ( 'Week Days'[Offset] ), [Week Day Is Current] = 1 ), 'Week Days'[Offset], \",\" ), 'DimDate'[Date] = DATE ( 2025, 7, 9 ) )",
+      "independent": "\"2\""
     }
   ]
 }

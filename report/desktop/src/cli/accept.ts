@@ -11,7 +11,8 @@
 //      Sales by month to its July and August share with all twelve columns kept, and dims the
 //      Support tickets and Web sessions Calendars outside the range without emptying them;
 //   3. a background click clears it, and the KPI strip reads as in step 1;
-//   4. hovering a day shows the Day summary page for that day, in words for a day with no sales;
+//   4. hovering a day shows the Day summary page for that day: its sales and variance to target, or
+//      words for a day with no sales, and its week's days on target;
 //   5. right click, Drill through, Day detail opens Day detail for that day.
 // Expected values come from independent DAX over the fact rows and from date arithmetic. Prints a
 // pass or fail line per check, writes accept.json to --out and exits 1 on any failure.
@@ -45,6 +46,17 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function texts(desktop: Desktop, alt: string): Promise<string[]> {
   const frame = await desktop.deneb(alt).frame();
   return frame.evaluate(() => [...document.querySelectorAll('svg.marks text')].map((t) => (t.textContent ?? '').trim()).filter(Boolean));
+}
+
+/** The texts drawn by the Day summary tooltip's Deneb visual: the sandbox frame whose texts include the day's words. */
+async function tooltipTexts(desktop: Desktop, words: string): Promise<string[]> {
+  for (const frame of desktop.page.frames()) {
+    try {
+      const shown = await frame.evaluate(() => [...document.querySelectorAll('svg.marks text')].map((t) => (t.textContent ?? '').trim()).filter(Boolean));
+      if (shown.includes(words)) return shown;
+    } catch { /* a frame that navigated away or is not a visual */ }
+  }
+  return [];
 }
 
 /** How many of a Calendar's day cells draw dimmed and at full strength. */
@@ -148,14 +160,28 @@ try {
   readings.cleared = { kpi: after };
   check('clear: a background click returns the KPI strip to FY26', JSON.stringify(after) === JSON.stringify(base), after.join(' | '));
 
-  // 4. hovering a day shows the Day summary report page for it, in words for a day without sales
-  for (const [day, words, extra] of [['2025-07-07', 'Mon 7 Jul 2025', null], ['2025-07-17', 'Thu 17 Jul 2025', 'No sales on this day']] as const) {
+  // 4. hovering a day shows the Day summary report page for it: the day's sales with its variance to
+  // target beside them, or words for a day without sales, and the week's count of days on target
+  const fmt = (n: number) => Math.round(n).toLocaleString('en-US');
+  const sign = (n: number) => (n >= 0 ? '+' : '−');
+  const onDay = (table: string, column: string, day: string) => {
+    const [y, m, d] = day.split('-').map(Number);
+    return daxScalar(`SUMX ( FILTER ( '${table}', '${table}'[Date] = DATE ( ${y}, ${m}, ${d} ) ), '${table}'[${column}] )`) as number | null;
+  };
+  for (const [day, words] of [['2025-07-07', 'Mon 7 Jul 2025'], ['2025-07-17', 'Thu 17 Jul 2025']] as const) {
+    const s = onDay('Sales', 'Amount', day), t = onDay('Targets', 'Target', day);
+    const expected = s == null ? ['No sales on this day']
+      : t == null ? [fmt(s), 'No target on this day']
+      : [fmt(s), `${s >= t ? '▲' : '▼'} ${sign(s - t)}${fmt(Math.abs(s - t))} (${sign(s - t)}${(Math.abs(s - t) / t * 100).toFixed(1)}%)`];
     const c = await sales.dayCentre(day);
     await desktop.page.mouse.move(c.x - 30, c.y - 30);
     await desktop.page.mouse.move(c.x, c.y, { steps: 5 });
     await sleep(4000);
-    const shown = await desktop.page.evaluate(() => document.body.innerText);
-    check(`hover: Day summary shows ${words}${extra ? ` and '${extra}'` : ''}`, shown.includes(words) && (!extra || shown.includes(extra)));
+    const shown = await tooltipTexts(desktop, words);
+    readings[`hover ${day}`] = shown;
+    const week = shown.some((x) => /^Week: \d of \d days on target$/.test(x));
+    check(`hover: Day summary shows ${words}, ${expected.map((x) => `'${x}'`).join(' then ')} and the week's days on target`,
+      expected.every((x) => shown.includes(x)) && week, shown.join(' | '));
   }
   await desktop.page.mouse.move(5, 5);
 

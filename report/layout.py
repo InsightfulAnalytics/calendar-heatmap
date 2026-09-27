@@ -39,6 +39,10 @@ LAYOUT = {
         'meanDay': (748, 416, 250, 120, 'card'),
         'meanTarget': (1014, 416, 250, 120, 'card'),
     },
+    # The tooltip page: one Deneb visual filling it
+    'daySummary': {
+        'weekSummary': (0, 0, 320, 200, 'bare'),
+    },
 }
 
 # The frame every visible page shares: rail, top bar and their contents. Everything in the rail
@@ -80,6 +84,24 @@ ALT_TEXT = {
     },
     'byRegion': {f'cal{r}': f'Calendar: daily sales for {r}, on the scale shared by every region' for r in ['North', 'South', 'EMEA', 'APAC']},
     'targets': {'targetCalendar': 'Calendar: each day coloured by whether its sales met the daily target'},
+    'daySummary': {'weekSummary': 'Day summary: the day, its sales and variance to target, and its week against target'},
+}
+
+# Deneb settings pbir cannot write (it has no schema for the custom visual's objects). Day summary's
+# week is a picture, not a control: no selection, highlight, tooltip or context menu, and its
+# supporting-fields map names its own fields with every companion off.
+COMPANIONS = ['highlight', 'highlightStatus', 'highlightComparator', 'format', 'formatted', 'names']
+WEEK_FIELDS = ['Offset', 'Day Label', 'Week Day Sales', 'Week Day Target', 'Week Day Is Current']
+DENEB_OPTIONS = {
+    'daySummary': {
+        'weekSummary': {
+            'vega': {'enableSelection': False, 'enableHighlight': False, 'enableTooltips': False, 'enableContextMenu': False},
+            'stateManagement': {
+                'viewportWidth': 320, 'viewportHeight': 200,
+                'supportFieldConfiguration': json.dumps({f: dict.fromkeys(COMPANIONS, False) for f in WEEK_FIELDS}, separators=(',', ':')),
+            },
+        },
+    },
 }
 
 # The page list in the rail: one button per visible page, the current page's in ink
@@ -158,6 +180,8 @@ def apply(page, name, spec):
     path = PAGES / page / 'visuals' / name / 'visual.json'
     visual = json.loads(path.read_text(encoding='utf-8'))
     x, y, w, h, style = spec
+    # pbir cp gives a copied visual a random name; the folder name is the one every table here uses
+    visual['name'] = name
     visual['position'].update({'x': x, 'y': y, 'width': w, 'height': h})
     if style:
         vco = visual['visual'].setdefault('visualContainerObjects', {})
@@ -187,6 +211,15 @@ if __name__ == '__main__':
             general = visual['visual'].setdefault('visualContainerObjects', {}).setdefault('general', [{'properties': {}}])
             general[0].setdefault('properties', {})['altText'] = lit(text)
             path.write_text(json.dumps(visual, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+    for page, visuals in DENEB_OPTIONS.items():
+        for name, objects in visuals.items():
+            path = PAGES / page / 'visuals' / name / 'visual.json'
+            visual = json.loads(path.read_text(encoding='utf-8'))
+            for obj, props in objects.items():
+                target = visual['visual']['objects'][obj][0]['properties']
+                target.update({key: lit(value) for key, value in props.items()})
+            path.write_text(json.dumps(visual, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+            print(f'{page}/{name}: Deneb options')
     for page, labels in LABELS.items():
         for name, spec in labels.items():
             write_label(page, name, spec)

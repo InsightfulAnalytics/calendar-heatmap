@@ -29,6 +29,7 @@ ref table Region
 ref table Targets
 ref table 'Support Tickets'
 ref table 'Web Sessions'
+ref table 'Week Days'
 
 ref cultureInfo en-US
 

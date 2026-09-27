@@ -473,7 +473,10 @@ Pass 'canvas reloaded'
 # ---------------------------------------------------------------------------------------------
 if (-not $SkipScreenshot) {
     Step '6. All-pages screenshot'
-    $out = [IO.Path]::GetFullPath($OutDir)
+    # Resolve against the PowerShell location, not the process directory [IO.Path]::GetFullPath uses,
+    # which Set-Location does not move: a relative -OutDir otherwise lands beside wherever the
+    # process started
+    $out = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutDir)
     New-Item -ItemType Directory -Force -Path $out | Out-Null
     $started = Get-Date
     $shot = Invoke-Pbir @('desktop', 'screenshot', $Report, '--all', '--output-dir', $out, '--settle', '8000', '--pid', "$DesktopPid")

@@ -54,7 +54,10 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
     By region Calendars' shared scale.
   - `Target Hit`, `Days on Target`, `Days Short of Target`: a day judged against its target, and
     the counts on Targets.
-  - `Day Label`, `Day Sales Label`, `Day Target Label`: Day summary and Day detail's words.
+  - `Day Label`: the day Day summary and Day detail describe, in words.
+  - `Week Day Date`, `Week Day Sales`, `Week Day Target`, `Week Day Is Current`: Day summary's
+    week, one value per row of the unrelated `Week Days` table (offsets 0 to 6 from Monday). The
+    date filters are lifted, so a week crossing a fiscal year or the date range stays whole.
 
 The DAX functions need compatibility level 1702. The DAX Studio TOM assembly on this machine
 (19.84.1.0) predates them, so `validate-model.ps1` round-trips a copy of the definition without
@@ -79,14 +82,20 @@ across pages: pbir cannot write a sync group, so each page holds its own.
   colour in every region. The region slicer does not filter them.
 - **Targets**: the sales Calendar in target mode against `Total Target`, with Days on target,
   Days short of target, Mean per day and Mean daily target cards.
-- **Day summary** (hidden tooltip page, 320 by 200): the day, its sales in words or "No sales on
-  this day", and its target. Every Calendar shows it on hover (tooltip type Canvas).
+- **Day summary** (hidden tooltip page, 320 by 200): one Deneb visual (`specs/day-summary.json`).
+  The day; its sales in ink with the variance to target beside them in the theme's good or bad
+  colour (such as "4,120 ▼ −73 (−1.7%)"), or "No sales on this day", or "No target on this day";
+  then its Monday to Sunday week as columns of each day's variance, the day itself at full
+  strength, and "Week: x of y days on target". Every Calendar shows it on hover (tooltip type
+  Canvas). Chosen from three prototypes (branch `prototype/day-summary-tooltip`, variant C with
+  the sales added).
 - **Day detail** (hidden drill-through on `DimDate[Date]`): the day's sales and target by channel
   and by region, with a Back button.
 
 Every Deneb visual is written by `embed.py` (each Calendar from the Template with its own
-settings, listed at the top of the script; the other three from `specs/`), and the frame's
-positions, container formatting, tooltip page and alt text by `layout.py`. Run both after any
+settings, listed at the top of the script; the other four from `specs/`), and the frame's
+positions, container formatting, tooltip page, alt text and the Deneb options pbir cannot write
+by `layout.py`. Run both after any
 Template, spec or layout change, then the seam loop. Every Calendar keeps the legacy container
 signal names, which Deneb 1.9 needs.
 
