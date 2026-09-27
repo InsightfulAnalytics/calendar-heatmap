@@ -19,3 +19,6 @@ __pycache__/
 # Node (template test harness)
 node_modules/
 harness/out/
+
+# Seam and run logs under evidence (local only)
+evidence/**/*.log
