@@ -3,7 +3,7 @@
 Each Calendar is the Template (template/calendar-heatmap/) written by the harness's
 `npm run template` with that Calendar's own field names and settings, so every Calendar carries
 the same Template revision and differs only in the settings listed here. The KPI strip, Sales by
-month and Top days are the specs in report/specs/. Embedding goes through the deneb-pbir skill's
+month, Top days and Day summary's week are the specs in report/specs/. Embedding goes through the deneb-pbir skill's
 deneb_spec.py, which keeps the legacy container signal names Deneb 1.9 needs. Run after any
 Template or spec change:
 
@@ -40,6 +40,7 @@ SPECS = {
     ('dailyOverview', 'kpiStrip'): 'kpi-strip.json',
     ('dailyOverview', 'salesByMonth'): 'sales-by-month.json',
     ('dailyOverview', 'topDays'): 'top-days.json',
+    ('daySummary', 'weekSummary'): 'day-summary.json',
 }
 
 

@@ -527,36 +527,61 @@ table 'Measure Table'
 		displayFolder: Day summary
 		lineageTag: 5a9c2e7f-8d1b-4f6a-93e0-b4c7d2a1f865
 
-	/// Day summary's headline:the day's sales, or words saying the day had none, so the tooltip never shows a blank card or a 0 for a day without sales.
-	measure 'Day Sales Label' =
-			
-			VAR __Sales =
-			    [Total Sales]
-			VAR __Result =
-			    IF ( ISBLANK ( __Sales ), "No sales on this day", FORMAT ( __Sales, "#,##0" ) )
-			RETURN
-			    __Result
-		displayFolder: Day summary
-		lineageTag: 9e2d4b7a-1c3f-4e8a-b6d5-7a0f2c9e4b13
+	/// Day summary's week: the date on the current Week Days row, in the Monday to Sunday week of the day the filter holds (its last day when it holds several). Blank without one Week Days row.
+	measure 'Week Day Date' =
 
-	/// Day summary's target line: the day's sales against its target in words, or that the day has no target.
-	measure 'Day Target Label' =
-			
-			VAR __Sales =
-			    COALESCE ( [Total Sales], 0 )
-			VAR __Target =
-			    [Total Target]
+			// The day being described, and the Monday that starts its week
+			VAR __Day =
+			    MAX ( 'DimDate'[Date] )
+			VAR __Monday =
+			    __Day - WEEKDAY ( __Day, 3 )
+			// The current Week Days row: its offset from Monday, 0 to 6
+			VAR __Offset =
+			    SELECTEDVALUE ( 'Week Days'[Offset] )
 			VAR __Result =
-			    IF (
-			        ISBLANK ( __Target ),
-			        "No target on this day",
-			        IF ( __Sales >= __Target, "On target: ", "Short of target: " )
-			            & FORMAT ( __Target, "#,##0" )
-			    )
+			    IF ( NOT ISBLANK ( __Day ) && NOT ISBLANK ( __Offset ), __Monday + __Offset )
 			RETURN
 			    __Result
+		formatString: d mmm yyyy
 		displayFolder: Day summary
-		lineageTag: 3c8f1e6d-7b2a-4d9e-a5c4-0e6b8d2f1a97
+		lineageTag: dbdb9a77-0563-4c62-8c4e-191fa8b4778a
+
+	/// Day summary's week: the sales on the current Week Days row's date. Every date filter is lifted first, the fiscal year and date range included, so a week that crosses into another year or out of the range is still whole; channel and region filters stay.
+	measure 'Week Day Sales' =
+
+			VAR __Date =
+			    [Week Day Date]
+			VAR __Result =
+			    CALCULATE ( [Total Sales], REMOVEFILTERS ( 'DimDate' ), 'DimDate'[Date] = __Date )
+			RETURN
+			    __Result
+		formatString: #,##0
+		displayFolder: Day summary
+		lineageTag: e87b63a9-834d-4030-9583-8846648b6988
+
+	/// Day summary's week: the target on the current Week Days row's date, with the date filters lifted as Week Day Sales lifts them.
+	measure 'Week Day Target' =
+
+			VAR __Date =
+			    [Week Day Date]
+			VAR __Result =
+			    CALCULATE ( [Total Target], REMOVEFILTERS ( 'DimDate' ), 'DimDate'[Date] = __Date )
+			RETURN
+			    __Result
+		formatString: #,##0
+		displayFolder: Day summary
+		lineageTag: 98500264-a780-4952-b3f7-f2ed755be24e
+
+	/// Day summary's week: 1 on the Week Days row that is the day the filter holds, 0 on the other six. Never blank, so Day summary always receives all seven rows.
+	measure 'Week Day Is Current' =
+
+			VAR __Result =
+			    IF ( [Week Day Date] = MAX ( 'DimDate'[Date] ), 1, 0 )
+			RETURN
+			    __Result
+		formatString: 0
+		displayFolder: Day summary
+		lineageTag: 5ad59d55-090a-4c9c-bdb7-1d8324a2c8c1
 
 	/// Days in the current filter whose sales meet or beat their target. Days with no sales or no target are not counted.
 	measure 'Days on Target' =
