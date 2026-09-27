@@ -3,10 +3,10 @@
   "name": "titleText",
   "position": {
     "x": 216,
-    "y": 10,
+    "y": 17,
     "z": 2000,
-    "height": 44,
-    "width": 760,
+    "height": 32,
+    "width": 820,
     "tabOrder": 0
   },
   "visual": {
@@ -160,6 +160,40 @@
               "expr": {
                 "Literal": {
                   "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
                 }
               }
             }

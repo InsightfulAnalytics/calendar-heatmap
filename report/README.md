@@ -87,8 +87,7 @@ across pages: pbir cannot write a sync group, so each page holds its own.
   colour (such as "4,120 ▼ −73 (−1.7%)"), or "No sales on this day", or "No target on this day";
   then its Monday to Sunday week as columns of each day's variance, the day itself at full
   strength, and "Week: x of y days on target". Every Calendar shows it on hover (tooltip type
-  Canvas). Chosen from three prototypes (branch `prototype/day-summary-tooltip`, variant C with
-  the sales added).
+  Canvas).
 - **Day detail** (hidden drill-through on `DimDate[Date]`): the day's sales and target by channel
   and by region, with a Back button.
 
