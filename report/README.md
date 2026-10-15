@@ -22,7 +22,7 @@ extends. [SPEC.md](../SPEC.md) holds the decisions.
 - `Sales`: synthetic daily sales at the day by channel by region grain, a DAX calculated table
   generated from `DimDate` by a fixed formula. Blank days have no rows. The generation pattern, and
   why it never reads the date table's blank row, is in the project LEARNINGS
-  (`Vault\Projects\Calendar Heatmap\LEARNINGS.md`). Its Channel and Region columns are hidden:
+  (`notes\LEARNINGS.md`, local only). Its Channel and Region columns are hidden:
   filters go through the dimensions.
 - `Targets`: synthetic daily sales targets at the grain of `Sales` (day by channel by region), a
   DAX calculated table generated from `DimDate` by a fixed formula in the same pattern, with its

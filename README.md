@@ -154,7 +154,7 @@ Finished on 2026-09-27. The template, all five report pages and the three test s
 - Open: republishing and the pull request to the public
   [Deneb template library](https://github.com/InsightfulAnalytics/Deneb) (#29).
 
-Learnings and notes live in the Vault, under `Vault\Projects\Calendar Heatmap\`.
+Learnings and notes live in `notes\`, kept on disk and out of git.
 
 ## License
 
