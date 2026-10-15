@@ -17,5 +17,5 @@ Single-context: one `CONTEXT.md` and `docs/adr/` at the repo root, created lazil
 ## Project notes
 
 Learnings (root causes, Desktop traps, the fact table generation pattern) live in
-`B:\VS Code Files\Vault\Projects\Calendar Heatmap\LEARNINGS.md`. Read it before any Desktop or
+`notes\LEARNINGS.md` (local only: `notes\` is listed in `.git\info\exclude`). Read it before any Desktop or
 harness work, and append to it after fixing a nontrivial error.
