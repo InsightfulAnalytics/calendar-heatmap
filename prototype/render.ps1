@@ -6,7 +6,7 @@
 #    replays a drag, a click, a right click and a clear.
 # 4. compare.py stacks the site card, the purple render and the BI Nexus render into compare.png.
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$renderer = "B:\VS Code Files\PBI_Agentic_Dev\plugins\custom-visuals\skills\deneb-pbir\renderer\render.mjs"
+$renderer = "W:\pbi_agentic_dev\plugins\custom-visuals\skills\deneb-pbir\renderer\render.mjs"
 py "$here\prep.py" | Out-Null
 foreach ($v in "1.9", "2.0") {
   node $renderer "$here\_render-spec.json" "$here\_check-$v.png" `

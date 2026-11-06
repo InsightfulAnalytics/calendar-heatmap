@@ -10,7 +10,7 @@ Tim performs this in Power BI Desktop on the probe Report, `report/Daily Sales.p
 **Daily overview**. A fresh session then reviews the screenshots and closes T02. Written by T01.
 
 - Save every screenshot to `checklists/probe/screenshots/` under the name given
-  (`B:\VS Code Files\PBI Projects\Calendar Heatmap\checklists\probe\screenshots\`). A screenshot of
+  (`W:\pbi_projects\calendar_heatmap\checklists\probe\screenshots\`). A screenshot of
   the whole Desktop window is best: every visual and the Filters pane in one image.
 - Where a step says **Record**, write the answer in the table at the end, or leave it for the
   review to read off the screenshot.
@@ -62,9 +62,9 @@ Sun, 14 Aug Thu, 20 Aug Wed, 21 Aug Thu. Hover a Calendar cell to see its date i
 pbir desktop list
 ```
 
-Expected: exactly one instance, holding `B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales.pbip`.
+Expected: exactly one instance, holding `W:\pbi_projects\calendar_heatmap\report\Daily Sales.pbip`.
 If Desktop is not open, open it with
-`Start-Process "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales.pbip"`, wait
+`Start-Process "W:\pbi_projects\calendar_heatmap\report\Daily Sales.pbip"`, wait
 for the page to draw, and run `pbir desktop list` again.
 
 The instance may show unsaved changes (`hasUnsavedChanges` true). That is expected and is not your
@@ -79,7 +79,7 @@ Otherwise pick one:
 - **Clear the flag (the usual choice).** Press **Ctrl+S** once in Desktop. Then in the terminal:
 
   ```powershell
-  git -C "B:\VS Code Files\PBI Projects\Calendar Heatmap" status --short -- report
+  git -C "W:\pbi_projects\calendar_heatmap" status --short -- report
   pbir desktop list
   ```
 
@@ -296,8 +296,8 @@ Screenshot: `25-after-save.png` (the Desktop window straight after the save)
 **D3** In a terminal:
 
 ```powershell
-python "C:\Users\timos\.claude\skills\custom-visuals\skills\deneb-pbir\scripts\deneb_spec.py" audit "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales.Report\definition\pages\dailyOverview\visuals\calendar\visual.json"
-git -C "B:\VS Code Files\PBI Projects\Calendar Heatmap" status --short -- report
+python "C:\Users\timos\.claude\skills\custom-visuals\skills\deneb-pbir\scripts\deneb_spec.py" audit "W:\pbi_projects\calendar_heatmap\report\Daily Sales.Report\definition\pages\dailyOverview\visuals\calendar\visual.json"
+git -C "W:\pbi_projects\calendar_heatmap" status --short -- report
 ```
 
 Expected from the audit:

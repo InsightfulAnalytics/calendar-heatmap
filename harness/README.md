@@ -49,7 +49,7 @@ embedded from that output with the deneb-pbir skill (the command is at the top o
 ticket passes them (`src/gates.ts`, checked in `test/template-package.test.ts`):
 
 - The Deneb template library's offline checker (`tools/check-templates.mjs` in the library clone,
-  `B:\VS Code Files\Deneb` by default; set `DENEB_LIBRARY` to move it). It runs on the Template's
+  `W:\deneb` by default; set `DENEB_LIBRARY` to move it). It runs on the Template's
   folder with its draft sample file, in each of the three time zones, and its `--render` SVG is read
   back: 365 days, the weekday labels Monday first, and 1 January 2025 in the Wednesday row. It runs
   a second time on a copy set as the Report sets it and fed the Report-exported fixture, where
