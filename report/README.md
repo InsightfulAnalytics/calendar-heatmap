@@ -103,13 +103,13 @@ signal names, which Deneb 1.9 needs.
 Open the PBIP first, one Desktop instance only, by its absolute path:
 
 ```powershell
-Start-Process "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\Daily Sales.pbip"
+Start-Process "W:\pbi_projects\calendar_heatmap\report\Daily Sales.pbip"
 ```
 
 Then run the loop with Windows PowerShell 5.1, from any folder, naming where the screenshots go:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File "B:\VS Code Files\PBI Projects\Calendar Heatmap\report\seam.ps1" -OutDir "<folder>" -OverwriteUnsaved
+powershell -NoProfile -ExecutionPolicy Bypass -File "W:\pbi_projects\calendar_heatmap\report\seam.ps1" -OutDir "<folder>" -OverwriteUnsaved
 ```
 
 Pass `-OverwriteUnsaved` only after checking that nobody has canvas work open in that Desktop

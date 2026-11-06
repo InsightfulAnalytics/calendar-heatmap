@@ -1,7 +1,7 @@
 {
   "started": "2026-09-25T22:11:26.016Z",
   "finished": "2026-09-25T22:17:25.382Z",
-  "pbip": "B:\\VS Code Files\\PBI Projects\\Calendar Heatmap\\report\\Daily Sales.pbip",
+  "pbip": "W:\\pbi_projects\\calendar_heatmap\\report\\Daily Sales.pbip",
   "answers": {
     "machine time zone at the start": "AUS Eastern Standard Time",
     "closing the Desktop instance already holding the PBIP": "closed through WindowPattern.Close, with no save prompt",
@@ -120,7 +120,7 @@
     "D3 git status of report/ after the save": "M report/README.md",
     "Desktop reopened without a debugging port": {
       "pid": 8008,
-      "file": "B:\\VS Code Files\\PBI Projects\\Calendar Heatmap\\report\\Daily Sales.pbip"
+      "file": "W:\\pbi_projects\\calendar_heatmap\\report\\Daily Sales.pbip"
     }
   },
   "results": [

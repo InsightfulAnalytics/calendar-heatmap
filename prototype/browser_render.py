@@ -19,7 +19,7 @@ from playwright.sync_api import sync_playwright
 
 here = Path(__file__).parent
 project = here.parent
-VEGA = Path(r"B:\VS Code Files\PBI_Agentic_Dev\plugins\custom-visuals\skills\deneb-pbir\renderer\node_modules\vega\build\vega.min.js")
+VEGA = Path(r"W:\pbi_agentic_dev\plugins\custom-visuals\skills\deneb-pbir\renderer\node_modules\vega\build\vega.min.js")
 theme = json.loads((project / "theme" / "bi-nexus.json").read_text(encoding="utf-8"))
 theme_js = json.dumps({k: theme[k] for k in ("dataColors", "good", "bad", "neutral", "minimum", "center", "maximum")})
 spec = json.loads((here / "_render-spec.json").read_text(encoding="utf-8"))
